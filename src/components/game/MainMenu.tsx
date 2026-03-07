@@ -1,117 +1,188 @@
-import { useState } from 'react';
-import { GameCard, getStarterDeck } from '@/data/cards';
+import { useGame } from '@/context/GameContext';
+import { getArenaForTrophies } from '@/data/cards';
 import CardComponent from './CardComponent';
 import { motion } from 'framer-motion';
-import { Swords, Trophy, Users, ScrollText, Settings, Crown } from 'lucide-react';
+import { Swords, Trophy, Users, ShoppingBag, Crown, Map, Star, Gift, Zap } from 'lucide-react';
+import splashImage from '@/assets/world-war-royale-splash.png';
 
-interface MainMenuProps {
-  trophies: number;
-  playerName: string;
-  deck: GameCard[];
-  onBattle: () => void;
-  onDeck: () => void;
-}
+const MainMenu = () => {
+  const { profile, deck, chests, setScreen, setActiveTab } = useGame();
+  const arena = getArenaForTrophies(profile.trophies);
 
-const MainMenu = ({ trophies, playerName, deck, onBattle, onDeck }: MainMenuProps) => {
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background relative overflow-hidden">
-      {/* Decorative background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[hsl(220,25%,8%)] via-[hsl(220,20%,12%)] to-[hsl(220,25%,8%)] pointer-events-none" />
-      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+      {/* Background */}
+      <div className="absolute inset-0">
+        <img src={splashImage} alt="World War Royale" className="w-full h-full object-cover opacity-15" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[hsl(220,25%,8%,0.7)] via-[hsl(220,20%,10%,0.85)] to-[hsl(220,25%,8%,0.95)]" />
+      </div>
 
-      {/* Top bar */}
-      <div className="relative z-10 flex items-center justify-between px-4 py-3 bg-card/80 backdrop-blur-sm border-b border-border">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
-            <Crown className="w-4 h-4 text-primary" />
+      {/* Top bar - Level, Name, Trophies, Resources */}
+      <div className="relative z-10 bg-[hsl(220,25%,10%,0.95)] border-b border-border">
+        {/* Player info row */}
+        <div className="flex items-center justify-between px-3 py-1.5">
+          <div className="flex items-center gap-2">
+            {/* Level badge */}
+            <div className="w-8 h-8 rounded-lg bg-[hsl(210,60%,40%)] border-2 border-[hsl(210,70%,55%)] flex items-center justify-center shadow-lg">
+              <span className="text-xs font-black text-foreground">{profile.level}</span>
+            </div>
+            <div>
+              <div className="text-xs font-bold text-foreground leading-none">{profile.name}</div>
+              <div className="text-[9px] text-muted-foreground leading-none mt-0.5">Deaf ID</div>
+            </div>
           </div>
-          <div>
-            <div className="text-xs font-bold text-foreground">{playerName}</div>
-            <div className="text-[10px] text-muted-foreground">Deaf ID</div>
+          {/* Resources */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-[hsl(220,15%,16%)] pl-1.5 pr-2.5 py-1 rounded-full border border-border">
+              <span className="text-xs">💰</span>
+              <span className="text-[10px] font-bold text-foreground">{profile.gold.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center gap-1 bg-[hsl(220,15%,16%)] pl-1.5 pr-2.5 py-1 rounded-full border border-border">
+              <span className="text-xs">💎</span>
+              <span className="text-[10px] font-bold text-foreground">{profile.gems}</span>
+            </div>
           </div>
         </div>
-        <div className="trophy-badge">
-          <Trophy className="w-3.5 h-3.5" />
-          <span>{trophies}</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 bg-muted px-2 py-1 rounded-full">
-            <span className="text-primary text-xs">💰</span>
-            <span className="text-xs font-bold text-foreground">2,450</span>
-          </div>
-          <div className="flex items-center gap-1 bg-muted px-2 py-1 rounded-full">
-            <span className="text-elixir text-xs">💎</span>
-            <span className="text-xs font-bold text-foreground">120</span>
+        {/* XP bar */}
+        <div className="px-3 pb-1.5">
+          <div className="h-1 bg-muted rounded-full overflow-hidden">
+            <div className="h-full bg-[hsl(210,60%,50%)]" style={{ width: `${(profile.xp / profile.maxXp) * 100}%` }} />
           </div>
         </div>
       </div>
 
-      {/* Arena display */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6">
-        <motion.div
-          animate={{ y: [0, -8, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          className="mb-6"
-        >
-          <div className="text-6xl mb-2 text-center">⚔️</div>
-          <h1 className="font-display font-black text-2xl text-foreground text-center tracking-wider">
-            WAR OF AGES
-          </h1>
-          <p className="text-muted-foreground text-xs text-center mt-1 tracking-widest uppercase">
-            Arena of Legends
-          </p>
-        </motion.div>
+      {/* Trophy/Arena display */}
+      <div className="relative z-10 flex items-center justify-center py-2 bg-[hsl(220,20%,11%,0.8)]">
+        <div className="flex items-center gap-3">
+          <div className="trophy-badge">
+            <Trophy className="w-3.5 h-3.5" />
+            <span>{profile.trophies.toLocaleString()}</span>
+          </div>
+          <div className="text-[10px] text-muted-foreground">
+            <span className="text-foreground font-semibold">{arena.emoji} {arena.name}</span>
+          </div>
+        </div>
+      </div>
 
-        {/* Battle Button */}
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onBattle}
-          className="btn-battle text-xl mb-8"
-        >
-          <Swords className="inline w-5 h-5 mr-2 -mt-0.5" />
-          BATTLE!
-        </motion.button>
+      {/* Main content area */}
+      <div className="relative z-10 flex-1 flex flex-col">
+        {/* Arena / Events buttons row */}
+        <div className="flex gap-1.5 px-3 py-2">
+          <button onClick={() => { setActiveTab('trophy-road'); setScreen('trophy-road'); }} className="flex-1 bg-[hsl(220,15%,16%)] border border-border rounded-lg py-2 px-2 flex items-center gap-2 hover:bg-[hsl(220,15%,20%)] transition-colors">
+            <Map className="w-4 h-4 text-primary" />
+            <div className="text-left">
+              <div className="text-[9px] font-bold text-foreground">Trophy Road</div>
+              <div className="text-[7px] text-muted-foreground">Arena {arena.id}</div>
+            </div>
+          </button>
+          <button onClick={() => setScreen('events')} className="flex-1 bg-[hsl(220,15%,16%)] border border-border rounded-lg py-2 px-2 flex items-center gap-2 hover:bg-[hsl(220,15%,20%)] transition-colors">
+            <Star className="w-4 h-4 text-legendary" />
+            <div className="text-left">
+              <div className="text-[9px] font-bold text-foreground">Events</div>
+              <div className="text-[7px] text-muted-foreground">Special Challenge</div>
+            </div>
+          </button>
+          <button className="bg-[hsl(220,15%,16%)] border border-border rounded-lg py-2 px-2 flex items-center gap-2 hover:bg-[hsl(220,15%,20%)] transition-colors">
+            <Gift className="w-4 h-4 text-epic" />
+            <div className="text-left">
+              <div className="text-[9px] font-bold text-foreground">Pass</div>
+              <div className="text-[7px] text-muted-foreground">War Pass</div>
+            </div>
+          </button>
+        </div>
+
+        {/* Battle Button - Center piece */}
+        <div className="flex-1 flex flex-col items-center justify-center px-6">
+          <motion.div
+            animate={{ y: [0, -5, 0] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+            className="mb-4"
+          >
+            <h1 className="font-display font-black text-lg text-foreground text-center tracking-widest uppercase">
+              World War Royale
+            </h1>
+            <p className="text-[10px] text-primary text-center font-bold tracking-[0.3em]">V1.0</p>
+          </motion.div>
+
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setScreen('battle')}
+            className="btn-battle text-lg flex items-center gap-2"
+          >
+            <Swords className="w-5 h-5" />
+            BATTLE
+          </motion.button>
+
+          {/* 1v1 / 2v2 toggle */}
+          <div className="flex gap-2 mt-3">
+            <button className="px-4 py-1.5 rounded-full bg-primary/20 border border-primary/40 text-[10px] font-bold text-primary">1v1</button>
+            <button className="px-4 py-1.5 rounded-full bg-secondary text-[10px] font-bold text-muted-foreground border border-border">2v2</button>
+            <button className="px-4 py-1.5 rounded-full bg-secondary text-[10px] font-bold text-muted-foreground border border-border">Party</button>
+          </div>
+        </div>
 
         {/* Current deck preview */}
-        <div className="w-full">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Your Deck</span>
-            <button onClick={onDeck} className="text-xs text-primary font-semibold">Edit →</button>
+        <div className="px-3 mb-1">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold">Current Deck</span>
+            <button onClick={() => { setActiveTab('cards'); setScreen('deck'); }} className="text-[9px] text-primary font-bold">Edit Deck →</button>
           </div>
-          <div className="grid grid-cols-8 gap-1">
-            {deck.slice(0, 8).map((card, i) => (
-              <CardComponent key={card.id} card={card} size="sm" />
+          <div className="grid grid-cols-8 gap-0.5">
+            {deck.slice(0, 8).map((card) => (
+              <CardComponent key={card.id} card={card} size="xs" showElixir={false} />
+            ))}
+          </div>
+        </div>
+
+        {/* Chest slots - Like CR */}
+        <div className="px-3 py-2 bg-[hsl(220,20%,11%,0.9)] border-t border-border">
+          <div className="grid grid-cols-4 gap-1.5">
+            {chests.map((chest) => (
+              <button
+                key={chest.id}
+                onClick={() => chest.isReady && setScreen('chest-open')}
+                className={`relative bg-[hsl(220,15%,16%)] border rounded-lg py-2 flex flex-col items-center gap-0.5 transition-all ${chest.isReady ? 'border-primary animate-pulse-glow' : 'border-border'}`}
+              >
+                <span className="text-xl">{chest.emoji}</span>
+                <span className="text-[7px] font-bold text-foreground">{chest.name.split(' ')[0]}</span>
+                {chest.isUnlocking && !chest.isReady && (
+                  <div className="w-full px-1 mt-0.5">
+                    <div className="h-1 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-primary rounded-full" style={{ width: `${chest.unlockProgress * 100}%` }} />
+                    </div>
+                  </div>
+                )}
+                {chest.isReady && (
+                  <span className="text-[7px] text-primary font-bold">OPEN</span>
+                )}
+                {!chest.isUnlocking && !chest.isReady && (
+                  <span className="text-[7px] text-muted-foreground">Tap</span>
+                )}
+              </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Bottom navigation */}
-      <div className="relative z-10 flex items-stretch bg-card/90 backdrop-blur-sm border-t border-border">
-        <button className="nav-tab flex-1">
-          <Users className="w-5 h-5" />
-          <span>Social</span>
-        </button>
-        <button className="nav-tab flex-1">
-          <ScrollText className="w-5 h-5" />
-          <span>Shop</span>
-        </button>
-        <button className="nav-tab active flex-1">
-          <Swords className="w-5 h-5" />
-          <span>Battle</span>
-        </button>
-        <button onClick={onDeck} className="nav-tab flex-1">
-          <Crown className="w-5 h-5" />
-          <span>Cards</span>
-        </button>
-        <button className="nav-tab flex-1">
-          <Settings className="w-5 h-5" />
-          <span>More</span>
-        </button>
+      {/* Bottom navigation - CR style */}
+      <div className="relative z-10 flex items-stretch bg-[hsl(220,20%,10%)] border-t-2 border-primary/20">
+        <NavTab icon={<ShoppingBag className="w-4 h-4" />} label="Shop" onClick={() => setScreen('shop')} />
+        <NavTab icon={<Crown className="w-4 h-4" />} label="Cards" onClick={() => { setActiveTab('cards'); setScreen('deck'); }} />
+        <NavTab icon={<Swords className="w-4 h-4" />} label="Battle" active onClick={() => setScreen('menu')} />
+        <NavTab icon={<Users className="w-4 h-4" />} label="Social" onClick={() => setScreen('social')} />
+        <NavTab icon={<Zap className="w-4 h-4" />} label="Events" onClick={() => setScreen('events')} />
       </div>
     </div>
   );
 };
+
+const NavTab = ({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active?: boolean; onClick?: () => void }) => (
+  <button onClick={onClick} className={`nav-tab flex-1 ${active ? 'active' : ''}`}>
+    <div className={`${active ? 'text-primary' : 'text-muted-foreground'} transition-colors`}>{icon}</div>
+    <span className={`text-[9px] ${active ? 'text-primary' : ''}`}>{label}</span>
+    {active && <div className="absolute bottom-0 left-1/4 right-1/4 h-0.5 bg-primary rounded-full" />}
+  </button>
+);
 
 export default MainMenu;

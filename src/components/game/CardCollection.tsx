@@ -1,65 +1,84 @@
-import { GameCard, allCards, rarityColors } from '@/data/cards';
+import { useGame } from '@/context/GameContext';
+import { allCards } from '@/data/cards';
 import CardComponent from './CardComponent';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { GameCard } from '@/data/cards';
 
-interface CardCollectionProps {
-  deck: GameCard[];
-  onDeckChange: (deck: GameCard[]) => void;
-  onBack: () => void;
-}
-
-const CardCollection = ({ deck, onDeckChange, onBack }: CardCollectionProps) => {
+const CardCollection = () => {
+  const { deck, setDeck, setScreen, setActiveTab } = useGame();
   const [selectedCard, setSelectedCard] = useState<GameCard | null>(null);
   const [filter, setFilter] = useState<'all' | 'troop' | 'spell' | 'building'>('all');
+  const [deckSlot, setDeckSlot] = useState(0);
+  const [decks, setDecks] = useState<GameCard[][]>([deck, [], [], [], []]);
 
   const filtered = filter === 'all' ? allCards : allCards.filter(c => c.type === filter);
-  const isInDeck = (card: GameCard) => deck.some(d => d.id === card.id);
+  const isInDeck = (card: GameCard) => decks[deckSlot].some(d => d.id === card.id);
 
   const toggleDeck = (card: GameCard) => {
+    const newDecks = [...decks];
     if (isInDeck(card)) {
-      onDeckChange(deck.filter(d => d.id !== card.id));
-    } else if (deck.length < 8) {
-      onDeckChange([...deck, card]);
+      newDecks[deckSlot] = newDecks[deckSlot].filter(d => d.id !== card.id);
+    } else if (newDecks[deckSlot].length < 8) {
+      newDecks[deckSlot] = [...newDecks[deckSlot], card];
     }
+    setDecks(newDecks);
+    if (deckSlot === 0) setDeck(newDecks[0]);
   };
 
+  const currentDeck = decks[deckSlot];
+  const avgElixir = currentDeck.length > 0 ? (currentDeck.reduce((a, c) => a + c.elixir, 0) / currentDeck.length).toFixed(1) : '0.0';
+
   return (
-    <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background">
+    <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-card border-b border-border">
-        <button onClick={onBack} className="text-muted-foreground text-sm">← Back</button>
-        <h2 className="font-display font-bold text-foreground text-lg">Battle Deck</h2>
-        <span className="text-primary text-sm font-bold">{deck.length}/8</span>
+      <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,25%,12%)] border-b border-border">
+        <button onClick={() => { setActiveTab('battle'); setScreen('menu'); }} className="text-muted-foreground text-xs font-semibold">✕</button>
+        <h2 className="font-display font-bold text-foreground text-sm">BATTLE DECK</h2>
+        <span className="text-xs font-bold text-primary">{currentDeck.length}/8</span>
+      </div>
+
+      {/* Deck slots tabs */}
+      <div className="flex bg-[hsl(220,20%,14%)] border-b border-border">
+        {[0, 1, 2, 3, 4].map(i => (
+          <button
+            key={i}
+            onClick={() => setDeckSlot(i)}
+            className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${deckSlot === i ? 'text-primary border-b-2 border-primary bg-[hsl(220,20%,16%)]' : 'text-muted-foreground'}`}
+          >
+            Deck {i + 1}
+          </button>
+        ))}
       </div>
 
       {/* Current deck */}
-      <div className="px-3 py-3 bg-secondary/50 border-b border-border">
+      <div className="px-2 py-2 bg-[hsl(220,20%,13%)] border-b border-border">
         <div className="grid grid-cols-8 gap-1">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="aspect-[3/4]">
-              {deck[i] ? (
-                <div onClick={() => toggleDeck(deck[i])}>
-                  <CardComponent card={deck[i]} size="sm" />
+            <div key={i}>
+              {currentDeck[i] ? (
+                <div onClick={() => toggleDeck(currentDeck[i])}>
+                  <CardComponent card={currentDeck[i]} size="xs" showElixir={false} />
                 </div>
               ) : (
-                <div className="w-full h-full rounded border-2 border-dashed border-muted-foreground/20" />
+                <div className="w-10 h-13 rounded border border-dashed border-muted-foreground/20 bg-muted/10" />
               )}
             </div>
           ))}
         </div>
-        <div className="text-center mt-2 text-xs text-muted-foreground">
-          Avg Elixir: {deck.length > 0 ? (deck.reduce((a, c) => a + c.elixir, 0) / deck.length).toFixed(1) : '0.0'}
+        <div className="flex items-center justify-between mt-1.5 px-1">
+          <span className="text-[9px] text-muted-foreground">Avg Elixir: <span className="text-elixir font-bold">{avgElixir}</span></span>
+          <span className="text-[9px] text-muted-foreground">{currentDeck.length}/8 cards</span>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2 px-3 py-2 bg-card border-b border-border">
+      <div className="flex gap-1.5 px-2 py-1.5 bg-[hsl(220,20%,11%)] border-b border-border">
         {(['all', 'troop', 'spell', 'building'] as const).map(f => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-3 py-1 rounded-full text-xs font-semibold capitalize transition-colors ${filter === f ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+            className={`px-3 py-1 rounded-full text-[10px] font-bold capitalize transition-colors ${filter === f ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}
           >
             {f}
           </button>
@@ -67,8 +86,8 @@ const CardCollection = ({ deck, onDeckChange, onBack }: CardCollectionProps) => 
       </div>
 
       {/* Card grid */}
-      <div className="flex-1 overflow-y-auto p-3">
-        <div className="grid grid-cols-4 gap-2">
+      <div className="flex-1 overflow-y-auto p-2 bg-[hsl(220,20%,10%)]">
+        <div className="grid grid-cols-4 gap-1.5">
           {filtered.map(card => (
             <motion.div
               key={card.id}
@@ -76,7 +95,7 @@ const CardCollection = ({ deck, onDeckChange, onBack }: CardCollectionProps) => 
               onClick={() => setSelectedCard(card)}
               className={`${isInDeck(card) ? 'ring-2 ring-primary rounded-lg' : ''}`}
             >
-              <CardComponent card={card} size="md" />
+              <CardComponent card={card} size="md" showLevel showCount />
             </motion.div>
           ))}
         </div>
@@ -87,37 +106,60 @@ const CardCollection = ({ deck, onDeckChange, onBack }: CardCollectionProps) => 
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="absolute inset-0 bg-background/90 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+          className="absolute inset-0 bg-[hsl(0,0%,0%,0.85)] backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={() => setSelectedCard(null)}
         >
           <motion.div
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            className="game-panel p-6 max-w-xs w-full"
+            initial={{ scale: 0.8, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            className="bg-card border border-border rounded-2xl p-5 max-w-xs w-full shadow-2xl"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex justify-center mb-4">
-              <CardComponent card={selectedCard} size="lg" showElixir />
+            <div className="flex justify-center mb-3">
+              <CardComponent card={selectedCard} size="lg" showElixir showLevel />
             </div>
-            <h3 className="font-display font-bold text-foreground text-xl text-center">{selectedCard.name}</h3>
-            <p className="text-muted-foreground text-xs text-center mt-1">{selectedCard.era}</p>
-            <p className="text-foreground/80 text-sm text-center mt-3">{selectedCard.description}</p>
-            <div className="grid grid-cols-2 gap-2 mt-4">
+            <h3 className="font-display font-bold text-foreground text-lg text-center">{selectedCard.name}</h3>
+            <div className="flex items-center justify-center gap-2 mt-1">
+              <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                selectedCard.rarity === 'common' ? 'bg-common/20 text-common' :
+                selectedCard.rarity === 'rare' ? 'bg-[hsl(210,60%,50%,0.2)] text-[hsl(210,60%,60%)]' :
+                selectedCard.rarity === 'epic' ? 'bg-epic/20 text-epic' :
+                selectedCard.rarity === 'legendary' ? 'bg-legendary/20 text-legendary' :
+                'bg-[hsl(340,60%,50%,0.2)] text-[hsl(340,60%,60%)]'
+              }`}>{selectedCard.rarity}</span>
+              <span className="text-[10px] text-muted-foreground">• {selectedCard.era}</span>
+            </div>
+            <p className="text-foreground/80 text-xs text-center mt-3 leading-relaxed">{selectedCard.description}</p>
+            <div className="grid grid-cols-3 gap-2 mt-3">
               {selectedCard.hp && (
-                <div className="bg-muted rounded p-2 text-center">
-                  <div className="text-[10px] text-muted-foreground">HP</div>
+                <div className="bg-muted rounded-lg p-2 text-center">
+                  <div className="text-[8px] text-muted-foreground uppercase">Hitpoints</div>
                   <div className="text-sm font-bold text-hp-green">{selectedCard.hp}</div>
                 </div>
               )}
-              <div className="bg-muted rounded p-2 text-center">
-                <div className="text-[10px] text-muted-foreground">DMG</div>
+              <div className="bg-muted rounded-lg p-2 text-center">
+                <div className="text-[8px] text-muted-foreground uppercase">Damage</div>
                 <div className="text-sm font-bold text-accent">{selectedCard.damage}</div>
+              </div>
+              <div className="bg-muted rounded-lg p-2 text-center">
+                <div className="text-[8px] text-muted-foreground uppercase">Elixir</div>
+                <div className="text-sm font-bold text-elixir">{selectedCard.elixir}</div>
+              </div>
+            </div>
+            {/* Upgrade progress */}
+            <div className="mt-3 bg-muted rounded-lg p-2">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[9px] text-muted-foreground">Level {selectedCard.level}</span>
+                <span className="text-[9px] text-muted-foreground">{selectedCard.count}/{selectedCard.maxCount}</span>
+              </div>
+              <div className="h-2 bg-[hsl(0,0%,0%,0.3)] rounded-full overflow-hidden">
+                <div className="h-full bg-primary rounded-full" style={{ width: `${(selectedCard.count / selectedCard.maxCount) * 100}%` }} />
               </div>
             </div>
             <button
               onClick={() => { toggleDeck(selectedCard); setSelectedCard(null); }}
-              className={`w-full mt-4 py-2 rounded-lg font-bold text-sm ${isInDeck(selectedCard) ? 'bg-accent text-accent-foreground' : deck.length < 8 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground cursor-not-allowed'}`}
-              disabled={!isInDeck(selectedCard) && deck.length >= 8}
+              className={`w-full mt-3 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider ${isInDeck(selectedCard) ? 'bg-accent text-accent-foreground' : currentDeck.length < 8 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground cursor-not-allowed'}`}
+              disabled={!isInDeck(selectedCard) && currentDeck.length >= 8}
             >
               {isInDeck(selectedCard) ? 'Remove from Deck' : 'Add to Deck'}
             </button>
