@@ -94,10 +94,16 @@ const ProfileScreen = () => {
             <div className="text-[10px] font-bold text-foreground mb-2">Win Rate</div>
             <div className="flex items-center gap-2">
               <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden flex">
-                <div className="h-full bg-hp-green" style={{ width: `${(profile.wins / (profile.wins + profile.losses)) * 100}%` }} />
-                <div className="h-full bg-hp-red" style={{ width: `${(profile.losses / (profile.wins + profile.losses)) * 100}%` }} />
+                {(profile.wins + profile.losses) > 0 ? (
+                  <>
+                    <div className="h-full bg-hp-green" style={{ width: `${(profile.wins / (profile.wins + profile.losses)) * 100}%` }} />
+                    <div className="h-full bg-hp-red" style={{ width: `${(profile.losses / (profile.wins + profile.losses)) * 100}%` }} />
+                  </>
+                ) : (
+                  <div className="h-full bg-muted w-full" />
+                )}
               </div>
-              <span className="text-xs font-bold text-foreground">{((profile.wins / (profile.wins + profile.losses)) * 100).toFixed(1)}%</span>
+              <span className="text-xs font-bold text-foreground">{(profile.wins + profile.losses) > 0 ? ((profile.wins / (profile.wins + profile.losses)) * 100).toFixed(1) : '0.0'}%</span>
             </div>
           </div>
         </div>
