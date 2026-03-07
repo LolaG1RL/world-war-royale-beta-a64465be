@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      player_progress: {
+        Row: {
+          arena: number
+          arena_name: string
+          challenge_max_wins: number
+          clan_cards_collected: number
+          created_at: string
+          deck_ids: string[]
+          gems: number
+          gold: number
+          id: string
+          level: number
+          losses: number
+          max_trophies: number
+          max_xp: number
+          star_points: number
+          three_crown_wins: number
+          total_donations: number
+          trophies: number
+          updated_at: string
+          user_id: string
+          war_day_wins: number
+          wins: number
+          xp: number
+        }
+        Insert: {
+          arena?: number
+          arena_name?: string
+          challenge_max_wins?: number
+          clan_cards_collected?: number
+          created_at?: string
+          deck_ids?: string[]
+          gems?: number
+          gold?: number
+          id?: string
+          level?: number
+          losses?: number
+          max_trophies?: number
+          max_xp?: number
+          star_points?: number
+          three_crown_wins?: number
+          total_donations?: number
+          trophies?: number
+          updated_at?: string
+          user_id: string
+          war_day_wins?: number
+          wins?: number
+          xp?: number
+        }
+        Update: {
+          arena?: number
+          arena_name?: string
+          challenge_max_wins?: number
+          clan_cards_collected?: number
+          created_at?: string
+          deck_ids?: string[]
+          gems?: number
+          gold?: number
+          id?: string
+          level?: number
+          losses?: number
+          max_trophies?: number
+          max_xp?: number
+          star_points?: number
+          three_crown_wins?: number
+          total_donations?: number
+          trophies?: number
+          updated_at?: string
+          user_id?: string
+          war_day_wins?: number
+          wins?: number
+          xp?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
