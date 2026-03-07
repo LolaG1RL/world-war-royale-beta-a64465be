@@ -1,4 +1,5 @@
 import { useGame } from '@/context/GameContext';
+import { useAuth } from '@/context/AuthContext';
 import { getArenaForTrophies } from '@/data/cards';
 import CardComponent from './CardComponent';
 import { motion } from 'framer-motion';
