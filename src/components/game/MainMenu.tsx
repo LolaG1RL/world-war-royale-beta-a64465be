@@ -8,6 +8,7 @@ import splashImage from '@/assets/world-war-royale-splash.png';
 
 const MainMenu = () => {
   const { profile, deck, chests, setScreen, setActiveTab } = useGame();
+  const { signOut } = useAuth();
   const arena = getArenaForTrophies(profile.trophies);
 
   return (
