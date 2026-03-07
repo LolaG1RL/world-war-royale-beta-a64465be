@@ -1,5 +1,7 @@
-import { useGame } from '@/context/GameContext';
-import { GameProvider } from '@/context/GameContext';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { GameProvider, useGame } from '@/context/GameContext';
+import DeafIDLogin from '@/components/auth/DeafIDLogin';
+import UsernamePicker from '@/components/auth/UsernamePicker';
 import MainMenu from '@/components/game/MainMenu';
 import BattleArena from '@/components/game/BattleArena';
 import BattleResult from '@/components/game/BattleResult';
@@ -28,11 +30,34 @@ const GameRouter = () => {
   }
 };
 
-// World War Royale V1.0
+const AuthGate = () => {
+  const { user, loading, needsUsername } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="h-screen w-full max-w-md mx-auto flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="text-4xl mb-3 animate-float">⚔️</div>
+          <p className="text-xs text-muted-foreground font-display tracking-widest">LOADING...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) return <DeafIDLogin />;
+  if (needsUsername) return <UsernamePicker />;
+
+  return (
+    <GameProvider>
+      <GameRouter />
+    </GameProvider>
+  );
+};
+
 const Index = () => (
-  <GameProvider>
-    <GameRouter />
-  </GameProvider>
+  <AuthProvider>
+    <AuthGate />
+  </AuthProvider>
 );
 
 export default Index;

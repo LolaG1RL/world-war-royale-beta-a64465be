@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 import { GameCard, ChestData, PlayerProfile, ClanData, getStarterDeck, defaultChests, defaultProfile, defaultClan } from '@/data/cards';
+import { useAuth } from '@/context/AuthContext';
 
 interface GameState {
   screen: string;
@@ -26,17 +27,24 @@ export const useGame = () => {
 };
 
 export const GameProvider = ({ children }: { children: ReactNode }) => {
+  const { username } = useAuth();
   const [screen, setScreen] = useState('menu');
-  const [profile, setProfile] = useState<PlayerProfile>(defaultProfile);
+  const [profile, setProfile] = useState<PlayerProfile>({
+    ...defaultProfile,
+    name: username || 'Warrior',
+  });
   const [deck, setDeck] = useState<GameCard[]>(getStarterDeck());
   const [chests, setChests] = useState<ChestData[]>(defaultChests);
   const [battleResult, setBattleResult] = useState<'win' | 'lose' | null>(null);
   const [activeTab, setActiveTab] = useState('battle');
 
+  // Keep profile name in sync with username
+  const currentProfile = { ...profile, name: username || profile.name };
+
   return (
     <GameContext.Provider value={{
       screen, setScreen,
-      profile, setProfile,
+      profile: currentProfile, setProfile,
       deck, setDeck,
       chests, setChests,
       clan: defaultClan,
