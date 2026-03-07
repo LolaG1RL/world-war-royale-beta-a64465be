@@ -1,96 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800;900&family=Barlow:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 220 20% 10%;
+    --foreground: 40 30% 90%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 220 18% 14%;
+    --card-foreground: 40 30% 90%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 220 18% 14%;
+    --popover-foreground: 40 30% 90%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 38 90% 50%;
+    --primary-foreground: 220 20% 10%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 220 15% 20%;
+    --secondary-foreground: 40 30% 90%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 15% 18%;
+    --muted-foreground: 220 10% 55%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 0 75% 55%;
+    --accent-foreground: 40 30% 95%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 15% 22%;
+    --input: 220 15% 22%;
+    --ring: 38 90% 50%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Game-specific tokens */
+    --gold: 43 96% 56%;
+    --elixir: 280 70% 55%;
+    --legendary: 38 100% 60%;
+    --epic: 270 70% 55%;
+    --rare: 38 80% 50%;
+    --common: 210 10% 60%;
+    --arena-green: 120 30% 28%;
+    --arena-river: 200 60% 40%;
+    --tower-blue: 210 60% 45%;
+    --tower-red: 0 65% 48%;
+    --hp-green: 120 60% 45%;
+    --hp-red: 0 70% 50%;
+    
+    --gradient-battle: linear-gradient(180deg, hsl(220 20% 8%) 0%, hsl(220 25% 15%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(38 90% 45%) 0%, hsl(43 96% 60%) 50%, hsl(38 90% 45%) 100%);
+    --gradient-elixir: linear-gradient(90deg, hsl(280 70% 45%) 0%, hsl(290 80% 60%) 100%);
+    --gradient-card-common: linear-gradient(180deg, hsl(210 10% 30%) 0%, hsl(210 10% 20%) 100%);
+    --gradient-card-rare: linear-gradient(180deg, hsl(38 60% 35%) 0%, hsl(38 80% 25%) 100%);
+    --gradient-card-epic: linear-gradient(180deg, hsl(270 50% 35%) 0%, hsl(270 70% 22%) 100%);
+    --gradient-card-legendary: linear-gradient(180deg, hsl(38 90% 45%) 0%, hsl(30 100% 30%) 100%);
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --shadow-glow-gold: 0 0 20px hsl(38 90% 50% / 0.4);
+    --shadow-glow-elixir: 0 0 15px hsl(280 70% 55% / 0.5);
+    --shadow-card: 0 4px 12px hsl(0 0% 0% / 0.5);
 
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --font-display: 'Cinzel', serif;
+    --font-body: 'Barlow', sans-serif;
   }
 }
 
@@ -101,5 +74,104 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-body);
+    overflow: hidden;
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+}
+
+@layer components {
+  .btn-battle {
+    @apply relative font-bold uppercase tracking-wider px-10 py-4 text-lg rounded-xl;
+    font-family: var(--font-display);
+    background: var(--gradient-gold);
+    color: hsl(var(--primary-foreground));
+    box-shadow: var(--shadow-glow-gold), 0 4px 0 hsl(30 80% 30%);
+    text-shadow: 0 1px 2px hsl(0 0% 0% / 0.3);
+    transition: all 0.15s ease;
+  }
+  .btn-battle:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow-gold), 0 6px 0 hsl(30 80% 30%);
+  }
+  .btn-battle:active {
+    transform: translateY(2px);
+    box-shadow: 0 0 10px hsl(38 90% 50% / 0.3), 0 1px 0 hsl(30 80% 30%);
+  }
+
+  .card-slot {
+    @apply relative rounded-lg overflow-hidden cursor-pointer;
+    box-shadow: var(--shadow-card);
+    transition: transform 0.2s ease;
+  }
+  .card-slot:hover {
+    transform: translateY(-4px) scale(1.05);
+  }
+
+  .elixir-bar {
+    background: var(--gradient-elixir);
+    box-shadow: var(--shadow-glow-elixir);
+  }
+
+  .tower {
+    @apply relative flex items-center justify-center;
+    text-shadow: 0 2px 4px hsl(0 0% 0% / 0.5);
+  }
+
+  .arena-field {
+    background: var(--gradient-battle);
+  }
+
+  .rarity-common { background: var(--gradient-card-common); }
+  .rarity-rare { background: var(--gradient-card-rare); }
+  .rarity-epic { background: var(--gradient-card-epic); }
+  .rarity-legendary { background: var(--gradient-card-legendary); }
+
+  .game-panel {
+    @apply rounded-xl border;
+    background: hsl(var(--card));
+    border-color: hsl(var(--border));
+  }
+
+  .nav-tab {
+    @apply flex flex-col items-center justify-center gap-1 py-2 px-3 text-xs font-semibold uppercase tracking-wide transition-colors;
+    color: hsl(var(--muted-foreground));
+  }
+  .nav-tab.active {
+    color: hsl(var(--primary));
+  }
+
+  .trophy-badge {
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-bold;
+    background: hsl(var(--secondary));
+    color: hsl(var(--primary));
+    font-family: var(--font-body);
+  }
+}
+
+/* Animations */
+@keyframes elixir-fill {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px hsl(38 90% 50% / 0.3); }
+  50% { box-shadow: 0 0 20px hsl(38 90% 50% / 0.6); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
 }
