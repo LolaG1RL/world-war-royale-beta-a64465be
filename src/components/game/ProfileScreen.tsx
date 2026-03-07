@@ -129,6 +129,14 @@ const ProfileScreen = () => {
             </div>
           </div>
         </div>
+
+        {/* Sign out */}
+        <div className="px-3 pb-4">
+          <button onClick={signOut} className="w-full py-2.5 bg-accent/10 border border-accent/20 rounded-xl text-xs font-bold text-accent uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-accent/20 transition-colors">
+            <LogOut className="w-3.5 h-3.5" />
+            Sign Out of Deaf ID
+          </button>
+        </div>
       </div>
 
       <BottomNav active="battle" setScreen={setScreen} />
