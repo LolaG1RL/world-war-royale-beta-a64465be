@@ -1,4 +1,5 @@
 import { useGame } from '@/context/GameContext';
+import { useAuth } from '@/context/AuthContext';
 import { getArenaForTrophies } from '@/data/cards';
 import CardComponent from './CardComponent';
 import { motion } from 'framer-motion';
@@ -7,6 +8,7 @@ import splashImage from '@/assets/world-war-royale-splash.png';
 
 const MainMenu = () => {
   const { profile, deck, chests, setScreen, setActiveTab } = useGame();
+  const { signOut } = useAuth();
   const arena = getArenaForTrophies(profile.trophies);
 
   return (

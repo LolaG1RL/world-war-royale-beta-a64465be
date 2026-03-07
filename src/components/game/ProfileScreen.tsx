@@ -1,10 +1,12 @@
 import { useGame } from '@/context/GameContext';
+import { useAuth } from '@/context/AuthContext';
 import { getArenaForTrophies } from '@/data/cards';
 import { BottomNav } from './ShopScreen';
-import { ChevronLeft, Copy, Shield, Award, Target, Crown, Star } from 'lucide-react';
+import { ChevronLeft, Copy, Shield, Award, Target, Crown, Star, LogOut } from 'lucide-react';
 
 const ProfileScreen = () => {
   const { setScreen, profile, deck } = useGame();
+  const { signOut } = useAuth();
   const arena = getArenaForTrophies(profile.trophies);
 
   const stats = [
@@ -126,6 +128,14 @@ const ProfileScreen = () => {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Sign out */}
+        <div className="px-3 pb-4">
+          <button onClick={signOut} className="w-full py-2.5 bg-accent/10 border border-accent/20 rounded-xl text-xs font-bold text-accent uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-accent/20 transition-colors">
+            <LogOut className="w-3.5 h-3.5" />
+            Sign Out of Deaf ID
+          </button>
         </div>
       </div>
 
