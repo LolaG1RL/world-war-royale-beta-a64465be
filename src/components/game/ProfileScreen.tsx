@@ -1,10 +1,12 @@
 import { useGame } from '@/context/GameContext';
+import { useAuth } from '@/context/AuthContext';
 import { getArenaForTrophies } from '@/data/cards';
 import { BottomNav } from './ShopScreen';
-import { ChevronLeft, Copy, Shield, Award, Target, Crown, Star } from 'lucide-react';
+import { ChevronLeft, Copy, Shield, Award, Target, Crown, Star, LogOut } from 'lucide-react';
 
 const ProfileScreen = () => {
   const { setScreen, profile, deck } = useGame();
+  const { signOut } = useAuth();
   const arena = getArenaForTrophies(profile.trophies);
 
   const stats = [
