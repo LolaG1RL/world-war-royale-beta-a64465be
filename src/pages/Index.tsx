@@ -28,6 +28,7 @@ const GameRouter = () => {
   }
 };
 
+// World War Royale V1.0
 const Index = () => (
   <GameProvider>
     <GameRouter />
