@@ -447,7 +447,7 @@ const SocialScreen = () => {
   // Load data when switching tabs
   useEffect(() => {
     if (tab === 'friends') loadFriends();
-    if (tab === 'global') loadLeaderboard();
+    if (tab === 'leaderboard') loadLeaderboard();
   }, [tab, globalSubTab, loadLeaderboard]);
 
   return (
@@ -692,7 +692,7 @@ const SocialScreen = () => {
         </div>
       )}
 
-      {tab === 'global' && (
+      {tab === 'leaderboard' && (
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Sub-tabs */}
           <div className="flex bg-[hsl(220,20%,12%)] border-b border-border">
