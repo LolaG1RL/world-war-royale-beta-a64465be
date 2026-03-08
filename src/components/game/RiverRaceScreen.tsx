@@ -4,15 +4,18 @@ import { useAuth } from '@/context/AuthContext';
 import { allCards, GameCard } from '@/data/cards';
 import { BottomNav } from './ShopScreen';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Swords, Shield, Zap, Trophy, Anchor, Clock, Medal, ChevronRight, Check, X, Shuffle, Ship } from 'lucide-react';
+import { ChevronLeft, Swords, Shield, Anchor, Clock, ChevronRight, Check, X, Shuffle, Ship, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import CardComponent from './CardComponent';
 
 // --- TYPES ---
 interface BoatData {
+  clanId: string;
   clanName: string;
   clanEmoji: string;
   medals: number;
-  position: number; // 0–10000
+  position: number;
   color: string;
   isPlayer: boolean;
   defenses: BoatDefense[];
@@ -23,7 +26,7 @@ interface BoatDefense {
   id: number;
   hp: number;
   maxHp: number;
-  cards: string[]; // card ids
+  cards: string[];
   destroyed: boolean;
 }
 
@@ -32,7 +35,7 @@ interface WarDeck {
   usedToday: boolean;
 }
 
-type RiverMode = 'map' | 'battle-select' | 'war-decks' | 'boat-defense' | 'boat-attack' | 'battle-result';
+type RiverMode = 'map' | 'battle-select' | 'war-decks' | 'edit-deck' | 'boat-defense' | 'edit-defense' | 'battle-result';
 type BattleType = '1v1' | 'duel' | 'boat' | 'special';
 
 const FINISH_LINE = 10000;
@@ -43,11 +46,9 @@ const MEDAL_LOSS_DUEL = 150;
 const MEDAL_SPECIAL = 250;
 const MEDAL_BOAT_WIN = 150;
 
-const RIVAL_CLANS = [
-  { name: 'Iron Wolves', emoji: '🐺', color: 'hsl(0,60%,45%)' },
-  { name: 'Storm Legion', emoji: '⛈️', color: 'hsl(210,60%,45%)' },
-  { name: 'Shadow Hawks', emoji: '🦅', color: 'hsl(280,50%,45%)' },
-  { name: 'Golden Horde', emoji: '🐎', color: 'hsl(45,70%,45%)' },
+const BOAT_COLORS = [
+  'hsl(38,90%,50%)', 'hsl(0,60%,50%)', 'hsl(210,60%,50%)',
+  'hsl(280,50%,50%)', 'hsl(120,50%,45%)',
 ];
 
 const SPECIAL_MODES = [
@@ -64,10 +65,7 @@ const getStoredRiverData = () => {
       const d = JSON.parse(saved);
       const weekStart = d.weekStart || Date.now();
       const daysPassed = (Date.now() - weekStart) / (1000 * 60 * 60 * 24);
-      if (daysPassed >= 7) {
-        // New week — reset
-        return null;
-      }
+      if (daysPassed >= 7) return null;
       return d;
     } catch { return null; }
   }
@@ -75,83 +73,113 @@ const getStoredRiverData = () => {
 };
 
 const RiverRaceScreen = () => {
-  const { setScreen, profile, setProfile, clan, deck } = useGame();
+  const { setScreen, profile, setProfile, clan } = useGame();
   const { user } = useAuth();
 
   const [mode, setMode] = useState<RiverMode>('map');
   const [boats, setBoats] = useState<BoatData[]>([]);
   const [warDecks, setWarDecks] = useState<WarDeck[]>([]);
-  const [editingDeck, setEditingDeck] = useState<number | null>(null);
-  const [dayNumber, setDayNumber] = useState(1); // 1-7
+  const [editingDeckIdx, setEditingDeckIdx] = useState(0);
+  const [editingDefenseIdx, setEditingDefenseIdx] = useState(0);
+  const [dayNumber, setDayNumber] = useState(1);
   const [isTrainingDay, setIsTrainingDay] = useState(true);
   const [battleType, setBattleType] = useState<BattleType>('1v1');
-  const [selectedDeckIndex, setSelectedDeckIndex] = useState(0);
   const [battleResult, setBattleResult] = useState<'win' | 'loss' | null>(null);
-  const [duelRound, setDuelRound] = useState(0);
-  const [duelScore, setDuelScore] = useState([0, 0]);
   const [attackingBoat, setAttackingBoat] = useState<number | null>(null);
   const [specialMode, setSpecialMode] = useState(SPECIAL_MODES[0]);
   const [battleGold, setBattleGold] = useState(0);
   const [battleMedals, setBattleMedals] = useState(0);
+  const [loadingClans, setLoadingClans] = useState(true);
 
-  // Init
+  useEffect(() => { setIsTrainingDay(dayNumber <= 3); }, [dayNumber]);
+
+  // Load real clans from DB + restore state
   useEffect(() => {
-    const stored = getStoredRiverData();
-    if (stored) {
-      setBoats(stored.boats || []);
-      setWarDecks(stored.warDecks?.map((wd: any) => ({
-        ...wd,
-        cards: wd.cards.map((id: string) => allCards.find(c => c.id === id) || allCards[0]),
-      })) || []);
-      setDayNumber(stored.dayNumber || 1);
-    } else {
-      initRace();
-    }
+    const init = async () => {
+      setLoadingClans(true);
+      const stored = getStoredRiverData();
+
+      // Fetch real clans
+      const { data: clansData } = await supabase
+        .from('clans')
+        .select('id, name, icon_id, banner_color')
+        .limit(5);
+
+      const realClans = (clansData || []);
+
+      if (stored && stored.boats?.length > 0) {
+        // Restore saved state
+        setBoats(stored.boats);
+        setWarDecks(stored.warDecks?.map((wd: any) => ({
+          ...wd,
+          cards: (wd.cards || []).map((id: string) => allCards.find(c => c.id === id) || allCards[0]),
+        })) || initWarDecks());
+        setDayNumber(stored.dayNumber || 1);
+      } else {
+        // Create new race with real clans
+        const playerClanId = await getPlayerClanId();
+        const raceBoats: BoatData[] = [];
+
+        // Player's clan boat
+        raceBoats.push({
+          clanId: playerClanId || 'player',
+          clanName: clan?.name || 'Your Clan',
+          clanEmoji: '⚔️',
+          medals: 0, position: 0,
+          color: BOAT_COLORS[0],
+          isPlayer: true, finished: false,
+          defenses: makeDefenses(),
+        });
+
+        // Real rival clans (exclude player's clan)
+        const rivals = realClans.filter(c => c.id !== playerClanId).slice(0, 4);
+        rivals.forEach((rc, i) => {
+          raceBoats.push({
+            clanId: rc.id,
+            clanName: rc.name,
+            clanEmoji: getClanEmoji(rc.icon_id),
+            medals: 0, position: 0,
+            color: BOAT_COLORS[i + 1] || BOAT_COLORS[1],
+            isPlayer: false, finished: false,
+            defenses: makeDefenses(),
+          });
+        });
+
+        setBoats(raceBoats);
+        const decks = initWarDecks();
+        setWarDecks(decks);
+        setDayNumber(1);
+        saveRaceData(raceBoats, decks, 1);
+      }
+      setLoadingClans(false);
+    };
+    init();
     setSpecialMode(SPECIAL_MODES[Math.floor(Math.random() * SPECIAL_MODES.length)]);
   }, []);
 
-  useEffect(() => {
-    setIsTrainingDay(dayNumber <= 3);
-  }, [dayNumber]);
+  const getPlayerClanId = async (): Promise<string | null> => {
+    if (!user) return null;
+    const { data } = await supabase
+      .from('clan_members')
+      .select('clan_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    return data?.clan_id || null;
+  };
 
-  const initRace = () => {
-    const playerBoat: BoatData = {
-      clanName: clan?.name || 'Your Clan',
-      clanEmoji: '⚔️',
-      medals: 0,
-      position: 0,
-      color: 'hsl(38,90%,50%)',
-      isPlayer: true,
-      finished: false,
-      defenses: Array.from({ length: 3 }, (_, i) => ({
-        id: i,
-        hp: 1000,
-        maxHp: 1000,
-        cards: [],
-        destroyed: false,
-      })),
+  const getClanEmoji = (iconId: string): string => {
+    const map: Record<string, string> = {
+      swords: '⚔️', shield: '🛡️', crown: '👑', skull: '💀',
+      flame: '🔥', star: '⭐', lightning: '⚡', dragon: '🐲',
+      wolf: '🐺', eagle: '🦅', lion: '🦁', serpent: '🐍',
     };
+    return map[iconId] || '⚔️';
+  };
 
-    const rivalBoats: BoatData[] = RIVAL_CLANS.map(rc => ({
-      clanName: rc.name,
-      clanEmoji: rc.emoji,
-      medals: 0,
-      position: 0,
-      color: rc.color,
-      isPlayer: false,
-      finished: false,
-      defenses: Array.from({ length: 3 }, (_, i) => ({
-        id: i,
-        hp: 1000,
-        maxHp: 1000,
-        cards: allCards.slice(Math.floor(Math.random() * 20), Math.floor(Math.random() * 20) + 4).map(c => c.id),
-        destroyed: false,
-      })),
-    }));
+  const makeDefenses = (): BoatDefense[] =>
+    Array.from({ length: 3 }, (_, i) => ({ id: i, hp: 1000, maxHp: 1000, cards: [], destroyed: false }));
 
-    setBoats([playerBoat, ...rivalBoats]);
-
-    // Init 4 war decks from player's cards
+  const initWarDecks = (): WarDeck[] => {
     const available = [...allCards];
     const decks: WarDeck[] = [];
     for (let d = 0; d < 4; d++) {
@@ -164,9 +192,7 @@ const RiverRaceScreen = () => {
       }
       decks.push({ cards: deckCards, usedToday: false });
     }
-    setWarDecks(decks);
-    setDayNumber(1);
-    saveRaceData([playerBoat, ...rivalBoats], decks, 1);
+    return decks;
   };
 
   const saveRaceData = (b: BoatData[], wd: WarDeck[], day: number) => {
@@ -178,7 +204,77 @@ const RiverRaceScreen = () => {
     }));
   };
 
-  // Simulate rival progress each "day"
+  // --- CARD PICKING HELPERS ---
+  const getUsedCardIds = (excludeDeckIdx?: number): Set<string> => {
+    const used = new Set<string>();
+    warDecks.forEach((wd, i) => {
+      if (i !== excludeDeckIdx) wd.cards.forEach(c => used.add(c.id));
+    });
+    // Also cards in boat defenses
+    const pb = boats.find(b => b.isPlayer);
+    pb?.defenses.forEach(def => def.cards.forEach(id => used.add(id)));
+    return used;
+  };
+
+  const getAvailableCards = (excludeDeckIdx?: number): GameCard[] => {
+    const used = getUsedCardIds(excludeDeckIdx);
+    return allCards.filter(c => !used.has(c.id));
+  };
+
+  const addCardToDeck = (deckIdx: number, card: GameCard) => {
+    const newDecks = [...warDecks];
+    if (newDecks[deckIdx].cards.length >= 8) {
+      toast.error('Deck is full (8 cards max)');
+      return;
+    }
+    if (newDecks[deckIdx].cards.find(c => c.id === card.id)) {
+      toast.error('Card already in deck');
+      return;
+    }
+    newDecks[deckIdx] = { ...newDecks[deckIdx], cards: [...newDecks[deckIdx].cards, card] };
+    setWarDecks(newDecks);
+    saveRaceData(boats, newDecks, dayNumber);
+  };
+
+  const removeCardFromDeck = (deckIdx: number, cardId: string) => {
+    const newDecks = [...warDecks];
+    newDecks[deckIdx] = { ...newDecks[deckIdx], cards: newDecks[deckIdx].cards.filter(c => c.id !== cardId) };
+    setWarDecks(newDecks);
+    saveRaceData(boats, newDecks, dayNumber);
+  };
+
+  const addCardToDefense = (defIdx: number, cardId: string) => {
+    const newBoats = [...boats];
+    const pb = newBoats.find(b => b.isPlayer);
+    if (!pb) return;
+    const def = pb.defenses[defIdx];
+    if (def.cards.length >= 4) { toast.error('Defense tower full (4 cards max)'); return; }
+    if (def.cards.includes(cardId)) return;
+    def.cards = [...def.cards, cardId];
+    setBoats(newBoats);
+    saveRaceData(newBoats, warDecks, dayNumber);
+  };
+
+  const removeCardFromDefense = (defIdx: number, cardId: string) => {
+    const newBoats = [...boats];
+    const pb = newBoats.find(b => b.isPlayer);
+    if (!pb) return;
+    pb.defenses[defIdx].cards = pb.defenses[defIdx].cards.filter(id => id !== cardId);
+    setBoats(newBoats);
+    saveRaceData(newBoats, warDecks, dayNumber);
+  };
+
+  const randomizeDeck = (deckIndex: number) => {
+    const available = getAvailableCards(deckIndex);
+    const shuffled = [...available].sort(() => Math.random() - 0.5).slice(0, 8);
+    const newDecks = [...warDecks];
+    newDecks[deckIndex] = { ...newDecks[deckIndex], cards: shuffled };
+    setWarDecks(newDecks);
+    saveRaceData(boats, newDecks, dayNumber);
+    toast.success('Deck randomized!');
+  };
+
+  // --- BATTLE ---
   const simulateRivals = useCallback((currentBoats: BoatData[]): BoatData[] => {
     return currentBoats.map(b => {
       if (b.isPlayer) return b;
@@ -189,40 +285,26 @@ const RiverRaceScreen = () => {
   }, []);
 
   const advanceDay = () => {
-    if (dayNumber >= 7) {
-      toast.info('Race is over! Rewards distributed.');
-      return;
-    }
+    if (dayNumber >= 7) { toast.info('Race is over!'); return; }
     const newDay = dayNumber + 1;
-    const newBoats = simulateRivals(boats).map(b => b.isPlayer ? b : b);
-    // Reset deck usage
+    const newBoats = simulateRivals(boats);
     const newDecks = warDecks.map(d => ({ ...d, usedToday: false }));
     setDayNumber(newDay);
-    setBoats(simulateRivals(newBoats));
+    setBoats(newBoats);
     setWarDecks(newDecks);
-    saveRaceData(simulateRivals(newBoats), newDecks, newDay);
-    toast.success(`Day ${newDay} started! ${newDay <= 3 ? '(Training Day)' : '(Battle Day)'}`);
+    saveRaceData(newBoats, newDecks, newDay);
+    toast.success(`Day ${newDay}! ${newDay <= 3 ? '(Training Day)' : '(Battle Day)'}`);
   };
 
   const startBattle = (type: BattleType, deckIdx: number) => {
-    if (warDecks[deckIdx]?.usedToday) {
-      toast.error('This deck is on cooldown until tomorrow!');
-      return;
-    }
+    if (warDecks[deckIdx]?.usedToday) { toast.error('Deck on cooldown!'); return; }
     setBattleType(type);
-    setSelectedDeckIndex(deckIdx);
     setBattleResult(null);
-    if (type === 'duel') {
-      setDuelRound(1);
-      setDuelScore([0, 0]);
-    }
     if (type === 'boat') {
-      // Pick a random non-player boat to attack
-      const rivalIdx = 1 + Math.floor(Math.random() * 4);
-      setAttackingBoat(rivalIdx);
+      const rivalIdx = boats.findIndex((b, i) => !b.isPlayer && i > 0);
+      setAttackingBoat(rivalIdx >= 0 ? rivalIdx : 1);
     }
     setMode('battle-result');
-    // Simulate battle outcome
     setTimeout(() => {
       const win = Math.random() > 0.4;
       resolveBattle(win, type, deckIdx);
@@ -230,87 +312,46 @@ const RiverRaceScreen = () => {
   };
 
   const resolveBattle = (win: boolean, type: BattleType, deckIdx: number) => {
-    let medals = 0;
-    let gold = 0;
-
-    if (type === '1v1') {
-      medals = win ? MEDAL_WIN_1V1 : MEDAL_LOSS_1V1;
-      gold = win ? 150 : 30;
-    } else if (type === 'duel') {
-      medals = win ? MEDAL_WIN_DUEL : MEDAL_LOSS_DUEL;
-      gold = win ? 450 : 90;
-    } else if (type === 'special') {
-      medals = win ? MEDAL_SPECIAL : 75;
-      gold = win ? 200 : 40;
-    } else if (type === 'boat') {
-      medals = win ? MEDAL_BOAT_WIN : 30;
-      gold = win ? 100 : 20;
+    let medals = 0, gold = 0;
+    if (type === '1v1') { medals = win ? MEDAL_WIN_1V1 : MEDAL_LOSS_1V1; gold = win ? 150 : 30; }
+    else if (type === 'duel') { medals = win ? MEDAL_WIN_DUEL : MEDAL_LOSS_DUEL; gold = win ? 450 : 90; }
+    else if (type === 'special') { medals = win ? MEDAL_SPECIAL : 75; gold = win ? 200 : 40; }
+    else if (type === 'boat') {
+      medals = win ? MEDAL_BOAT_WIN : 30; gold = win ? 100 : 20;
       if (win && attackingBoat != null) {
-        // Damage rival boat
         const newBoats = [...boats];
         const rival = newBoats[attackingBoat];
-        const intact = rival.defenses.find(d => !d.destroyed);
-        if (intact) {
-          intact.hp -= 400 + Math.floor(Math.random() * 300);
-          if (intact.hp <= 0) {
-            intact.destroyed = true;
-            intact.hp = 0;
+        if (rival) {
+          const intact = rival.defenses.find(d => !d.destroyed);
+          if (intact) {
+            intact.hp -= 400 + Math.floor(Math.random() * 300);
+            if (intact.hp <= 0) { intact.destroyed = true; intact.hp = 0; }
           }
         }
         setBoats(newBoats);
       }
     }
-
-    // Training days: only gold, no medals
     if (isTrainingDay) medals = 0;
-
     setBattleResult(win ? 'win' : 'loss');
     setBattleGold(gold);
     setBattleMedals(medals);
-
-    // Update player boat
     const newBoats = boats.map(b => {
       if (!b.isPlayer) return b;
       const newPos = Math.min(FINISH_LINE, b.position + medals);
       return { ...b, medals: b.medals + medals, position: newPos, finished: newPos >= FINISH_LINE };
     });
     setBoats(newBoats);
-
-    // Mark deck used
     const newDecks = [...warDecks];
     newDecks[deckIdx] = { ...newDecks[deckIdx], usedToday: true };
     setWarDecks(newDecks);
-
-    // Grant gold
     setProfile(p => ({ ...p, gold: p.gold + gold, warDayWins: win ? p.warDayWins + 1 : p.warDayWins }));
-
     saveRaceData(newBoats, newDecks, dayNumber);
-  };
-
-  const randomizeDeck = (deckIndex: number) => {
-    const usedCards = new Set<string>();
-    warDecks.forEach((wd, i) => {
-      if (i !== deckIndex) wd.cards.forEach(c => usedCards.add(c.id));
-    });
-    const available = allCards.filter(c => !usedCards.has(c.id));
-    const shuffled = [...available].sort(() => Math.random() - 0.5);
-    const newCards = shuffled.slice(0, 8);
-    const newDecks = [...warDecks];
-    newDecks[deckIndex] = { ...newDecks[deckIndex], cards: newCards };
-    setWarDecks(newDecks);
-    saveRaceData(boats, newDecks, dayNumber);
-    toast.success('Deck randomized!');
-  };
-
-  const getPlacement = (): { place: number; boats: BoatData[] } => {
-    const sorted = [...boats].sort((a, b) => b.position - a.position);
-    const playerIdx = sorted.findIndex(b => b.isPlayer);
-    return { place: playerIdx + 1, boats: sorted };
   };
 
   const playerBoat = boats.find(b => b.isPlayer);
   const sortedBoats = [...boats].sort((a, b) => b.position - a.position);
 
+  // --- NO CLAN ---
   if (!clan) {
     return (
       <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
@@ -333,7 +374,11 @@ const RiverRaceScreen = () => {
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
       {/* Header */}
       <div className="bg-[hsl(220,25%,10%)] border-b border-border px-3 py-2 flex items-center gap-2">
-        <button onClick={() => mode === 'map' ? setScreen('social') : setMode('map')} className="text-muted-foreground">
+        <button onClick={() => {
+          if (mode === 'edit-deck' || mode === 'edit-defense') setMode(mode === 'edit-deck' ? 'war-decks' : 'boat-defense');
+          else if (mode === 'map') setScreen('social');
+          else setMode('map');
+        }} className="text-muted-foreground">
           <ChevronLeft className="w-5 h-5" />
         </button>
         <Ship className="w-4 h-4 text-[hsl(200,70%,55%)]" />
@@ -343,137 +388,97 @@ const RiverRaceScreen = () => {
         </div>
       </div>
 
-      {/* MAP VIEW */}
+      {/* ===== MAP ===== */}
       {mode === 'map' && (
         <div className="flex-1 overflow-y-auto">
-          {/* River visualization */}
-          <div className="bg-gradient-to-b from-[hsl(200,40%,18%)] to-[hsl(200,30%,12%)] p-3">
-            <div className="text-center mb-2">
-              <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold">🏁 Finish Line: {FINISH_LINE.toLocaleString()} pts</div>
+          {loadingClans ? (
+            <div className="flex items-center justify-center py-12">
+              <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
+                <Ship className="w-8 h-8 text-primary" />
+              </motion.div>
             </div>
-
-            {/* Boat standings */}
-            <div className="space-y-1.5">
-              {sortedBoats.map((boat, i) => {
-                const progress = Math.min(100, (boat.position / FINISH_LINE) * 100);
-                return (
-                  <motion.div
-                    key={boat.clanName}
-                    layout
-                    className={`rounded-xl p-2 border ${boat.isPlayer ? 'bg-primary/10 border-primary/30' : 'bg-[hsl(220,15%,14%)] border-border'}`}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] font-black w-4 text-center" style={{ color: boat.color }}>
-                        {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}`}
-                      </span>
-                      <span className="text-sm">{boat.clanEmoji}</span>
-                      <span className={`text-[10px] font-bold flex-1 ${boat.isPlayer ? 'text-primary' : 'text-foreground'}`}>
-                        {boat.clanName} {boat.isPlayer && '(You)'}
-                      </span>
-                      <span className="text-[9px] text-muted-foreground">{boat.position.toLocaleString()}</span>
-                      {boat.finished && <Check className="w-3 h-3 text-[hsl(120,50%,50%)]" />}
-                    </div>
-                    <div className="h-2 bg-[hsl(0,0%,0%,0.4)] rounded-full overflow-hidden">
-                      <motion.div
-                        className="h-full rounded-full"
-                        style={{ backgroundColor: boat.color }}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${progress}%` }}
-                        transition={{ duration: 0.8 }}
-                      />
-                    </div>
-                    {/* Boat defenses indicator */}
-                    <div className="flex gap-1 mt-1">
-                      {boat.defenses.map(def => (
-                        <div key={def.id} className={`h-1 flex-1 rounded-full ${def.destroyed ? 'bg-destructive/40' : 'bg-[hsl(120,40%,40%)]'}`} />
-                      ))}
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          <div className="p-3 space-y-2">
-            <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-1">⚔️ River Tasks</div>
-
-            {/* 1v1 */}
-            <button onClick={() => { setBattleType('1v1'); setMode('battle-select'); }}
-              className="w-full bg-card border border-border rounded-xl p-3 flex items-center gap-3 hover:border-primary/30 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-[hsl(210,50%,25%)] flex items-center justify-center">
-                <Swords className="w-5 h-5 text-[hsl(210,70%,60%)]" />
-              </div>
-              <div className="flex-1 text-left">
-                <div className="text-xs font-bold text-foreground">1v1 Battle</div>
-                <div className="text-[8px] text-muted-foreground">Use 1 War Deck • {isTrainingDay ? 'Gold only' : `${MEDAL_WIN_1V1} medals (win)`}</div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            </button>
-
-            {/* Duel */}
-            <button onClick={() => { setBattleType('duel'); setMode('battle-select'); }}
-              className="w-full bg-card border border-border rounded-xl p-3 flex items-center gap-3 hover:border-primary/30 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-[hsl(280,40%,25%)] flex items-center justify-center">
-                <span className="text-lg">⚔️</span>
-              </div>
-              <div className="flex-1 text-left">
-                <div className="text-xs font-bold text-foreground">Duel (Best of 3)</div>
-                <div className="text-[8px] text-muted-foreground">Uses 3 War Decks • {isTrainingDay ? 'Gold only' : `${MEDAL_WIN_DUEL} medals (win)`}</div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            </button>
-
-            {/* Special mode */}
-            <button onClick={() => { setBattleType('special'); setMode('battle-select'); }}
-              className="w-full bg-card border border-[hsl(45,50%,25%)] rounded-xl p-3 flex items-center gap-3 hover:border-primary/30 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-[hsl(45,50%,20%)] flex items-center justify-center">
-                <span className="text-lg">{specialMode.emoji}</span>
-              </div>
-              <div className="flex-1 text-left">
-                <div className="text-xs font-bold text-foreground">{specialMode.name}</div>
-                <div className="text-[8px] text-muted-foreground">{specialMode.desc} • {isTrainingDay ? 'Gold only' : `${MEDAL_SPECIAL} medals`}</div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            </button>
-
-            {/* Boat battle */}
-            {!isTrainingDay && (
-              <button onClick={() => { setBattleType('boat'); setMode('battle-select'); }}
-                className="w-full bg-gradient-to-r from-[hsl(0,40%,15%)] to-[hsl(20,40%,15%)] border border-[hsl(0,40%,25%)] rounded-xl p-3 flex items-center gap-3 hover:border-accent/30 transition-colors">
-                <div className="w-10 h-10 rounded-lg bg-[hsl(0,50%,20%)] flex items-center justify-center">
-                  <Anchor className="w-5 h-5 text-accent" />
+          ) : (
+            <>
+              <div className="bg-gradient-to-b from-[hsl(200,40%,18%)] to-[hsl(200,30%,12%)] p-3">
+                <div className="text-center mb-2">
+                  <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold">🏁 Finish Line: {FINISH_LINE.toLocaleString()} pts</div>
                 </div>
-                <div className="flex-1 text-left">
-                  <div className="text-xs font-bold text-foreground">Boat Battle</div>
-                  <div className="text-[8px] text-muted-foreground">Attack rival boat defenses • {MEDAL_BOAT_WIN} medals</div>
+                <div className="space-y-1.5">
+                  {sortedBoats.map((boat, i) => {
+                    const progress = Math.min(100, (boat.position / FINISH_LINE) * 100);
+                    return (
+                      <motion.div key={boat.clanId} layout
+                        className={`rounded-xl p-2 border ${boat.isPlayer ? 'bg-primary/10 border-primary/30' : 'bg-[hsl(220,15%,14%)] border-border'}`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[10px] font-black w-4 text-center" style={{ color: boat.color }}>
+                            {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}`}
+                          </span>
+                          <span className="text-sm">{boat.clanEmoji}</span>
+                          <span className={`text-[10px] font-bold flex-1 truncate ${boat.isPlayer ? 'text-primary' : 'text-foreground'}`}>
+                            {boat.clanName} {boat.isPlayer && '(You)'}
+                          </span>
+                          <span className="text-[9px] text-muted-foreground">{boat.position.toLocaleString()}</span>
+                          {boat.finished && <Check className="w-3 h-3 text-[hsl(120,50%,50%)]" />}
+                        </div>
+                        <div className="h-2 bg-[hsl(0,0%,0%,0.4)] rounded-full overflow-hidden">
+                          <motion.div className="h-full rounded-full" style={{ backgroundColor: boat.color }}
+                            initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.8 }} />
+                        </div>
+                        <div className="flex gap-1 mt-1">
+                          {boat.defenses.map(def => (
+                            <div key={def.id} className={`h-1 flex-1 rounded-full ${def.destroyed ? 'bg-destructive/40' : 'bg-[hsl(120,40%,40%)]'}`} />
+                          ))}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
-              </button>
-            )}
+              </div>
 
-            {/* War Decks / Boat Defense */}
-            <div className="flex gap-2 mt-2">
-              <button onClick={() => setMode('war-decks')}
-                className="flex-1 py-2 bg-[hsl(220,15%,16%)] border border-border rounded-lg text-[10px] font-bold text-foreground flex items-center justify-center gap-1">
-                🃏 War Decks
-              </button>
-              <button onClick={() => setMode('boat-defense')}
-                className="flex-1 py-2 bg-[hsl(220,15%,16%)] border border-border rounded-lg text-[10px] font-bold text-foreground flex items-center justify-center gap-1">
-                <Shield className="w-3 h-3" /> Boat Defense
-              </button>
-            </div>
+              {/* River Tasks */}
+              <div className="p-3 space-y-2">
+                <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-1">⚔️ River Tasks</div>
 
-            {/* Advance day (dev) */}
-            <button onClick={advanceDay}
-              className="w-full py-2 bg-secondary border border-border rounded-lg text-[9px] text-muted-foreground font-bold flex items-center justify-center gap-1">
-              <Clock className="w-3 h-3" /> Advance to Day {dayNumber + 1}
-            </button>
-          </div>
+                <RiverTaskBtn icon={<Swords className="w-5 h-5 text-[hsl(210,70%,60%)]" />} bg="hsl(210,50%,25%)"
+                  title="1v1 Battle" desc={`Use 1 War Deck • ${isTrainingDay ? 'Gold only' : `${MEDAL_WIN_1V1} medals (win)`}`}
+                  onClick={() => { setBattleType('1v1'); setMode('battle-select'); }} />
+
+                <RiverTaskBtn icon={<span className="text-lg">⚔️</span>} bg="hsl(280,40%,25%)"
+                  title="Duel (Best of 3)" desc={`Uses 3 War Decks • ${isTrainingDay ? 'Gold only' : `${MEDAL_WIN_DUEL} medals (win)`}`}
+                  onClick={() => { setBattleType('duel'); setMode('battle-select'); }} />
+
+                <RiverTaskBtn icon={<span className="text-lg">{specialMode.emoji}</span>} bg="hsl(45,50%,20%)"
+                  title={specialMode.name} desc={`${specialMode.desc} • ${isTrainingDay ? 'Gold only' : `${MEDAL_SPECIAL} medals`}`}
+                  onClick={() => { setBattleType('special'); setMode('battle-select'); }} border="hsl(45,50%,25%)" />
+
+                {!isTrainingDay && (
+                  <RiverTaskBtn icon={<Anchor className="w-5 h-5 text-accent" />} bg="hsl(0,50%,20%)"
+                    title="Boat Battle" desc={`Attack rival defenses • ${MEDAL_BOAT_WIN} medals`}
+                    onClick={() => { setBattleType('boat'); setMode('battle-select'); }} border="hsl(0,40%,25%)" />
+                )}
+
+                <div className="flex gap-2 mt-2">
+                  <button onClick={() => setMode('war-decks')}
+                    className="flex-1 py-2.5 bg-[hsl(220,15%,16%)] border border-border rounded-lg text-[10px] font-bold text-foreground flex items-center justify-center gap-1.5">
+                    🃏 War Decks
+                  </button>
+                  <button onClick={() => setMode('boat-defense')}
+                    className="flex-1 py-2.5 bg-[hsl(220,15%,16%)] border border-border rounded-lg text-[10px] font-bold text-foreground flex items-center justify-center gap-1.5">
+                    <Shield className="w-3.5 h-3.5" /> Boat Defense
+                  </button>
+                </div>
+
+                <button onClick={advanceDay}
+                  className="w-full py-2 bg-secondary border border-border rounded-lg text-[9px] text-muted-foreground font-bold flex items-center justify-center gap-1">
+                  <Clock className="w-3 h-3" /> Advance to Day {dayNumber + 1}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
 
-      {/* BATTLE SELECT — pick deck */}
+      {/* ===== BATTLE SELECT ===== */}
       {mode === 'battle-select' && (
         <div className="flex-1 overflow-y-auto p-3">
           <div className="text-center mb-3">
@@ -482,30 +487,23 @@ const RiverRaceScreen = () => {
             </div>
             <div className="text-[9px] text-muted-foreground">Select a War Deck to use</div>
           </div>
-
           <div className="space-y-2">
             {warDecks.map((wd, i) => (
-              <button
-                key={i}
-                onClick={() => !wd.usedToday && startBattle(battleType, i)}
-                disabled={wd.usedToday}
-                className={`w-full bg-card border rounded-xl p-3 text-left transition-colors ${
-                  wd.usedToday ? 'border-border/30 opacity-40' : 'border-border hover:border-primary/30'
-                }`}
-              >
+              <button key={i} onClick={() => !wd.usedToday && startBattle(battleType, i)} disabled={wd.usedToday}
+                className={`w-full bg-card border rounded-xl p-3 text-left transition-colors ${wd.usedToday ? 'border-border/30 opacity-40' : 'border-border hover:border-primary/30'}`}>
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className="text-[10px] font-bold text-foreground">War Deck {i + 1}</span>
-                  {wd.usedToday && (
-                    <span className="text-[8px] bg-accent/20 text-accent px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5">
-                      <Clock className="w-2.5 h-2.5" /> Cooldown
-                    </span>
-                  )}
+                  {wd.usedToday && <span className="text-[8px] bg-accent/20 text-accent px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" /> Cooldown</span>}
+                  <span className="text-[8px] text-muted-foreground ml-auto">{wd.cards.length}/8 cards</span>
                 </div>
                 <div className="grid grid-cols-8 gap-0.5">
                   {wd.cards.map(card => (
                     <div key={card.id} className="aspect-square bg-[hsl(220,15%,18%)] rounded border border-border flex items-center justify-center">
                       <span className="text-xs">{card.emoji}</span>
                     </div>
+                  ))}
+                  {Array.from({ length: Math.max(0, 8 - wd.cards.length) }).map((_, j) => (
+                    <div key={`empty-${j}`} className="aspect-square bg-muted/10 rounded border border-border/30" />
                   ))}
                 </div>
               </button>
@@ -514,12 +512,11 @@ const RiverRaceScreen = () => {
         </div>
       )}
 
-      {/* WAR DECKS EDITOR */}
+      {/* ===== WAR DECKS ===== */}
       {mode === 'war-decks' && (
         <div className="flex-1 overflow-y-auto p-3">
-          <div className="text-sm font-display font-bold text-foreground mb-2">War Decks</div>
-          <div className="text-[8px] text-muted-foreground mb-3">4 decks with 32 unique cards. No card repeats across decks!</div>
-
+          <div className="text-sm font-display font-bold text-foreground mb-1">🃏 War Decks</div>
+          <div className="text-[8px] text-muted-foreground mb-3">4 decks × 8 unique cards. No card can appear in multiple decks or boat defenses.</div>
           <div className="space-y-3">
             {warDecks.map((wd, i) => (
               <div key={i} className="bg-card border border-border rounded-xl p-3">
@@ -527,8 +524,12 @@ const RiverRaceScreen = () => {
                   <span className="text-[10px] font-bold text-foreground">Deck {i + 1}</span>
                   <div className="flex gap-1">
                     <button onClick={() => randomizeDeck(i)}
-                      className="text-[8px] bg-primary/20 text-primary px-2 py-0.5 rounded font-bold flex items-center gap-0.5">
-                      <Shuffle className="w-2.5 h-2.5" /> Random
+                      className="text-[8px] bg-secondary text-muted-foreground px-2 py-0.5 rounded font-bold flex items-center gap-0.5 border border-border">
+                      <Shuffle className="w-2.5 h-2.5" /> Auto
+                    </button>
+                    <button onClick={() => { setEditingDeckIdx(i); setMode('edit-deck'); }}
+                      className="text-[8px] bg-primary/20 text-primary px-2 py-0.5 rounded font-bold">
+                      Edit
                     </button>
                   </div>
                 </div>
@@ -539,10 +540,15 @@ const RiverRaceScreen = () => {
                       <span className="text-[5px] text-muted-foreground leading-none truncate w-full text-center">{card.name.split(' ')[0]}</span>
                     </div>
                   ))}
+                  {Array.from({ length: Math.max(0, 8 - wd.cards.length) }).map((_, j) => (
+                    <div key={`e-${j}`} className="aspect-square bg-muted/10 rounded-lg border border-dashed border-border/30 flex items-center justify-center">
+                      <Plus className="w-2.5 h-2.5 text-muted-foreground/30" />
+                    </div>
+                  ))}
                 </div>
                 <div className="flex items-center justify-between mt-1.5">
                   <span className="text-[7px] text-muted-foreground">
-                    Avg Elixir: {(wd.cards.reduce((s, c) => s + c.elixir, 0) / wd.cards.length).toFixed(1)}
+                    {wd.cards.length}/8 • Avg Elixir: {wd.cards.length ? (wd.cards.reduce((s, c) => s + c.elixir, 0) / wd.cards.length).toFixed(1) : '0'}
                   </span>
                   {wd.usedToday && <span className="text-[7px] text-accent font-bold">⏳ On Cooldown</span>}
                 </div>
@@ -552,12 +558,60 @@ const RiverRaceScreen = () => {
         </div>
       )}
 
-      {/* BOAT DEFENSE */}
+      {/* ===== EDIT DECK (card picker) ===== */}
+      {mode === 'edit-deck' && (
+        <div className="flex-1 overflow-y-auto">
+          {/* Current deck */}
+          <div className="p-3 bg-[hsl(220,20%,11%)] border-b border-border">
+            <div className="text-[10px] font-bold text-foreground mb-1.5">War Deck {editingDeckIdx + 1} — {warDecks[editingDeckIdx]?.cards.length}/8</div>
+            <div className="grid grid-cols-8 gap-1">
+              {warDecks[editingDeckIdx]?.cards.map(card => (
+                <button key={card.id} onClick={() => removeCardFromDeck(editingDeckIdx, card.id)}
+                  className="aspect-square bg-[hsl(220,15%,16%)] rounded-lg border border-primary/30 flex flex-col items-center justify-center p-0.5 relative group">
+                  <span className="text-sm">{card.emoji}</span>
+                  <span className="text-[5px] text-muted-foreground truncate w-full text-center">{card.name.split(' ')[0]}</span>
+                  <div className="absolute inset-0 bg-destructive/20 rounded-lg opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                    <X className="w-3 h-3 text-destructive" />
+                  </div>
+                </button>
+              ))}
+              {Array.from({ length: Math.max(0, 8 - (warDecks[editingDeckIdx]?.cards.length || 0)) }).map((_, j) => (
+                <div key={j} className="aspect-square bg-muted/10 rounded-lg border border-dashed border-border/30 flex items-center justify-center">
+                  <Plus className="w-2.5 h-2.5 text-muted-foreground/30" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Available cards */}
+          <div className="p-3">
+            <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-2">Available Cards (tap to add)</div>
+            <div className="grid grid-cols-4 gap-1.5">
+              {getAvailableCards(editingDeckIdx).map(card => (
+                <button key={card.id} onClick={() => addCardToDeck(editingDeckIdx, card)}
+                  className="bg-[hsl(220,15%,14%)] border border-border rounded-lg p-1.5 flex flex-col items-center gap-0.5 hover:border-primary/40 transition-colors">
+                  <span className="text-lg">{card.emoji}</span>
+                  <span className="text-[7px] font-bold text-foreground truncate w-full text-center">{card.name}</span>
+                  <span className={`text-[6px] font-bold ${
+                    card.rarity === 'legendary' ? 'text-[hsl(38,90%,55%)]' :
+                    card.rarity === 'epic' ? 'text-[hsl(280,60%,65%)]' :
+                    card.rarity === 'rare' ? 'text-[hsl(210,70%,60%)]' :
+                    card.rarity === 'hero' ? 'text-[hsl(340,70%,60%)]' :
+                    'text-muted-foreground'
+                  }`}>{card.rarity}</span>
+                  <span className="text-[7px] text-primary font-bold">{card.elixir}⚡</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== BOAT DEFENSE ===== */}
       {mode === 'boat-defense' && playerBoat && (
         <div className="flex-1 overflow-y-auto p-3">
-          <div className="text-sm font-display font-bold text-foreground mb-1">⛵ Your Boat Defenses</div>
-          <div className="text-[8px] text-muted-foreground mb-3">Intact defenses earn bonus movement points daily!</div>
-
+          <div className="text-sm font-display font-bold text-foreground mb-1">⛵ Boat Defenses</div>
+          <div className="text-[8px] text-muted-foreground mb-3">Set up 4 cards per defense tower. Intact defenses earn bonus movement points!</div>
           <div className="space-y-3">
             {playerBoat.defenses.map((def, i) => (
               <div key={def.id} className={`bg-card border rounded-xl p-3 ${def.destroyed ? 'border-destructive/30 opacity-50' : 'border-border'}`}>
@@ -567,28 +621,50 @@ const RiverRaceScreen = () => {
                   {def.destroyed ? (
                     <span className="text-[8px] text-destructive font-bold ml-auto">DESTROYED</span>
                   ) : (
-                    <span className="text-[8px] text-[hsl(120,50%,50%)] font-bold ml-auto">{def.hp}/{def.maxHp} HP</span>
+                    <>
+                      <span className="text-[8px] text-[hsl(120,50%,50%)] font-bold ml-auto">{def.hp}/{def.maxHp} HP</span>
+                      <button onClick={() => { setEditingDefenseIdx(i); setMode('edit-defense'); }}
+                        className="text-[8px] bg-primary/20 text-primary px-2 py-0.5 rounded font-bold">Edit</button>
+                    </>
                   )}
                 </div>
                 {!def.destroyed && (
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-[hsl(120,50%,45%)] rounded-full" style={{ width: `${(def.hp / def.maxHp) * 100}%` }} />
-                  </div>
+                  <>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden mb-2">
+                      <div className="h-full bg-[hsl(120,50%,45%)] rounded-full" style={{ width: `${(def.hp / def.maxHp) * 100}%` }} />
+                    </div>
+                    <div className="grid grid-cols-4 gap-1">
+                      {def.cards.map(cardId => {
+                        const card = allCards.find(c => c.id === cardId);
+                        return card ? (
+                          <div key={cardId} className="aspect-square bg-[hsl(220,15%,16%)] rounded-lg border border-border flex flex-col items-center justify-center p-0.5">
+                            <span className="text-sm">{card.emoji}</span>
+                            <span className="text-[5px] text-muted-foreground truncate w-full text-center">{card.name.split(' ')[0]}</span>
+                          </div>
+                        ) : null;
+                      })}
+                      {Array.from({ length: Math.max(0, 4 - def.cards.length) }).map((_, j) => (
+                        <div key={j} className="aspect-square bg-muted/10 rounded-lg border border-dashed border-border/30 flex items-center justify-center">
+                          <Plus className="w-3 h-3 text-muted-foreground/30" />
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 )}
               </div>
             ))}
           </div>
 
-          {/* Rival boats status */}
+          {/* Rival boat statuses */}
           <div className="mt-4">
             <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-2">Enemy Boats</div>
             {boats.filter(b => !b.isPlayer).map((rival, i) => (
               <div key={i} className="bg-[hsl(220,15%,14%)] border border-border rounded-lg p-2 mb-1.5 flex items-center gap-2">
                 <span className="text-sm">{rival.clanEmoji}</span>
-                <span className="text-[10px] font-bold text-foreground flex-1">{rival.clanName}</span>
+                <span className="text-[10px] font-bold text-foreground flex-1 truncate">{rival.clanName}</span>
                 <div className="flex gap-0.5">
                   {rival.defenses.map(d => (
-                    <div key={d.id} className={`w-2 h-2 rounded-full ${d.destroyed ? 'bg-destructive/40' : 'bg-[hsl(120,40%,40%)]'}`} />
+                    <div key={d.id} className={`w-2.5 h-2.5 rounded-full ${d.destroyed ? 'bg-destructive/40' : 'bg-[hsl(120,40%,40%)]'}`} />
                   ))}
                 </div>
               </div>
@@ -597,7 +673,52 @@ const RiverRaceScreen = () => {
         </div>
       )}
 
-      {/* BATTLE RESULT */}
+      {/* ===== EDIT DEFENSE (card picker) ===== */}
+      {mode === 'edit-defense' && playerBoat && (
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-3 bg-[hsl(220,20%,11%)] border-b border-border">
+            <div className="text-[10px] font-bold text-foreground mb-1.5">
+              Defense Tower {editingDefenseIdx + 1} — {playerBoat.defenses[editingDefenseIdx]?.cards.length || 0}/4
+            </div>
+            <div className="grid grid-cols-4 gap-1.5">
+              {playerBoat.defenses[editingDefenseIdx]?.cards.map(cardId => {
+                const card = allCards.find(c => c.id === cardId);
+                if (!card) return null;
+                return (
+                  <button key={cardId} onClick={() => removeCardFromDefense(editingDefenseIdx, cardId)}
+                    className="aspect-square bg-[hsl(220,15%,16%)] rounded-lg border border-primary/30 flex flex-col items-center justify-center p-0.5 relative group">
+                    <span className="text-lg">{card.emoji}</span>
+                    <span className="text-[6px] text-muted-foreground truncate w-full text-center">{card.name.split(' ')[0]}</span>
+                    <div className="absolute inset-0 bg-destructive/20 rounded-lg opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                      <X className="w-3 h-3 text-destructive" />
+                    </div>
+                  </button>
+                );
+              })}
+              {Array.from({ length: Math.max(0, 4 - (playerBoat.defenses[editingDefenseIdx]?.cards.length || 0)) }).map((_, j) => (
+                <div key={j} className="aspect-square bg-muted/10 rounded-lg border border-dashed border-border/30 flex items-center justify-center">
+                  <Plus className="w-3 h-3 text-muted-foreground/30" />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="p-3">
+            <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-2">Available Cards (tap to add)</div>
+            <div className="grid grid-cols-4 gap-1.5">
+              {getAvailableCards().filter(c => !playerBoat.defenses[editingDefenseIdx]?.cards.includes(c.id)).map(card => (
+                <button key={card.id} onClick={() => addCardToDefense(editingDefenseIdx, card.id)}
+                  className="bg-[hsl(220,15%,14%)] border border-border rounded-lg p-1.5 flex flex-col items-center gap-0.5 hover:border-primary/40 transition-colors">
+                  <span className="text-lg">{card.emoji}</span>
+                  <span className="text-[7px] font-bold text-foreground truncate w-full text-center">{card.name}</span>
+                  <span className="text-[7px] text-primary font-bold">{card.elixir}⚡</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== BATTLE RESULT ===== */}
       {mode === 'battle-result' && (
         <div className="flex-1 flex flex-col items-center justify-center p-6">
           {battleResult === null ? (
@@ -610,7 +731,6 @@ const RiverRaceScreen = () => {
               <div className={`text-2xl font-display font-black mb-2 ${battleResult === 'win' ? 'text-primary' : 'text-destructive'}`}>
                 {battleResult === 'win' ? 'VICTORY!' : 'DEFEAT'}
               </div>
-
               <div className="bg-card border border-border rounded-xl p-4 mt-4 space-y-2 w-64">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-muted-foreground">Gold earned</span>
@@ -626,10 +746,7 @@ const RiverRaceScreen = () => {
                   <div className="text-[8px] text-[hsl(45,80%,60%)] text-center">Training Day — no medals earned</div>
                 )}
               </div>
-
-              <button onClick={() => setMode('map')} className="mt-4 btn-battle text-xs px-8 py-2">
-                Continue
-              </button>
+              <button onClick={() => setMode('map')} className="mt-4 btn-battle text-xs px-8 py-2">Continue</button>
             </motion.div>
           )}
         </div>
@@ -639,5 +756,23 @@ const RiverRaceScreen = () => {
     </div>
   );
 };
+
+// Reusable river task button
+const RiverTaskBtn = ({ icon, bg, title, desc, onClick, border }: {
+  icon: React.ReactNode; bg: string; title: string; desc: string; onClick: () => void; border?: string;
+}) => (
+  <button onClick={onClick}
+    className={`w-full bg-card border rounded-xl p-3 flex items-center gap-3 hover:border-primary/30 transition-colors`}
+    style={{ borderColor: border || undefined }}>
+    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: bg }}>
+      {icon}
+    </div>
+    <div className="flex-1 text-left">
+      <div className="text-xs font-bold text-foreground">{title}</div>
+      <div className="text-[8px] text-muted-foreground">{desc}</div>
+    </div>
+    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+  </button>
+);
 
 export default RiverRaceScreen;
