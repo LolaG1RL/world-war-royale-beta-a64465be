@@ -126,7 +126,7 @@ const RiverRaceScreen = () => {
       let currentDay: number;
 
       if (stored && stored.boats?.length > 0) {
-        currentBoats = stored.boats;
+        currentBoats = stored.boats.map(normalizeBoatDefenses);
         currentDecks = stored.warDecks?.map((wd: any) => ({
           ...wd,
           cards: (wd.cards || []).map((id: string) => allCards.find(c => c.id === id) || allCards[0]),
@@ -239,7 +239,22 @@ const RiverRaceScreen = () => {
   };
 
   const makeDefenses = (): BoatDefense[] =>
-    Array.from({ length: 1 }, (_, i) => ({ id: i, hp: 1000, maxHp: 1000, cards: [], destroyed: false }));
+    Array.from({ length: 3 }, (_, i) => ({ id: i, hp: 1000, maxHp: 1000, cards: [], destroyed: false }));
+
+  const normalizeBoatDefenses = (boat: BoatData): BoatData => {
+    const existing = Array.isArray(boat.defenses) ? boat.defenses : [];
+    const defenses: BoatDefense[] = Array.from({ length: 3 }, (_, i) => {
+      const def = existing[i];
+      return {
+        id: i,
+        hp: def?.hp ?? 1000,
+        maxHp: def?.maxHp ?? 1000,
+        cards: Array.isArray(def?.cards) ? def.cards : [],
+        destroyed: def?.destroyed ?? false,
+      };
+    });
+    return { ...boat, defenses };
+  };
 
   const initWarDecks = (): WarDeck[] => {
     return Array.from({ length: 4 }, () => ({ cards: [], usedToday: false }));
@@ -295,6 +310,10 @@ const RiverRaceScreen = () => {
     const def = pb.defenses[defIdx];
     if (def.cards.length >= 4) { toast.error('Defense tower full (4 cards max)'); return; }
     if (def.cards.includes(cardId)) return;
+    const entry = getCardEntry(cardId);
+    if (entry.count <= 0) { toast.error('You can only add cards you own.'); return; }
+    const usedInOtherTower = pb.defenses.some((tower, idx) => idx !== defIdx && tower.cards.includes(cardId));
+    if (usedInOtherTower) { toast.error('Card already used in another defense tower.'); return; }
     def.cards = [...def.cards, cardId];
     setBoats(newBoats);
     saveRaceData(newBoats, warDecks, dayNumber);
@@ -693,7 +712,7 @@ const RiverRaceScreen = () => {
       {mode === 'boat-defense' && playerBoat && (
         <div className="flex-1 overflow-y-auto p-3">
           <div className="text-sm font-display font-bold text-foreground mb-1">⛵ Your Boat Part</div>
-          <div className="text-[8px] text-muted-foreground mb-3">Each clan member has 1 boat part with max 4 cards. Add any card you own as defense!</div>
+          <div className="text-[8px] text-muted-foreground mb-3">Each clan member has 3 defense towers with max 4 cards each (12 total). Use cards you own, and each card can only be used in one tower.</div>
           <div className="space-y-3">
             {playerBoat.defenses.map((def, i) => (
               <div key={def.id} className={`bg-card border rounded-xl p-3 ${def.destroyed ? 'border-destructive/30 opacity-50' : 'border-border'}`}>
@@ -790,7 +809,8 @@ const RiverRaceScreen = () => {
               {allCards.filter(c => {
                 const entry = getCardEntry(c.id);
                 const currentDefCards = playerBoat.defenses[editingDefenseIdx]?.cards || [];
-                return entry.count > 0 && !currentDefCards.includes(c.id);
+                const usedInOtherTower = playerBoat.defenses.some((tower, idx) => idx !== editingDefenseIdx && tower.cards.includes(c.id));
+                return entry.count > 0 && !currentDefCards.includes(c.id) && !usedInOtherTower;
               }).map(card => (
                 <button key={card.id} onClick={() => addCardToDefense(editingDefenseIdx, card.id)}
                   className="bg-[hsl(220,15%,14%)] border border-border rounded-lg p-1.5 flex flex-col items-center gap-0.5 hover:border-primary/40 transition-colors">
