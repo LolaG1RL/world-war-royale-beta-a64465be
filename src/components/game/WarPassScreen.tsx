@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { supabase } from '@/integrations/supabase/client';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Lock, Crown, Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+
+interface RevealItem { emoji: string; label: string; rarity: string; }
 
 const STRIPE_WAR_PASS_PRICE = 'price_1T8c8eF8KfKkJquqBrjotFic';
 
@@ -54,7 +56,7 @@ const WarPassScreen = () => {
   const [claimedFree, setClaimedFree] = useState<Set<number>>(new Set());
   const [claimedPaid, setClaimedPaid] = useState<Set<number>>(new Set());
   const [purchasing, setPurchasing] = useState(false);
-
+  const [revealItem, setRevealItem] = useState<RevealItem | null>(null);
   useEffect(() => {
     const saved = localStorage.getItem('war_pass_data');
     if (saved) {
@@ -124,7 +126,10 @@ const WarPassScreen = () => {
       setClaimedPaid(next);
       save(crowns, hasPaid, claimedFree, next);
     }
-    toast.success(`Claimed: ${r.label}!`);
+
+    // Show reveal popup
+    const rarity = r.type === 'gems' ? 'rare' : r.type === 'chest' ? 'epic' : r.type === 'emote' ? 'legendary' : 'common';
+    setRevealItem({ emoji: r.emoji, label: r.label, rarity });
   };
 
   const handleBuyPass = async () => {
