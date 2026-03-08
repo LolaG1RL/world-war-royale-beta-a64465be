@@ -88,12 +88,10 @@ function getDailyDeals() {
   return shuffled.slice(0, 6);
 }
 
-function getDailyBannerDeals(type: 'bg' | 'emb' | 'badge') {
+function getDailyBgDeals() {
   const today = new Date();
-  const seed = (today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()) * (type === 'bg' ? 17 : type === 'emb' ? 23 : 31);
-  const pool = type === 'bg' ? allBackgrounds.filter(b => b.cost > 0) :
-               type === 'emb' ? allEmblems.filter(e => e.cost > 0) :
-               allBadges.filter(b => b.type === 'cosmetic');
+  const seed = (today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()) * 17;
+  const pool = allBackgrounds.filter(b => b.cost > 0);
   const shuffled = [...pool];
   let s = seed;
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -101,10 +99,45 @@ function getDailyBannerDeals(type: 'bg' | 'emb' | 'badge') {
     const j = s % (i + 1);
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
-  const count = type === 'bg' ? 4 : type === 'emb' ? 4 : 4;
-  return shuffled.slice(0, count).map((item, i) => {
+  return shuffled.slice(0, 4).map(item => {
     s = (s * 1103515245 + 12345) & 0x7fffffff;
-    const discountPct = s % 100 < 30 ? (s % 3 + 1) * 10 : 0; // 30% chance of 10-30% discount
+    const discountPct = s % 100 < 30 ? (s % 3 + 1) * 10 : 0;
+    return { item, discountPct };
+  });
+}
+
+function getDailyEmbDeals() {
+  const today = new Date();
+  const seed = (today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()) * 23;
+  const pool = allEmblems.filter(e => e.cost > 0);
+  const shuffled = [...pool];
+  let s = seed;
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const j = s % (i + 1);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, 4).map(item => {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const discountPct = s % 100 < 30 ? (s % 3 + 1) * 10 : 0;
+    return { item, discountPct };
+  });
+}
+
+function getDailyBadgeDeals() {
+  const today = new Date();
+  const seed = (today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()) * 31;
+  const pool = allBadges.filter(b => b.type === 'cosmetic');
+  const shuffled = [...pool];
+  let s = seed;
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const j = s % (i + 1);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, 4).map(item => {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const discountPct = s % 100 < 30 ? (s % 3 + 1) * 10 : 0;
     return { item, discountPct };
   });
 }
