@@ -1,0 +1,1 @@
+ALTER TABLE public.player_progress ADD COLUMN IF NOT EXISTS equipped_emblem text NOT NULL DEFAULT 'emb-shield';
