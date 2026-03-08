@@ -260,6 +260,7 @@ const ShopScreen = () => {
   const emoteDeals = useMemo(() => getDailyEmoteDeals(), []);
   const [purchasedEmotes, setPurchasedEmotes] = useState<Set<number>>(() => getEmoteDealsPurchased());
   const [ownedEmoteIds, setOwnedEmoteIds] = useState(() => getOwnedEmotes());
+  const [confirmAction, setConfirmAction] = useState<{ label: string; cost: string; onConfirm: () => void } | null>(null);
 
   const filtered = tab === 'featured' ? shopItems :
     tab === 'cards' ? shopItems.filter(i => i.type === 'card') :
