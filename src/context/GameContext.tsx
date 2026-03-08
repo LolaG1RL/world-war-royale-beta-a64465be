@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useRef, ReactNode, useC
 import { GameCard, ChestData, PlayerProfile, ClanData, getStarterDeck, defaultChests, defaultProfile, allCards, getArenaForTrophies } from '@/data/cards';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { markCardsOwned } from '@/data/cardInventory';
 
 interface GameState {
   screen: string;
@@ -148,6 +149,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (loaded) saveProgress();
   }, [profile, deck, loaded]);
+
+  useEffect(() => {
+    if (!loaded) return;
+    markCardsOwned(deck.map(c => c.id));
+  }, [deck, loaded]);
 
   // Keep profile name in sync with username
   const currentProfile = { ...profile, name: username || profile.name };

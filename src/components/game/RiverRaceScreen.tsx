@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { useAuth } from '@/context/AuthContext';
 import { allCards, GameCard } from '@/data/cards';
-import { getCardEntry } from '@/data/cardInventory';
+import { getCardEntry, isCardOwned, subscribeToCardInventory } from '@/data/cardInventory';
 import { BottomNav } from './ShopScreen';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Swords, Shield, Anchor, Clock, ChevronRight, Check, X, Shuffle, Ship, Plus, Target } from 'lucide-react';
@@ -98,6 +98,7 @@ const RiverRaceScreen = () => {
   const [attackingBoatIdx, setAttackingBoatIdx] = useState<number | null>(null);
   const [specialMode, setSpecialMode] = useState(SPECIAL_MODES[0]);
   const [loadingClans, setLoadingClans] = useState(true);
+  const [, setInventoryVersion] = useState(0);
 
   // Calculate day from real time
   useEffect(() => {
@@ -106,6 +107,11 @@ const RiverRaceScreen = () => {
     const realDay = Math.min(7, Math.floor((Date.now() - weekStart) / (1000 * 60 * 60 * 24)) + 1);
     setDayNumber(realDay);
     setIsTrainingDay(realDay <= 3);
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToCardInventory(() => setInventoryVersion(v => v + 1));
+    return unsubscribe;
   }, []);
 
   // On mount: load clans + check for completed battle
@@ -310,8 +316,7 @@ const RiverRaceScreen = () => {
     const def = pb.defenses[defIdx];
     if (def.cards.length >= 4) { toast.error('Defense tower full (4 cards max)'); return; }
     if (def.cards.includes(cardId)) return;
-    const entry = getCardEntry(cardId);
-    if (entry.count <= 0) { toast.error('You can only add cards you own.'); return; }
+    if (!isCardOwned(cardId)) { toast.error('You can only add cards you own.'); return; }
     const usedInOtherTower = pb.defenses.some((tower, idx) => idx !== defIdx && tower.cards.includes(cardId));
     if (usedInOtherTower) { toast.error('Card already used in another defense tower.'); return; }
     def.cards = [...def.cards, cardId];
@@ -808,9 +813,8 @@ const RiverRaceScreen = () => {
             <div className="grid grid-cols-4 gap-1.5">
               {allCards
                 .filter(c => {
-                  const entry = getCardEntry(c.id);
                   const currentDefCards = playerBoat.defenses[editingDefenseIdx]?.cards || [];
-                  return entry.count > 0 && !currentDefCards.includes(c.id);
+                  return isCardOwned(c.id) && !currentDefCards.includes(c.id);
                 })
                 .map(card => {
                   const usedInOtherTower = playerBoat.defenses.some((tower, idx) => idx !== editingDefenseIdx && tower.cards.includes(card.id));
