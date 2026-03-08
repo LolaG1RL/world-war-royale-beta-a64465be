@@ -12,6 +12,7 @@ const BattleResult = () => {
   const isWin = battleResult === 'win';
   const [netCrowns, setNetCrowns] = useState(0);
   const [riverBattle, setRiverBattle] = useState<any>(null);
+  const [eventBattle, setEventBattle] = useState<any>(null);
   const [showCrowns, setShowCrowns] = useState(false);
   const [zoomOut, setZoomOut] = useState(false);
 
@@ -34,6 +35,38 @@ const BattleResult = () => {
         localStorage.setItem('river_race_battle', JSON.stringify({ ...parsed, completed: true, result: isWin ? 'win' : 'loss' }));
       } catch {}
     }
+    // Event battle context
+    const eb = localStorage.getItem('event_battle');
+    if (eb) {
+      try {
+        const parsed = JSON.parse(eb);
+        setEventBattle(parsed);
+        // Update event progress
+        const progKey = `event_progress_${parsed.eventId}`;
+        const stored = localStorage.getItem(progKey);
+        const prog = stored ? JSON.parse(stored) : { wins: 0, losses: 0, claimed: [], completed: false };
+        if (isWin) prog.wins += 1; else prog.losses += 1;
+        if (parsed.maxWins && prog.wins >= parsed.maxWins) prog.completed = true;
+        if (parsed.maxLosses && parsed.maxLosses > 0 && prog.losses >= parsed.maxLosses) prog.completed = true;
+        localStorage.setItem(progKey, JSON.stringify(prog));
+        localStorage.setItem('event_battle', JSON.stringify({ ...parsed, completed: true, result: isWin ? 'win' : 'loss' }));
+      } catch {}
+    }
+    // Advance daily quest "Win 3 Battles" on any battle win
+    if (isWin) {
+      try {
+        const d = new Date();
+        const todayKey = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+        const stored = localStorage.getItem('daily_quest_progress');
+        if (stored) {
+          const qp = JSON.parse(stored);
+          if (qp.date === todayKey && qp.quests[0] && qp.quests[0].progress < 3) {
+            qp.quests[0].progress += 1;
+            localStorage.setItem('daily_quest_progress', JSON.stringify(qp));
+          }
+        }
+      } catch {}
+    }
     // Play sfx
     if (isWin) playVictory(); else playDefeat();
     // Animate: zoom out, then show crowns
@@ -42,10 +75,12 @@ const BattleResult = () => {
   }, [isWin]);
 
   const isRiverRace = !!riverBattle;
-  const trophyChange = isRiverRace ? 0 : parseInt(localStorage.getItem('last_trophy_change') || '0');
+  const isEventBattle = !!eventBattle;
+  const trophyChange = (isRiverRace || isEventBattle) ? 0 : parseInt(localStorage.getItem('last_trophy_change') || '0');
 
   const handleContinue = () => {
-    if (isRiverRace) setScreen('river-race');
+    if (isEventBattle) { localStorage.removeItem('event_battle'); setScreen('events'); }
+    else if (isRiverRace) setScreen('river-race');
     else setScreen('menu');
   };
 

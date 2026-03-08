@@ -102,7 +102,7 @@ const translations: TranslationMap = {
   // ═══ Social / Leaderboard ═══
   'social.clan': { en: 'Clan', es: 'Clan', fr: 'Clan', de: 'Clan', pt: 'Clã', ja: 'クラン', ko: '클랜', zh: '部落', ar: 'العشيرة', ru: 'Клан' },
   'social.friends': { en: 'Friends', es: 'Amigos', fr: 'Amis', de: 'Freunde', pt: 'Amigos', ja: 'フレンド', ko: '친구', zh: '好友', ar: 'الأصدقاء', ru: 'Друзья' },
-  'social.leaderboard': { en: '🏆 Leaderboard', es: '🏆 Clasificación', fr: '🏆 Classement', de: '🏆 Rangliste', pt: '🏆 Ranking', ja: '🏆 ランキング', ko: '🏆 리더보드', zh: '🏆 排行榜', ar: '🏆 لوحة الصدارة', ru: '🏆 Таблица лидеров' },
+  'social.leaderboard': { en: 'Leaderboard', es: 'Clasificación', fr: 'Classement', de: 'Rangliste', pt: 'Ranking', ja: 'ランキング', ko: '리더보드', zh: '排行榜', ar: 'لوحة الصدارة', ru: 'Таблица лидеров' },
   'social.local': { en: '🏠 Local', es: '🏠 Local', fr: '🏠 Local', de: '🏠 Lokal', pt: '🏠 Local', ja: '🏠 ローカル', ko: '🏠 로컬', zh: '🏠 本地', ar: '🏠 محلي', ru: '🏠 Местные' },
   'social.worldwide': { en: '🌍 Worldwide', es: '🌍 Mundial', fr: '🌍 Mondial', de: '🌍 Weltweit', pt: '🌍 Mundial', ja: '🌍 世界', ko: '🌍 세계', zh: '🌍 全球', ar: '🌍 عالمي', ru: '🌍 Мировые' },
   'social.top100': { en: '👑 Top #100', es: '👑 Top #100', fr: '👑 Top #100', de: '👑 Top #100', pt: '👑 Top #100', ja: '👑 Top #100', ko: '👑 Top #100', zh: '👑 Top #100', ar: '👑 Top #100', ru: '👑 Топ #100' },
