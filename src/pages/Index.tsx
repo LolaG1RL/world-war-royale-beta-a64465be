@@ -13,6 +13,7 @@ import EventsScreen from '@/components/game/EventsScreen';
 import ProfileScreen from '@/components/game/ProfileScreen';
 import ChestOpenScreen from '@/components/game/ChestOpenScreen';
 import MailboxScreen from '@/components/game/MailboxScreen';
+import WarPassScreen from '@/components/game/WarPassScreen';
 import DeafMode from '@/components/game/DeafMode';
 
 const GameRouter = () => {
