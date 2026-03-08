@@ -70,6 +70,11 @@ const BattleArena = () => {
   const enemyElixir = useRef(5);
   const gameTime = useRef(0);
 
+  // Champion ability state
+  const championCard = deck.find(c => c.rarity === 'champion' && c.ability);
+  const [abilityCooldown, setAbilityCooldown] = useState(0);
+  const [abilityActive, setAbilityActive] = useState(false);
+
   const towersRef = useRef(towers);
   towersRef.current = towers;
   const deployedUnitsRef = useRef(deployedUnits);
