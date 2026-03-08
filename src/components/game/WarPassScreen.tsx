@@ -100,6 +100,37 @@ const WAR_PASS_REWARDS: PassReward[] = Array.from({ length: 60 }, (_, i) => {
   return { tier, crownsNeeded, free, paid };
 });
 
+// Season-end leaderboard reward distribution
+function distributeLeaderboardRewards() {
+  try {
+    const worldRank = parseInt(localStorage.getItem('my_world_rank') || '0');
+    const localRank = parseInt(localStorage.getItem('my_local_rank') || '0');
+    let gold = 0, gems = 0;
+    const rewardLog: string[] = [];
+
+    if (worldRank > 0 && worldRank <= 100) {
+      if (worldRank === 1) { gold += 100000; gems += 5000; rewardLog.push('#1 World Champion'); }
+      else if (worldRank === 2) { gold += 75000; gems += 3500; rewardLog.push('#2 World'); }
+      else if (worldRank === 3) { gold += 50000; gems += 2500; rewardLog.push('#3 World'); }
+      else if (worldRank <= 10) { gold += 30000 - (worldRank - 4) * 2000; gems += 1500 - (worldRank - 4) * 100; rewardLog.push(`#${worldRank} World`); }
+      else if (worldRank <= 25) { gold += 15000 - (worldRank - 11) * 500; gems += 800 - (worldRank - 11) * 20; rewardLog.push(`#${worldRank} World`); }
+      else if (worldRank <= 50) { gold += 8000 - (worldRank - 26) * 100; gems += 400 - (worldRank - 26) * 5; rewardLog.push(`#${worldRank} World`); }
+      else { gold += 5000 - (worldRank - 51) * 50; gems += Math.max(10, 200 - (worldRank - 51) * 2); rewardLog.push(`#${worldRank} World`); }
+    }
+
+    if (localRank > 0 && localRank <= 10) {
+      if (localRank === 1) { gold += 25000; gems += 1000; rewardLog.push('#1 National'); }
+      else if (localRank === 2) { gold += 18000; gems += 700; rewardLog.push('#2 National'); }
+      else if (localRank === 3) { gold += 12000; gems += 500; rewardLog.push('#3 National'); }
+      else { gold += 8000 - (localRank - 4) * 500; gems += 300 - (localRank - 4) * 20; rewardLog.push(`#${localRank} National`); }
+    }
+
+    if (gold > 0 || gems > 0) {
+      localStorage.setItem('season_end_rewards', JSON.stringify({ gold, gems, ranks: rewardLog }));
+    }
+  } catch {}
+}
+
 const WarPassScreen = () => {
   const { setScreen, profile, setProfile } = useGame();
   const { language } = useSettings();
