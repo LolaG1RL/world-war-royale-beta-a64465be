@@ -667,15 +667,24 @@ interface ClanMsg {
 }
 
 const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; profile: any; user: any; leaveClan: () => void; setScreen: (s: string) => void }) => {
+  const { setProfile } = useGame();
   const [chatMode, setChatMode] = useState<'info' | 'chat'>('info');
   const [messages, setMessages] = useState<ClanMsg[]>([]);
   const [msgInput, setMsgInput] = useState('');
   const [sending, setSending] = useState(false);
   const [showTrade, setShowTrade] = useState(false);
+  const [showRequest, setShowRequest] = useState(false);
   const [tradeOffer, setTradeOffer] = useState('');
   const [tradeWant, setTradeWant] = useState('');
+  const [requestCardId, setRequestCardId] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [clanId, setClanId] = useState<string | null>(null);
+
+  // Cards the user owns (count > 0)
+  const ownedCards = allCards.filter(c => {
+    const entry = getCardEntry(c.id);
+    return entry.count > 0 && DONATION_LIMITS[c.rarity] > 0;
+  });
 
   // Get clan ID from DB
   useEffect(() => {
@@ -758,6 +767,56 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
     setTradeWant('');
     setSending(false);
     toast.success('Trade request posted!');
+  };
+
+  const sendCardRequest = async () => {
+    if (!requestCardId || !clanId || !user) return;
+    if (!canRequest()) {
+      toast.error(`Request on cooldown! ${getRequestTimeLeft()} left`);
+      return;
+    }
+    const card = allCards.find(c => c.id === requestCardId);
+    if (!card) return;
+    const entry = getCardEntry(card.id);
+    if (entry.count <= 0) { toast.error("You don't own this card!"); return; }
+    const limit = DONATION_LIMITS[card.rarity];
+    if (limit <= 0) { toast.error("This card rarity can't be requested!"); return; }
+
+    setSending(true);
+    await supabase.from('clan_messages').insert({
+      clan_id: clanId,
+      user_id: user.id,
+      username: profile.name,
+      message_type: 'card_request',
+      content: `🙏 Requesting: ${card.emoji} ${card.name} (${card.rarity}) — max ${limit}/day`,
+      trade_card_wanted: requestCardId,
+    });
+    setRequestCooldown();
+    setShowRequest(false);
+    setRequestCardId('');
+    setSending(false);
+    toast.success('Card request posted!');
+  };
+
+  const donateCard = (msg: ClanMsg) => {
+    if (!msg.trade_card_wanted) return;
+    if (msg.user_id === user?.id) { toast.error("You can't donate to your own request!"); return; }
+    const card = allCards.find(c => c.id === msg.trade_card_wanted);
+    if (!card) return;
+    const myEntry = getCardEntry(card.id);
+    if (myEntry.count <= 1) { toast.error("You need at least 2 of this card to donate!"); return; }
+    const limit = DONATION_LIMITS[card.rarity];
+    const today = getDonationsToday();
+    if (today.donated >= limit) { toast.error(`Daily donation limit reached (${limit}/day for ${card.rarity})!`); return; }
+
+    // Remove card from donor, add to requester (locally — in a real game this would be server-side)
+    removeCards(card.id, 1);
+    recordDonation(1);
+    // Grant XP/gold for donating
+    const xpReward = card.rarity === 'common' ? 1 : card.rarity === 'rare' ? 10 : 50;
+    const goldReward = card.rarity === 'common' ? 5 : card.rarity === 'rare' ? 50 : 500;
+    setProfile((p: any) => ({ ...p, gold: p.gold + goldReward, xp: p.xp + xpReward, totalDonations: p.totalDonations + 1 }));
+    toast.success(`Donated ${card.emoji} ${card.name}! +${goldReward}💰 +${xpReward}XP`);
   };
 
   const formatTime = (d: string) => {
