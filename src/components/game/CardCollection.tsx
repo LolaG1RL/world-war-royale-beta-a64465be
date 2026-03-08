@@ -829,13 +829,15 @@ const CardCollection = () => {
                           className={`w-full mt-2 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider ${
                             isInDeck(enriched)
                               ? 'bg-accent text-accent-foreground'
-                              : currentDeck.length < 8
-                                ? 'bg-secondary text-foreground'
-                                : 'bg-muted text-muted-foreground cursor-not-allowed'
+                              : enriched.unlockArena > profile.arena
+                                ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                                : currentDeck.length < 8
+                                  ? 'bg-secondary text-foreground'
+                                  : 'bg-muted text-muted-foreground cursor-not-allowed'
                           }`}
-                          disabled={!isInDeck(enriched) && currentDeck.length >= 8}
+                          disabled={!isInDeck(enriched) && (currentDeck.length >= 8 || enriched.unlockArena > profile.arena)}
                         >
-                          {isInDeck(enriched) ? 'Remove from Deck' : 'Add to Deck'}
+                          {isInDeck(enriched) ? 'Remove from Deck' : enriched.unlockArena > profile.arena ? `🔒 Requires Arena ${enriched.unlockArena}` : 'Add to Deck'}
                         </button>
                       )}
                       {!owned && (
