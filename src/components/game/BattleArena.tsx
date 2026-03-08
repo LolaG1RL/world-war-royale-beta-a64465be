@@ -908,7 +908,12 @@ const BattleArena = () => {
             <div className="text-[7px] font-bold text-center text-foreground/70 mt-1 max-w-14 leading-tight">
               {championCard.ability.name}
             </div>
-          </div>
+            {championCard.passive && (
+              <div className="mt-1 px-1 py-0.5 rounded bg-amber-500/20 border border-amber-500/30">
+                <div className="text-[5px] font-bold text-amber-400 uppercase text-center">Passive</div>
+                <div className="text-[5px] text-amber-300/80 text-center leading-tight">{championCard.passive.name}</div>
+              </div>
+            )}
         )}
 
         {selectedCard !== null && (
