@@ -61,6 +61,11 @@ const CardCollection = () => {
   const currentDeck = decks[deckSlot];
   const avgElixir = currentDeck.length > 0 ? (currentDeck.reduce((a, c) => a + c.elixir, 0) / currentDeck.length).toFixed(1) : '0.0';
 
+  // If banner tab selected, render full-screen BannerCustomizer
+  if (mainTab === 'banner') {
+    return <BannerCustomizer />;
+  }
+
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
       {/* Header */}
@@ -83,9 +88,7 @@ const CardCollection = () => {
         </button>
       </div>
 
-      {mainTab === 'banner' ? (
-        <BannerCustomizer onClose={() => setMainTab('cards')} />
-      ) : mainTab === 'cards' ? (
+      {mainTab === 'cards' ? (
         <>
           {/* Deck slots tabs */}
           <div className="flex bg-[hsl(220,20%,14%)] border-b border-border">
