@@ -23,16 +23,16 @@ const MainMenu = () => {
       <div className="relative z-10 bg-[hsl(220,25%,10%,0.95)] border-b border-border">
         {/* Player info row */}
         <div className="flex items-center justify-between px-3 py-1.5">
-          <div className="flex items-center gap-2">
+          <button onClick={() => setScreen('profile')} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             {/* Level badge */}
             <div className="w-8 h-8 rounded-lg bg-[hsl(210,60%,40%)] border-2 border-[hsl(210,70%,55%)] flex items-center justify-center shadow-lg">
               <span className="text-xs font-black text-foreground">{profile.level}</span>
             </div>
-            <div>
+            <div className="text-left">
               <div className="text-xs font-bold text-foreground leading-none">{profile.name}</div>
               <div className="text-[9px] text-muted-foreground leading-none mt-0.5">Deaf ID</div>
             </div>
-          </div>
+          </button>
           {/* Resources */}
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 bg-[hsl(220,15%,16%)] pl-1.5 pr-2.5 py-1 rounded-full border border-border">
