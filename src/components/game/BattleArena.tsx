@@ -45,6 +45,7 @@ const BattleArena = () => {
   const { deck, setScreen, setBattleResult, setProfile, profile } = useGame();
   const { language } = useSettings();
   const isRiverRace = !!localStorage.getItem('river_race_battle');
+  const isEventBattle = !!localStorage.getItem('event_battle');
   const [showIntro, setShowIntro] = useState(true);
   const playerBanner = getPlayerBanner();
   const [elixir, setElixir] = useState(5);
