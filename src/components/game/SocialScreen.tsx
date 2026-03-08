@@ -376,14 +376,40 @@ const SocialScreen = () => {
     toast.success('Friend removed');
   };
 
-  // Load leaderboard
+  // Detect user country on mount
+  useEffect(() => {
+    const detectCountry = async () => {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        if (data.country_name) {
+          setUserCountry(data.country_name);
+          setUserCountryCode(data.country_code);
+          // Save country to player_progress
+          if (user) {
+            await supabase
+              .from('player_progress')
+              .update({ country: data.country_code } as any)
+              .eq('user_id', user.id);
+          }
+        }
+      } catch {
+        setUserCountry('Unknown');
+      }
+    };
+    detectCountry();
+  }, [user]);
+
+  // Load leaderboard (worldwide + local)
   const loadLeaderboard = useCallback(async () => {
     setLoadingLeaderboard(true);
+
+    // Worldwide
     const { data: progress } = await supabase
       .from('player_progress')
-      .select('user_id, trophies, level, wins')
+      .select('user_id, trophies, level, wins, country')
       .order('trophies', { ascending: false })
-      .limit(50);
+      .limit(200);
 
     if (progress && progress.length > 0) {
       const userIds = progress.map(p => p.user_id);
@@ -398,18 +424,31 @@ const SocialScreen = () => {
           ...p,
           username: prof?.username || 'Unknown',
           player_tag: prof?.player_tag || '',
+          country: (p as any).country || null,
         };
       });
       setLeaderboard(entries);
+
+      // Find world rank
+      const worldIdx = entries.findIndex(e => e.user_id === user?.id);
+      setMyWorldRank(worldIdx >= 0 ? worldIdx + 1 : null);
+
+      // Local leaderboard (same country)
+      if (userCountryCode) {
+        const local = entries.filter(e => e.country === userCountryCode);
+        setLocalLeaderboard(local);
+        const localIdx = local.findIndex(e => e.user_id === user?.id);
+        setMyLocalRank(localIdx >= 0 ? localIdx + 1 : null);
+      }
     }
     setLoadingLeaderboard(false);
-  }, []);
+  }, [user, userCountryCode]);
 
   // Load data when switching tabs
   useEffect(() => {
     if (tab === 'friends') loadFriends();
     if (tab === 'global') loadLeaderboard();
-  }, [tab]);
+  }, [tab, globalSubTab, loadLeaderboard]);
 
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
