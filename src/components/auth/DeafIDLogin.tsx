@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Shield, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { lovable } from '@/integrations/lovable/index';
 import splashImage from '@/assets/world-war-royale-splash.png';
+import { t, Language } from '@/lib/i18n';
 
 const DeafIDLogin = () => {
   const { signIn, signUp } = useAuth();
@@ -16,6 +17,8 @@ const DeafIDLogin = () => {
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
+  const lang = (localStorage.getItem('game_settings') ? JSON.parse(localStorage.getItem('game_settings')!).language : 'en') as Language;
+  const T = (key: string) => t(key, lang);
 
   const handleGoogleSignIn = async () => {
     setError('');
@@ -84,17 +87,17 @@ const DeafIDLogin = () => {
           </div>
           <h1 className="font-display font-black text-xl text-foreground tracking-wider">DEAF ID</h1>
           <p className="text-[10px] text-muted-foreground mt-1 tracking-widest uppercase">
-            {mode === 'login' ? 'Sign in to your account' : 'Create your account'}
+            {mode === 'login' ? T('auth.sign_in_account') : T('auth.create_your_account')}
           </p>
         </motion.div>
 
         {signupSuccess ? (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-center">
             <div className="text-3xl mb-3">📧</div>
-            <h2 className="font-display font-bold text-foreground text-base mb-1">Check Your Email!</h2>
-            <p className="text-xs text-muted-foreground">We sent a confirmation link to <span className="text-primary">{email}</span></p>
+            <h2 className="font-display font-bold text-foreground text-base mb-1">{T('auth.check_email')}</h2>
+            <p className="text-xs text-muted-foreground">{T('auth.confirmation_sent')} <span className="text-primary">{email}</span></p>
             <button onClick={() => { setSignupSuccess(false); setMode('login'); }} className="mt-4 text-xs text-primary font-bold">
-              Back to Sign In
+              {T('auth.back_sign_in')}
             </button>
           </motion.div>
         ) : (
@@ -111,7 +114,7 @@ const DeafIDLogin = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email address"
+                placeholder={T('auth.email')}
                 required
                 className="w-full bg-secondary border border-border rounded-xl pl-10 pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
               />
@@ -124,7 +127,7 @@ const DeafIDLogin = () => {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password"
+                placeholder={T('auth.password')}
                 required
                 className="w-full bg-secondary border border-border rounded-xl pl-10 pr-10 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
               />
@@ -142,12 +145,12 @@ const DeafIDLogin = () => {
               disabled={loading}
               className="btn-battle w-full text-sm disabled:opacity-50"
             >
-              {loading ? '...' : mode === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT'}
+              {loading ? '...' : mode === 'login' ? T('auth.sign_in').toUpperCase() : T('auth.create_account')}
             </button>
 
             <div className="relative flex items-center my-2">
               <div className="flex-1 border-t border-border" />
-              <span className="px-3 text-[10px] text-muted-foreground uppercase">or</span>
+              <span className="px-3 text-[10px] text-muted-foreground uppercase">{T('auth.or')}</span>
               <div className="flex-1 border-t border-border" />
             </div>
 
@@ -163,7 +166,7 @@ const DeafIDLogin = () => {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
-              {googleLoading ? '...' : 'Sign in with Google'}
+              {googleLoading ? '...' : T('auth.sign_in_google')}
             </button>
 
             <button
@@ -175,7 +178,7 @@ const DeafIDLogin = () => {
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
               </svg>
-              {appleLoading ? '...' : 'Sign in with Apple'}
+              {appleLoading ? '...' : T('auth.sign_in_apple')}
             </button>
 
             <div className="text-center pt-2">
@@ -184,8 +187,8 @@ const DeafIDLogin = () => {
                 onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); }}
                 className="text-xs text-muted-foreground"
               >
-                {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-                <span className="text-primary font-bold">{mode === 'login' ? 'Sign Up' : 'Sign In'}</span>
+                {mode === 'login' ? T('auth.no_account') : T('auth.have_account')}
+                <span className="text-primary font-bold">{mode === 'login' ? T('auth.sign_up') : T('auth.sign_in')}</span>
               </button>
             </div>
           </motion.form>

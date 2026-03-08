@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { t, Language } from '@/lib/i18n';
 
 export interface RevealItem {
   emoji: string;
@@ -12,9 +13,13 @@ interface RevealScreenProps {
   title?: string;
   subtitle?: string;
   onClose: () => void;
+  lang?: Language;
 }
 
-const RevealScreen = ({ items, title = '🎁 YOU GOT!', subtitle, onClose }: RevealScreenProps) => (
+const RevealScreen = ({ items, title, subtitle, onClose, lang = 'en' }: RevealScreenProps) => {
+  const T = (key: string) => t(key, lang);
+  const displayTitle = title || `🎁 ${T('shop.you_got')}`;
+  return (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -38,7 +43,7 @@ const RevealScreen = ({ items, title = '🎁 YOU GOT!', subtitle, onClose }: Rev
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary/20 rounded-full blur-xl pointer-events-none"
       />
 
-      <h2 className="font-display font-bold text-lg text-primary text-center mb-1 relative z-10">{title}</h2>
+      <h2 className="font-display font-bold text-lg text-primary text-center mb-1 relative z-10">{displayTitle}</h2>
       {subtitle && <p className="text-xs text-muted-foreground text-center mb-3 relative z-10">{subtitle}</p>}
 
       <div className="grid grid-cols-3 gap-2 max-h-[40vh] overflow-y-auto relative z-10">
@@ -74,10 +79,11 @@ const RevealScreen = ({ items, title = '🎁 YOU GOT!', subtitle, onClose }: Rev
         onClick={onClose}
         className="w-full mt-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold uppercase relative z-10"
       >
-        Collect
+        {T('shop.collect')}
       </motion.button>
     </motion.div>
   </motion.div>
-);
+  );
+};
 
 export default RevealScreen;

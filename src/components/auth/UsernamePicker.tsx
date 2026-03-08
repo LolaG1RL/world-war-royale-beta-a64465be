@@ -3,12 +3,15 @@ import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
 import { User, AlertCircle } from 'lucide-react';
 import splashImage from '@/assets/world-war-royale-splash.png';
+import { t, Language } from '@/lib/i18n';
 
 const UsernamePicker = () => {
   const { setUsername } = useAuth();
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const lang = (localStorage.getItem('game_settings') ? JSON.parse(localStorage.getItem('game_settings')!).language : 'en') as Language;
+  const T = (key: string) => t(key, lang);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,9 +32,9 @@ const UsernamePicker = () => {
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6">
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center mb-6">
           <div className="text-5xl mb-3">⚔️</div>
-          <h1 className="font-display font-black text-xl text-foreground tracking-wider">CHOOSE YOUR NAME</h1>
+          <h1 className="font-display font-black text-xl text-foreground tracking-wider">{T('auth.choose_username')}</h1>
           <p className="text-xs text-muted-foreground mt-2 leading-relaxed max-w-xs">
-            This is your warrior name. Choose wisely — <span className="text-accent font-bold">once chosen, it's yours forever</span> and can never be used by anyone else!
+            {T('auth.warrior_name')} <span className="text-accent font-bold">{T('auth.once_chosen')}</span>
           </p>
         </motion.div>
 
@@ -42,7 +45,7 @@ const UsernamePicker = () => {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))}
-              placeholder="Enter username (3-20 characters)"
+              placeholder={T('auth.enter_username')}
               maxLength={20}
               minLength={3}
               required
@@ -52,11 +55,11 @@ const UsernamePicker = () => {
 
           <div className="flex items-start gap-2 text-[9px] text-muted-foreground bg-muted/30 rounded-lg px-3 py-2">
             <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
-            <span>Letters, numbers, and underscores only. This name is <strong className="text-foreground">permanent</strong>.</span>
+            <span>Letters, numbers, and underscores only. <strong className="text-foreground">{T('auth.permanent')}</strong>.</span>
           </div>
 
           {name.length > 0 && name.length < 3 && (
-            <div className="text-[10px] text-accent">Minimum 3 characters</div>
+            <div className="text-[10px] text-accent">{T('auth.min_chars')}</div>
           )}
 
           {error && (
@@ -64,7 +67,7 @@ const UsernamePicker = () => {
           )}
 
           <button type="submit" disabled={loading || name.length < 3} className="btn-battle w-full text-sm disabled:opacity-50">
-            {loading ? '...' : 'LOCK IN NAME'}
+            {loading ? '...' : T('auth.lock_in')}
           </button>
         </motion.form>
       </div>
