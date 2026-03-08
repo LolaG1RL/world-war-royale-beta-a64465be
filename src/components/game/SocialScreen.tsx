@@ -464,9 +464,9 @@ const SocialScreen = () => {
 
       {/* Tabs */}
       <div className="flex bg-[hsl(220,20%,14%)] border-b border-border">
-        {(['clan', 'friends', 'leaderboard'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider ${tab === t ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
-            {t === 'leaderboard' ? '🏆 Leaderboard' : t}
+        {(['clan', 'friends', 'leaderboard'] as const).map(tb => (
+          <button key={tb} onClick={() => setTab(tb)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider ${tab === tb ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
+            {tb === 'clan' ? t('social.clan', language) : tb === 'friends' ? t('social.friends', language) : t('social.leaderboard', language)}
           </button>
         ))}
       </div>
