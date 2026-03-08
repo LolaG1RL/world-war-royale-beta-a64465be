@@ -14,13 +14,22 @@ import ArenaPreview from './ArenaPreview';
 import RevealScreen, { RevealItem } from './RevealScreen';
 
 const MainMenu = () => {
-  const { profile, deck, chests, setScreen, setActiveTab } = useGame();
+  const { profile, deck, chests, setScreen, setActiveTab, setProfile } = useGame();
   const { signOut, user } = useAuth();
   const arena = getArenaForTrophies(profile.trophies);
   const playerBanner = getPlayerBanner();
   const [unreadMail, setUnreadMail] = useState(0);
   const [unclaimedTrophy, setUnclaimedTrophy] = useState(0);
   const [unclaimedWarPass, setUnclaimedWarPass] = useState(0);
+  const [showLevelModal, setShowLevelModal] = useState(false);
+  const [revealItems, setRevealItems] = useState<RevealItem[] | null>(null);
+  const [claimedLevels, setClaimedLevels] = useState<Set<number>>(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('claimed_level_rewards') || '[]')); }
+    catch { return new Set(); }
+  });
+
+  const xpForCurrentLevel = getXpForLevel(profile.level);
+  const xpProgress = Math.min(100, (profile.xp / xpForCurrentLevel) * 100);
 
   // Check unclaimed trophy road rewards
   useEffect(() => {
