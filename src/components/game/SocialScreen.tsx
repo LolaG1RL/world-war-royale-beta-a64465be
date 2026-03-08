@@ -13,6 +13,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getCardEntry, addCards, removeCards, canRequest, setRequestCooldown, getRequestTimeLeft, getSkipCooldownCost, skipRequestCooldown, DONATION_LIMITS, getDonationsToday, recordDonation } from '@/data/cardInventory';
 import { allEmotes, getEquippedEmotes } from '@/data/emotes';
 import { countryCodeToFlag } from '@/lib/countryFlags';
+import { allEmblems, getPlayerBanner } from '@/data/banners';
+import RevealScreen, { RevealItem } from './RevealScreen';
 
 const BANNER_COLORS = [
   '#b91c1c', '#dc2626', '#ef4444',
@@ -42,6 +44,7 @@ interface LeaderboardEntry {
   username?: string;
   player_tag?: string;
   country?: string;
+  equipped_emblem?: string;
 }
 
 // Top 100 worldwide rewards (rank 1 = best)
@@ -101,6 +104,7 @@ const SocialScreen = () => {
   const { setScreen, clan, profile, setClan, setProfile } = useGame();
   const { language } = useSettings();
   const { user, playerTag } = useAuth();
+  const T = (key: string) => t(key, language);
   const [tab, setTab] = useState<'clan' | 'friends' | 'leaderboard'>('clan');
   const [showCreateClan, setShowCreateClan] = useState(false);
   const [clanName, setClanName] = useState('');
@@ -134,6 +138,58 @@ const SocialScreen = () => {
   const [myWorldRank, setMyWorldRank] = useState<number | null>(null);
   const [myLocalRank, setMyLocalRank] = useState<number | null>(null);
   const [showRewardsPanel, setShowRewardsPanel] = useState(false);
+  const [seasonEndReveal, setSeasonEndReveal] = useState<RevealItem[] | null>(null);
+
+  // Helper: get emblem emoji by id
+  const getEmblemEmoji = (id?: string) => {
+    const emb = allEmblems.find(e => e.id === (id || 'emb-shield'));
+    return emb?.emoji || '🛡️';
+  };
+
+  // Check & distribute season-end rewards once
+  useEffect(() => {
+    if (!user) return;
+    const seasonKey = 'season_rewards_claimed_v1';
+    if (localStorage.getItem(seasonKey)) return;
+
+    const worldRank = parseInt(localStorage.getItem('my_world_rank') || '0');
+    const localRank = parseInt(localStorage.getItem('my_local_rank') || '0');
+
+    const items: RevealItem[] = [];
+    let goldTotal = 0;
+    let gemsTotal = 0;
+
+    // World rank rewards
+    if (worldRank > 0 && worldRank <= 100) {
+      const reward = TOP_100_REWARDS.find(r => r.rank === worldRank);
+      if (reward) {
+        goldTotal += reward.gold;
+        gemsTotal += reward.gems;
+        items.push({ emoji: '🌍', name: `${T('social.worldwide')} #${worldRank}`, count: 1, rarity: worldRank <= 3 ? 'legendary' : worldRank <= 10 ? 'epic' : 'rare' });
+        if (reward.exclusiveBanner) items.push({ emoji: '🏴', name: reward.exclusiveBanner, count: 1, rarity: 'legendary' });
+        if (reward.exclusiveEmote) items.push({ emoji: '😀', name: reward.exclusiveEmote, count: 1, rarity: 'epic' });
+      }
+    }
+
+    // Local rank rewards
+    if (localRank > 0 && localRank <= 10) {
+      const reward = TOP_10_LOCAL_REWARDS.find(r => r.rank === localRank);
+      if (reward) {
+        goldTotal += reward.gold;
+        gemsTotal += reward.gems;
+        items.push({ emoji: '🏠', name: `${T('social.local')} #${localRank}`, count: 1, rarity: localRank <= 3 ? 'legendary' : 'epic' });
+        if (reward.exclusiveBanner) items.push({ emoji: '🏴', name: reward.exclusiveBanner, count: 1, rarity: 'legendary' });
+      }
+    }
+
+    if (items.length > 0) {
+      if (goldTotal > 0) items.push({ emoji: '💰', name: T('shop.gold'), count: goldTotal, rarity: 'common' });
+      if (gemsTotal > 0) items.push({ emoji: '💎', name: T('shop.gems'), count: gemsTotal, rarity: 'rare' });
+      setProfile(prev => ({ ...prev, gold: prev.gold + goldTotal, gems: prev.gems + gemsTotal }));
+      setSeasonEndReveal(items);
+      localStorage.setItem(seasonKey, 'true');
+    }
+  }, [user]);
 
   // Load user's clan from DB on mount
   useEffect(() => {
