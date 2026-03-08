@@ -16,6 +16,7 @@ const MainMenu = () => {
   const { profile, deck, chests, setScreen, setActiveTab } = useGame();
   const { signOut, user } = useAuth();
   const arena = getArenaForTrophies(profile.trophies);
+  const playerBanner = getPlayerBanner();
   const [unreadMail, setUnreadMail] = useState(0);
   const [unclaimedTrophy, setUnclaimedTrophy] = useState(0);
   const [unclaimedWarPass, setUnclaimedWarPass] = useState(0);
