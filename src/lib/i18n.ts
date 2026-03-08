@@ -458,12 +458,7 @@ const translations: TranslationMap = {
   'shop.cancel_label': { en: 'Cancel', es: 'Cancelar', fr: 'Annuler', de: 'Abbrechen', pt: 'Cancelar', ja: 'キャンセル', ko: '취소', zh: '取消', ar: 'إلغاء', ru: 'Отмена' },
   'shop.badges_equip': { en: 'Check Cards → Banner to equip your earned badges.', es: 'Revisa Cartas → Estandarte para equipar.', fr: 'Allez dans Cartes → Bannière pour équiper.', de: 'Karten → Banner zum Ausrüsten.', pt: 'Cartas → Bandeira para equipar.', ja: 'カード→バナーでバッジを装備', ko: '카드 → 배너에서 장착', zh: '卡牌→旗帜装备', ar: 'البطاقات → اللافتة لتجهيز', ru: 'Карты → Баннер для экипировки.' },
   'events.claim_btn': { en: 'Claim', es: 'Reclamar', fr: 'Récupérer', de: 'Abholen', pt: 'Resgatar', ja: '受取', ko: '수령', zh: '领取', ar: 'مطالبة', ru: 'Забрать' },
-  'social.costs_gems': { en: 'Costs 100 gems', es: 'Cuesta 100 gemas', fr: 'Coûte 100 gemmes', de: 'Kostet 100 Juwelen', pt: 'Custa 100 gemas', ja: '100ジェム', ko: '보석 100개', zh: '花费100宝石', ar: 'يكلف 100 حجر', ru: 'Стоит 100 самоцветов' },
   'trophy.arena_label': { en: 'Arena', es: 'Arena', fr: 'Arène', de: 'Arena', pt: 'Arena', ja: 'アリーナ', ko: '아레나', zh: '竞技场', ar: 'الحلبة', ru: 'Арена' },
-  'trophy.trophies_word': { en: 'trophies', es: 'trofeos', fr: 'trophées', de: 'Trophäen', pt: 'troféus', ja: 'トロフィー', ko: '트로피', zh: '奖杯', ar: 'كؤوس', ru: 'трофеев' },
-  'trophy.cards_word': { en: 'cards', es: 'cartas', fr: 'cartes', de: 'Karten', pt: 'cartas', ja: 'カード', ko: '카드', zh: '卡牌', ar: 'بطاقات', ru: 'карт' },
-  'trophy.trophies_to': { en: 'trophies to', es: 'trofeos para', fr: 'trophées pour', de: 'Trophäen bis', pt: 'troféus para', ja: 'トロフィーで', ko: '트로피로', zh: '奖杯到', ar: 'كؤوس إلى', ru: 'трофеев до' },
-  'trophy.cards_unlocked_in': { en: '🃏 Cards unlocked in', es: '🃏 Cartas desbloqueadas en', fr: '🃏 Cartes débloquées dans', de: '🃏 Karten freigeschaltet in', pt: '🃏 Cartas desbloqueadas em', ja: '🃏 で解放されるカード', ko: '🃏 에서 해제되는 카드', zh: '🃏 中解锁的卡牌', ar: '🃏 بطاقات مفتوحة في', ru: '🃏 Карты в' },
   'trophy.never_drop': { en: 'never', es: 'nunca', fr: 'jamais', de: 'nie', pt: 'nunca', ja: '決して', ko: '절대', zh: '永远不会', ar: 'أبداً', ru: 'никогда' },
 };
 
