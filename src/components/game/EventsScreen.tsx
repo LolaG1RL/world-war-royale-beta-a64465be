@@ -13,8 +13,6 @@ const challenges = [
 ];
 
 const specialEvents = [
-  { name: 'Clan War Day', emoji: '⚔️', timeLeft: '1d 5h', description: 'War battles remaining: 2/4', type: 'war' },
-  { name: 'Album Event', emoji: '📖', timeLeft: '23d', description: 'Collect snippets for exclusive rewards!', type: 'album' },
   { name: 'Season Challenge', emoji: '🏅', timeLeft: '12d', description: 'Complete challenges for season rewards', type: 'season' },
 ];
 
@@ -50,16 +48,16 @@ const EventsScreen = () => {
                 <span className="text-2xl">🎖️</span>
                 <div>
                   <div className="text-sm font-display font-bold text-foreground">WAR PASS</div>
-                  <div className="text-[9px] text-foreground/70">Season 1 • Tier 15/35</div>
+                  <div className="text-[9px] text-foreground/70">Season 1 • Tier 0/35</div>
                 </div>
               </div>
               <div className="mt-2 h-2 bg-[hsl(0,0%,0%,0.4)] rounded-full">
-                <div className="h-full bg-primary rounded-full" style={{ width: '43%' }} />
+                <div className="h-full bg-primary rounded-full" style={{ width: '0%' }} />
               </div>
               <div className="flex gap-1 mt-2">
                 {Array.from({ length: 10 }).map((_, i) => (
-                  <div key={i} className={`flex-1 h-6 rounded text-center text-[8px] flex items-center justify-center ${i < 4 ? 'bg-primary/20 text-primary' : 'bg-muted/20 text-muted-foreground'}`}>
-                    {i < 4 ? '✓' : i + 12}
+                  <div key={i} className="flex-1 h-6 rounded text-center text-[8px] flex items-center justify-center bg-muted/20 text-muted-foreground">
+                    {i + 1}
                   </div>
                 ))}
               </div>
@@ -84,19 +82,19 @@ const EventsScreen = () => {
             <div className="bg-card border border-border rounded-xl p-3">
               <div className="text-xs font-display font-bold text-foreground mb-2">Daily Quests</div>
               {[
-                { name: 'Win 3 Battles', progress: 2, max: 3, reward: '💰 200' },
-                { name: 'Play 5 Cards', progress: 5, max: 5, reward: '💰 100', done: true },
-                { name: 'Destroy 10 Towers', progress: 4, max: 10, reward: '💎 5' },
+                { name: 'Win 3 Battles', progress: 0, max: 3, reward: '💰 200' },
+                { name: 'Play 5 Cards', progress: 0, max: 5, reward: '💰 100' },
+                { name: 'Destroy 10 Towers', progress: 0, max: 10, reward: '💎 5' },
               ].map((q, i) => (
                 <div key={i} className="flex items-center gap-2 py-1.5 border-t border-border/30">
                   <div className="flex-1">
-                    <div className={`text-[10px] font-bold ${q.done ? 'text-muted-foreground line-through' : 'text-foreground'}`}>{q.name}</div>
+                    <div className="text-[10px] font-bold text-foreground">{q.name}</div>
                     <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-0.5">
-                      <div className={`h-full rounded-full ${q.done ? 'bg-hp-green' : 'bg-primary'}`} style={{ width: `${(q.progress / q.max) * 100}%` }} />
+                      <div className="h-full rounded-full bg-primary" style={{ width: `${(q.progress / q.max) * 100}%` }} />
                     </div>
                   </div>
                   <span className="text-[9px] text-muted-foreground">{q.progress}/{q.max}</span>
-                  <span className={`text-[9px] font-bold ${q.done ? 'text-hp-green' : 'text-primary'}`}>{q.done ? '✓' : q.reward}</span>
+                  <span className="text-[9px] font-bold text-primary">{q.reward}</span>
                 </div>
               ))}
             </div>
@@ -122,44 +120,10 @@ const EventsScreen = () => {
         )}
 
         {tab === 'tournaments' && (
-          <div className="p-3 space-y-2">
-            <div className="bg-gradient-to-r from-[hsl(38,80%,22%)] to-[hsl(28,70%,18%)] rounded-xl p-4 border border-primary/30">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">🌍</span>
-                <div>
-                  <div className="text-sm font-display font-bold text-foreground">Global Tournament</div>
-                  <div className="text-[9px] text-foreground/70">Season 1 Championship</div>
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-2 mt-2">
-                <div className="bg-[hsl(0,0%,0%,0.3)] rounded-lg p-2 text-center">
-                  <div className="text-[8px] text-muted-foreground">Your Wins</div>
-                  <div className="text-lg font-bold text-primary">7</div>
-                </div>
-                <div className="bg-[hsl(0,0%,0%,0.3)] rounded-lg p-2 text-center">
-                  <div className="text-[8px] text-muted-foreground">Rank</div>
-                  <div className="text-lg font-bold text-foreground">#2,451</div>
-                </div>
-                <div className="bg-[hsl(0,0%,0%,0.3)] rounded-lg p-2 text-center">
-                  <div className="text-[8px] text-muted-foreground">Time Left</div>
-                  <div className="text-lg font-bold text-accent">2d</div>
-                </div>
-              </div>
-              <button className="w-full mt-3 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold uppercase">Play Tournament</button>
-            </div>
-
-            {/* Past tournaments */}
-            <div className="text-[10px] font-bold text-muted-foreground uppercase mt-3 mb-1">Past Tournaments</div>
-            {[1, 2, 3].map(i => (
-              <div key={i} className="bg-card border border-border rounded-xl p-3 flex items-center gap-3 opacity-60">
-                <span className="text-xl">🏆</span>
-                <div className="flex-1">
-                  <div className="text-xs font-bold text-foreground">Tournament #{i}</div>
-                  <div className="text-[9px] text-muted-foreground">Rank #{100 * i + 50} • 8 wins</div>
-                </div>
-                <span className="text-[9px] text-muted-foreground">Ended</span>
-              </div>
-            ))}
+          <div className="flex-1 flex flex-col items-center justify-center p-6">
+            <Trophy className="w-12 h-12 text-muted-foreground/30 mb-3" />
+            <div className="text-sm font-display font-bold text-foreground">No Active Tournament</div>
+            <div className="text-xs text-muted-foreground text-center mt-1">Check back soon for the next tournament!</div>
           </div>
         )}
       </div>

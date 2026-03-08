@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef, ReactNode, useCallback } from 'react';
-import { GameCard, ChestData, PlayerProfile, ClanData, getStarterDeck, defaultChests, defaultProfile, defaultClan, allCards, getArenaForTrophies } from '@/data/cards';
+import { GameCard, ChestData, PlayerProfile, ClanData, getStarterDeck, defaultChests, defaultProfile, allCards, getArenaForTrophies } from '@/data/cards';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -12,7 +12,8 @@ interface GameState {
   setDeck: (d: GameCard[]) => void;
   chests: ChestData[];
   setChests: (c: ChestData[]) => void;
-  clan: ClanData;
+  clan: ClanData | null;
+  setClan: (c: ClanData | null) => void;
   battleResult: 'win' | 'lose' | null;
   setBattleResult: (r: 'win' | 'lose' | null) => void;
   activeTab: string;
@@ -37,6 +38,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   });
   const [deck, setDeck] = useState<GameCard[]>(getStarterDeck());
   const [chests, setChests] = useState<ChestData[]>(defaultChests);
+  const [clan, setClan] = useState<ClanData | null>(null);
   const [battleResult, setBattleResult] = useState<'win' | 'lose' | null>(null);
   const [activeTab, setActiveTab] = useState('battle');
   const [saving, setSaving] = useState(false);
@@ -138,7 +140,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       profile: currentProfile, setProfile,
       deck, setDeck,
       chests, setChests,
-      clan: defaultClan,
+      clan, setClan,
       battleResult, setBattleResult,
       activeTab, setActiveTab,
       saving,
