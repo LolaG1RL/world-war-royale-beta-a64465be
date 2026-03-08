@@ -19,6 +19,7 @@ export interface GameCard {
   level: number;
   count: number;
   maxCount: number;
+  unlockArena: number; // Arena required to unlock (1-15)
   // Combat mechanics
   hitSpeed?: number; // seconds between attacks
   speed?: MovementSpeed;
@@ -38,6 +39,11 @@ export interface GameCard {
     cooldown?: number;
   };
   passive?: {
+    name: string;
+    description: string;
+  };
+  // Hero version info (for champions with War Pass+ unlock)
+  heroBonus?: {
     name: string;
     description: string;
   };
@@ -143,73 +149,73 @@ export const allCards: GameCard[] = [
   { 
     id: 'roman-legionary', name: 'Roman Legionary', elixir: 3, rarity: 'common', type: 'troop', 
     hp: 600, damage: 75, description: 'Disciplined soldier with shield and gladius. Marches in formation.', 
-    era: 'Ancient Rome', emoji: '🛡️', level: 1, count: 0, maxCount: 800,
+    era: 'Ancient Rome', emoji: '🛡️', level: 1, count: 0, maxCount: 800, unlockArena: 1,
     hitSpeed: 1.2, speed: 'medium', range: 'melee-short', targets: 'ground', unitType: 'ground', shieldHp: 200
   },
   { 
     id: 'wwii-rifleman', name: 'WWII Rifleman', elixir: 3, rarity: 'common', type: 'troop', 
     hp: 500, damage: 90, description: 'Standard infantry with semi-auto rifle. Fast fire rate.', 
-    era: 'World War II', emoji: '🔫', level: 1, count: 0, maxCount: 400,
+    era: 'World War II', emoji: '🔫', level: 1, count: 0, maxCount: 400, unlockArena: 3,
     hitSpeed: 0.8, speed: 'medium', range: 5.5, targets: 'ground-air', unitType: 'ground'
   },
   { 
     id: 'viking-raider', name: 'Viking Raider', elixir: 3, rarity: 'common', type: 'troop', 
     hp: 650, damage: 85, description: 'Axe-wielding Norse warrior. Hits hard and fast.', 
-    era: 'Viking Age', emoji: '🪓', level: 1, count: 0, maxCount: 800,
+    era: 'Viking Age', emoji: '🪓', level: 1, count: 0, maxCount: 800, unlockArena: 1,
     hitSpeed: 1.0, speed: 'fast', range: 'melee-medium', targets: 'ground', unitType: 'ground'
   },
   { 
     id: 'skeleton-horde', name: 'Skeleton Horde', elixir: 2, rarity: 'common', type: 'troop', 
     hp: 100, damage: 40, description: 'A swarm of undead skeletons. Weak alone, deadly in numbers.', 
-    era: 'Fantasy', emoji: '💀', level: 1, count: 0, maxCount: 200,
+    era: 'Fantasy', emoji: '💀', level: 1, count: 0, maxCount: 200, unlockArena: 2,
     hitSpeed: 1.0, speed: 'fast', range: 'melee-short', targets: 'ground', unitType: 'ground', deployCount: 6
   },
   { 
     id: 'egyptian-archer', name: 'Egyptian Archer', elixir: 3, rarity: 'common', type: 'troop', 
     hp: 350, damage: 95, description: 'Precise ranged attacker from the Nile. Fires flaming arrows.', 
-    era: 'Ancient Egypt', emoji: '🏹', level: 1, count: 0, maxCount: 800,
+    era: 'Ancient Egypt', emoji: '🏹', level: 1, count: 0, maxCount: 800, unlockArena: 1,
     hitSpeed: 1.1, speed: 'medium', range: 5.0, targets: 'ground-air', unitType: 'ground', deployCount: 2
   },
   { 
     id: 'mongol-cavalry', name: 'Mongol Cavalry', elixir: 4, rarity: 'common', type: 'troop', 
     hp: 700, damage: 110, description: 'Lightning fast horse archer. Strikes and retreats.', 
-    era: 'Mongol Empire', emoji: '🐎', level: 1, count: 0, maxCount: 400,
+    era: 'Mongol Empire', emoji: '🐎', level: 1, count: 0, maxCount: 400, unlockArena: 4,
     hitSpeed: 1.3, speed: 'very-fast', range: 4.5, targets: 'ground-air', unitType: 'ground'
   },
   { 
     id: 'goblin-scouts', name: 'Goblin Scouts', elixir: 2, rarity: 'common', type: 'troop', 
     hp: 200, damage: 60, description: 'Three sneaky goblins. Fast and mischievous.', 
-    era: 'Fantasy', emoji: '👺', level: 1, count: 0, maxCount: 100,
+    era: 'Fantasy', emoji: '👺', level: 1, count: 0, maxCount: 100, unlockArena: 2,
     hitSpeed: 0.8, speed: 'very-fast', range: 'melee-short', targets: 'ground', unitType: 'ground', deployCount: 3
   },
   { 
     id: 'zulu-warrior', name: 'Zulu Warrior', elixir: 3, rarity: 'common', type: 'troop', 
     hp: 580, damage: 80, description: 'Fearsome spear-wielding warrior with iklwa and shield.', 
-    era: 'Zulu Kingdom', emoji: '⚔️', level: 1, count: 0, maxCount: 200,
+    era: 'Zulu Kingdom', emoji: '⚔️', level: 1, count: 0, maxCount: 200, unlockArena: 5,
     hitSpeed: 1.1, speed: 'fast', range: 'melee-long', targets: 'ground', unitType: 'ground'
   },
   { 
     id: 'militia-spearmen', name: 'Militia Spearmen', elixir: 2, rarity: 'common', type: 'troop', 
     hp: 280, damage: 55, description: 'Peasant soldiers armed with spears. Deploy three at once.', 
-    era: 'Medieval', emoji: '🗡️', level: 1, count: 0, maxCount: 50,
+    era: 'Medieval', emoji: '🗡️', level: 1, count: 0, maxCount: 50, unlockArena: 1,
     hitSpeed: 1.3, speed: 'medium', range: 'melee-long', targets: 'ground', unitType: 'ground', deployCount: 3, shieldHp: 100
   },
   { 
     id: 'maori-warrior', name: 'Māori Warrior', elixir: 3, rarity: 'common', type: 'troop', 
     hp: 620, damage: 78, description: 'Fierce Polynesian warrior with a taiaha. Haka intimidation!', 
-    era: 'Polynesia', emoji: '🪃', level: 1, count: 0, maxCount: 100,
+    era: 'Polynesia', emoji: '🪃', level: 1, count: 0, maxCount: 100, unlockArena: 6,
     hitSpeed: 1.0, speed: 'medium', range: 'melee-medium', targets: 'ground', unitType: 'ground'
   },
   { 
     id: 'minions', name: 'Minions', elixir: 3, rarity: 'common', type: 'troop', 
     hp: 250, damage: 80, description: 'Three fast flying demons. Target both air and ground.', 
-    era: 'Fantasy', emoji: '👿', level: 1, count: 0, maxCount: 200,
+    era: 'Fantasy', emoji: '👿', level: 1, count: 0, maxCount: 200, unlockArena: 3,
     hitSpeed: 1.0, speed: 'fast', range: 2.0, targets: 'ground-air', unitType: 'air', deployCount: 3
   },
   { 
     id: 'bats', name: 'Bat Swarm', elixir: 2, rarity: 'common', type: 'troop', 
     hp: 80, damage: 30, description: 'Five bats that attack anything. Very fast but fragile.', 
-    era: 'Fantasy', emoji: '🦇', level: 1, count: 0, maxCount: 100,
+    era: 'Fantasy', emoji: '🦇', level: 1, count: 0, maxCount: 100, unlockArena: 4,
     hitSpeed: 1.1, speed: 'very-fast', range: 'melee-short', targets: 'ground-air', unitType: 'air', deployCount: 5
   },
 
@@ -217,61 +223,61 @@ export const allCards: GameCard[] = [
   { 
     id: 'samurai', name: 'Samurai', elixir: 4, rarity: 'rare', type: 'troop', 
     hp: 850, damage: 150, description: 'Master swordsman with devastating katana strikes.', 
-    era: 'Feudal Japan', emoji: '⚔️', level: 1, count: 0, maxCount: 50,
+    era: 'Feudal Japan', emoji: '⚔️', level: 1, count: 0, maxCount: 50, unlockArena: 3,
     hitSpeed: 1.4, speed: 'medium', range: 'melee-long', targets: 'ground', unitType: 'ground', chargeSpeed: 2.0
   },
   { 
     id: 'orc-berserker', name: 'Orc Berserker', elixir: 5, rarity: 'rare', type: 'troop', 
     hp: 1200, damage: 130, description: 'Raging greenskin that gets stronger when hurt. Splash damage.', 
-    era: 'Fantasy', emoji: '👹', level: 1, count: 0, maxCount: 50,
+    era: 'Fantasy', emoji: '👹', level: 1, count: 0, maxCount: 50, unlockArena: 4,
     hitSpeed: 1.5, speed: 'medium', range: 'melee-medium', targets: 'ground', unitType: 'ground', splashRadius: 0.8
   },
   { 
     id: 'crusader-knight', name: 'Crusader Knight', elixir: 5, rarity: 'rare', type: 'troop', 
     hp: 1400, damage: 120, description: 'Heavily armored mounted knight. Charges into battle.', 
-    era: 'Medieval', emoji: '🏇', level: 1, count: 0, maxCount: 50,
+    era: 'Medieval', emoji: '🏇', level: 1, count: 0, maxCount: 50, unlockArena: 5,
     hitSpeed: 1.8, speed: 'medium', range: 'melee-medium', targets: 'ground', unitType: 'ground', chargeSpeed: 2.5
   },
   { 
     id: 'spartan-phalanx', name: 'Spartan Phalanx', elixir: 5, rarity: 'rare', type: 'troop', 
     hp: 400, damage: 70, description: 'Three Spartans in tight formation. High defense, area denial.', 
-    era: 'Ancient Greece', emoji: '🏛️', level: 1, count: 0, maxCount: 20,
+    era: 'Ancient Greece', emoji: '🏛️', level: 1, count: 0, maxCount: 20, unlockArena: 6,
     hitSpeed: 1.2, speed: 'slow', range: 'melee-long', targets: 'ground', unitType: 'ground', deployCount: 3, shieldHp: 300
   },
   { 
     id: 'wwi-tank', name: 'WWI Tank', elixir: 6, rarity: 'rare', type: 'troop', 
     hp: 2000, damage: 100, description: 'Slow but nearly indestructible. Crushes everything in its path.', 
-    era: 'World War I', emoji: '🪖', level: 1, count: 0, maxCount: 50,
+    era: 'World War I', emoji: '🪖', level: 1, count: 0, maxCount: 50, unlockArena: 7,
     hitSpeed: 2.0, speed: 'very-slow', range: 3.5, targets: 'ground', unitType: 'ground', splashRadius: 1.0
   },
   { 
     id: 'ninja', name: 'Shadow Ninja', elixir: 3, rarity: 'rare', type: 'troop', 
     hp: 450, damage: 180, description: 'Invisible until attacking. Deadly first strike.', 
-    era: 'Feudal Japan', emoji: '🥷', level: 1, count: 0, maxCount: 50,
+    era: 'Feudal Japan', emoji: '🥷', level: 1, count: 0, maxCount: 50, unlockArena: 5,
     hitSpeed: 0.7, speed: 'very-fast', range: 'melee-short', targets: 'ground', unitType: 'ground'
   },
   { 
     id: 'ottoman-janissary', name: 'Ottoman Janissary', elixir: 4, rarity: 'rare', type: 'troop', 
     hp: 750, damage: 95, description: 'Elite musketeer with early firearms. Ranged splash damage.', 
-    era: 'Ottoman Empire', emoji: '🔥', level: 1, count: 0, maxCount: 20,
+    era: 'Ottoman Empire', emoji: '🔥', level: 1, count: 0, maxCount: 20, unlockArena: 6,
     hitSpeed: 1.5, speed: 'medium', range: 5.0, targets: 'ground-air', unitType: 'ground', splashRadius: 0.5
   },
   { 
     id: 'celtic-druid', name: 'Celtic Druid', elixir: 4, rarity: 'rare', type: 'troop', 
     hp: 500, damage: 60, description: 'Heals nearby allies over time. Ancient nature magic.', 
-    era: 'Celtic', emoji: '🌿', level: 1, count: 0, maxCount: 20,
+    era: 'Celtic', emoji: '🌿', level: 1, count: 0, maxCount: 20, unlockArena: 7,
     hitSpeed: 1.4, speed: 'slow', range: 4.0, targets: 'ground-air', unitType: 'ground'
   },
   { 
     id: 'balloon', name: 'Da Vinci Airship', elixir: 5, rarity: 'rare', type: 'troop', 
     hp: 1400, damage: 200, description: 'Leonardo\'s flying machine drops bombs on buildings. Death damage.', 
-    era: 'Renaissance', emoji: '🎈', level: 1, count: 0, maxCount: 20,
+    era: 'Renaissance', emoji: '🎈', level: 1, count: 0, maxCount: 20, unlockArena: 8,
     hitSpeed: 3.0, speed: 'medium', range: 'melee-short', targets: 'buildings', unitType: 'air', deathDamage: 250, splashRadius: 1.5
   },
   { 
     id: 'valkyrie', name: 'Shield Maiden', elixir: 4, rarity: 'rare', type: 'troop', 
     hp: 900, damage: 110, description: 'Norse shield maiden with 360° axe spin attack.', 
-    era: 'Viking Age', emoji: '💃', level: 1, count: 0, maxCount: 20,
+    era: 'Viking Age', emoji: '💃', level: 1, count: 0, maxCount: 20, unlockArena: 4,
     hitSpeed: 1.5, speed: 'medium', range: 'melee-medium', targets: 'ground', unitType: 'ground', splashRadius: 1.2
   },
 
@@ -279,60 +285,60 @@ export const allCards: GameCard[] = [
   { 
     id: 'dragon-warrior', name: 'Dragon Warrior', elixir: 7, rarity: 'epic', type: 'troop', 
     hp: 2500, damage: 200, description: 'Half-dragon berserker. Breathes fire in an arc.', 
-    era: 'Fantasy', emoji: '🐲', level: 1, count: 0, maxCount: 10,
+    era: 'Fantasy', emoji: '🐲', level: 1, count: 0, maxCount: 10, unlockArena: 8,
     hitSpeed: 1.8, speed: 'medium', range: 3.0, targets: 'ground-air', unitType: 'air', splashRadius: 1.0
   },
   { 
     id: 'persian-war-elephant', name: 'War Elephant', elixir: 7, rarity: 'epic', type: 'troop', 
     hp: 3000, damage: 180, description: 'Massive beast that tramples everything. Splash damage.', 
-    era: 'Persian Empire', emoji: '🐘', level: 1, count: 0, maxCount: 10,
+    era: 'Persian Empire', emoji: '🐘', level: 1, count: 0, maxCount: 10, unlockArena: 9,
     hitSpeed: 2.0, speed: 'slow', range: 'melee-long', targets: 'ground', unitType: 'ground', splashRadius: 1.5
   },
   { 
     id: 'aztec-priest', name: 'Aztec Sun Priest', elixir: 5, rarity: 'epic', type: 'troop', 
     hp: 600, damage: 160, description: 'Channels solar energy to blast enemies. Area damage.', 
-    era: 'Aztec Empire', emoji: '☀️', level: 1, count: 0, maxCount: 10,
+    era: 'Aztec Empire', emoji: '☀️', level: 1, count: 0, maxCount: 10, unlockArena: 7,
     hitSpeed: 1.6, speed: 'medium', range: 5.5, targets: 'ground-air', unitType: 'ground', splashRadius: 1.0
   },
   { 
     id: 'fireball', name: 'Greek Fire', elixir: 4, rarity: 'epic', type: 'spell', 
     damage: 350, description: 'Ancient incendiary weapon. Damages everything in its radius.', 
-    era: 'Byzantine', emoji: '🔥', level: 1, count: 0, maxCount: 10,
+    era: 'Byzantine', emoji: '🔥', level: 1, count: 0, maxCount: 10, unlockArena: 5,
     splashRadius: 2.5
   },
   { 
     id: 'artillery-strike', name: 'Artillery Strike', elixir: 5, rarity: 'epic', type: 'spell', 
     damage: 500, description: 'Calls in a barrage of mortar shells. Massive area damage.', 
-    era: 'Modern', emoji: '💣', level: 1, count: 0, maxCount: 4,
+    era: 'Modern', emoji: '💣', level: 1, count: 0, maxCount: 4, unlockArena: 10,
     splashRadius: 3.5
   },
   { 
     id: 'freeze-spell', name: 'Frost Rune', elixir: 4, rarity: 'epic', type: 'spell', 
     damage: 50, description: 'Ancient Norse rune that freezes all enemies in area for 4 seconds.', 
-    era: 'Fantasy', emoji: '❄️', level: 1, count: 0, maxCount: 10,
+    era: 'Fantasy', emoji: '❄️', level: 1, count: 0, maxCount: 10, unlockArena: 8,
     splashRadius: 3.0
   },
   { 
     id: 'terracotta-army', name: 'Terracotta Army', elixir: 6, rarity: 'epic', type: 'troop', 
     hp: 300, damage: 55, description: 'Summons 6 clay soldiers. They shatter on death dealing area damage.', 
-    era: 'Ancient China', emoji: '🪨', level: 1, count: 0, maxCount: 4,
+    era: 'Ancient China', emoji: '🪨', level: 1, count: 0, maxCount: 4, unlockArena: 9,
     hitSpeed: 1.3, speed: 'medium', range: 'melee-short', targets: 'ground', unitType: 'ground', deployCount: 6, deathDamage: 80
   },
   { 
     id: 'lightning-bolt', name: 'Zeus Lightning', elixir: 6, rarity: 'epic', type: 'spell', 
     damage: 600, description: 'Strikes 3 enemy targets with divine lightning. Stuns for 0.5s.', 
-    era: 'Mythology', emoji: '⚡', level: 1, count: 0, maxCount: 10
+    era: 'Mythology', emoji: '⚡', level: 1, count: 0, maxCount: 10, unlockArena: 11
   },
   { 
     id: 'golem', name: 'Easter Island Titan', elixir: 8, rarity: 'epic', type: 'troop', 
     hp: 4500, damage: 100, description: 'A living Moai statue. Splits into two fragments on death.', 
-    era: 'Polynesia', emoji: '🗿', level: 1, count: 0, maxCount: 4,
+    era: 'Polynesia', emoji: '🗿', level: 1, count: 0, maxCount: 4, unlockArena: 10,
     hitSpeed: 2.5, speed: 'slow', range: 'melee-short', targets: 'buildings', unitType: 'ground', deathDamage: 200
   },
   { 
     id: 'pekka', name: 'Iron Colossus', elixir: 7, rarity: 'epic', type: 'troop', 
     hp: 3500, damage: 600, description: 'Steampunk automaton forged in Victorian workshops. Devastating single-target.', 
-    era: 'Industrial Age', emoji: '🤖', level: 1, count: 0, maxCount: 4,
+    era: 'Industrial Age', emoji: '🤖', level: 1, count: 0, maxCount: 4, unlockArena: 11,
     hitSpeed: 1.8, speed: 'slow', range: 'melee-long', targets: 'ground', unitType: 'ground'
   },
 
@@ -340,37 +346,37 @@ export const allCards: GameCard[] = [
   {
     id: 'cannon', name: 'Colonial Cannon', elixir: 3, rarity: 'common', type: 'building',
     hp: 800, damage: 100, description: 'A rugged colonial-era cannon. Reliable ground defense.',
-    era: 'Colonial', emoji: '💥', level: 1, count: 0, maxCount: 800,
+    era: 'Colonial', emoji: '💥', level: 1, count: 0, maxCount: 800, unlockArena: 3,
     hitSpeed: 0.8, range: 5.5, targets: 'ground', unitType: 'ground', lifetime: 30
   },
   {
     id: 'watchtower', name: 'Roman Watchtower', elixir: 4, rarity: 'rare', type: 'building',
     hp: 1000, damage: 70, description: 'A tall Roman-style tower that rains arrows on air and ground.',
-    era: 'Ancient Rome', emoji: '🏰', level: 1, count: 0, maxCount: 50,
+    era: 'Ancient Rome', emoji: '🏰', level: 1, count: 0, maxCount: 50, unlockArena: 4,
     hitSpeed: 1.0, range: 7.0, targets: 'ground-air', unitType: 'ground', lifetime: 35
   },
   {
     id: 'bomb-tower', name: 'Ming Powder Tower', elixir: 4, rarity: 'rare', type: 'building',
     hp: 1200, damage: 120, description: 'Chinese gunpowder tower that lobs explosive shells. Splash damage!',
-    era: 'Ming Dynasty', emoji: '💣', level: 1, count: 0, maxCount: 50,
+    era: 'Ming Dynasty', emoji: '💣', level: 1, count: 0, maxCount: 50, unlockArena: 6,
     hitSpeed: 1.6, range: 5.0, targets: 'ground', unitType: 'ground', splashRadius: 1.5, lifetime: 25, deathDamage: 200
   },
   {
     id: 'inferno-tower', name: 'Greek Fire Beacon', elixir: 5, rarity: 'epic', type: 'building',
     hp: 1500, damage: 40, description: 'Byzantine fire weapon. Beam ramps up damage over time. Melts tanks.',
-    era: 'Byzantine', emoji: '🔥', level: 1, count: 0, maxCount: 10,
+    era: 'Byzantine', emoji: '🔥', level: 1, count: 0, maxCount: 10, unlockArena: 9,
     hitSpeed: 0.4, range: 6.0, targets: 'ground-air', unitType: 'ground', lifetime: 35
   },
   {
     id: 'tombstone', name: 'Aztec Death Shrine', elixir: 3, rarity: 'common', type: 'building',
     hp: 500, damage: 0, description: 'Cursed Aztec shrine that periodically summons undead warriors.',
-    era: 'Aztec Empire', emoji: '🪦', level: 1, count: 0, maxCount: 400,
+    era: 'Aztec Empire', emoji: '🪦', level: 1, count: 0, maxCount: 400, unlockArena: 5,
     hitSpeed: 0, range: 0, targets: 'ground', unitType: 'ground', lifetime: 40
   },
   {
     id: 'tesla', name: 'Tesla\'s Lightning Rod', elixir: 4, rarity: 'epic', type: 'building',
     hp: 900, damage: 130, description: 'Nikola Tesla\'s invention. Hidden electrical tower that zaps all enemies.',
-    era: 'Industrial Age', emoji: '⚡', level: 1, count: 0, maxCount: 10,
+    era: 'Industrial Age', emoji: '⚡', level: 1, count: 0, maxCount: 10, unlockArena: 10,
     hitSpeed: 1.1, range: 5.5, targets: 'ground-air', unitType: 'ground', lifetime: 30
   },
 
@@ -378,25 +384,25 @@ export const allCards: GameCard[] = [
   {
     id: 'siege-ram', name: 'Hunnic Siege Ram', elixir: 4, rarity: 'rare', type: 'troop',
     hp: 1800, damage: 250, description: 'An armored battering ram from the Hunnic hordes. Demolishes buildings.',
-    era: 'Hunnic Empire', emoji: '🪵', level: 1, count: 0, maxCount: 20,
+    era: 'Hunnic Empire', emoji: '🪵', level: 1, count: 0, maxCount: 20, unlockArena: 6,
     hitSpeed: 2.0, speed: 'medium', range: 'melee-short', targets: 'buildings', unitType: 'ground'
   },
   {
     id: 'giant', name: 'Norse Troll', elixir: 5, rarity: 'common', type: 'troop',
     hp: 3500, damage: 150, description: 'Enormous Scandinavian troll. Only smashes buildings with its club.',
-    era: 'Norse Mythology', emoji: '🧌', level: 1, count: 0, maxCount: 400,
+    era: 'Norse Mythology', emoji: '🧌', level: 1, count: 0, maxCount: 400, unlockArena: 2,
     hitSpeed: 1.5, speed: 'slow', range: 'melee-short', targets: 'buildings', unitType: 'ground'
   },
   {
     id: 'royal-giant', name: 'Ottoman Bombard', elixir: 6, rarity: 'rare', type: 'troop',
     hp: 2800, damage: 180, description: 'Massive Ottoman siege cannon on wheels. Bombards buildings from afar.',
-    era: 'Ottoman Empire', emoji: '🫅', level: 1, count: 0, maxCount: 20,
+    era: 'Ottoman Empire', emoji: '🫅', level: 1, count: 0, maxCount: 20, unlockArena: 8,
     hitSpeed: 1.7, speed: 'slow', range: 5.0, targets: 'buildings', unitType: 'ground'
   },
   {
     id: 'wall-breakers', name: 'Inca Sappers', elixir: 2, rarity: 'common', type: 'troop',
     hp: 300, damage: 400, description: 'Two speedy Inca demolition runners that charge at buildings and explode!',
-    era: 'Inca Empire', emoji: '💀', level: 1, count: 0, maxCount: 200,
+    era: 'Inca Empire', emoji: '💀', level: 1, count: 0, maxCount: 200, unlockArena: 4,
     hitSpeed: 1.0, speed: 'very-fast', range: 'melee-short', targets: 'buildings', unitType: 'ground', deployCount: 2, deathDamage: 400
   },
 
@@ -404,46 +410,46 @@ export const allCards: GameCard[] = [
   { 
     id: 'napoleon', name: 'Napoleon', elixir: 6, rarity: 'legendary', type: 'troop', 
     hp: 1800, damage: 250, description: 'The Emperor himself! Buffs nearby allies and fires cannon.', 
-    era: 'Napoleonic', emoji: '👑', level: 1, count: 0, maxCount: 2,
+    era: 'Napoleonic', emoji: '👑', level: 1, count: 0, maxCount: 2, unlockArena: 11,
     hitSpeed: 2.0, speed: 'medium', range: 5.5, targets: 'ground-air', unitType: 'ground', splashRadius: 1.0,
     ability: { name: 'Imperial Aura', description: '+35% damage to nearby allies', cooldown: 10 }
   },
   { 
     id: 'phoenix', name: 'Phoenix', elixir: 5, rarity: 'legendary', type: 'troop', 
     hp: 1500, damage: 200, description: 'Mythical firebird. Revives once after death with half HP.', 
-    era: 'Mythology', emoji: '🦅', level: 1, count: 0, maxCount: 2,
+    era: 'Mythology', emoji: '🦅', level: 1, count: 0, maxCount: 2, unlockArena: 12,
     hitSpeed: 1.3, speed: 'fast', range: 3.5, targets: 'ground-air', unitType: 'air', splashRadius: 0.5
   },
   { 
     id: 'genghis-khan', name: 'Genghis Khan', elixir: 7, rarity: 'legendary', type: 'troop', 
     hp: 2200, damage: 280, description: 'Spawns Mongol riders and charges with unstoppable force.', 
-    era: 'Mongol Empire', emoji: '⚡', level: 1, count: 0, maxCount: 2,
+    era: 'Mongol Empire', emoji: '⚡', level: 1, count: 0, maxCount: 2, unlockArena: 13,
     hitSpeed: 1.5, speed: 'very-fast', range: 'melee-long', targets: 'ground', unitType: 'ground', chargeSpeed: 3.0,
     ability: { name: 'Horde Summon', description: 'Spawns 2 Mongol Cavalry', cooldown: 15 }
   },
   { 
     id: 'necromancer', name: 'Necromancer', elixir: 5, rarity: 'legendary', type: 'troop', 
     hp: 800, damage: 120, description: 'Raises fallen enemies as skeletons to fight for you.', 
-    era: 'Fantasy', emoji: '🧙', level: 1, count: 0, maxCount: 2,
+    era: 'Fantasy', emoji: '🧙', level: 1, count: 0, maxCount: 2, unlockArena: 12,
     hitSpeed: 1.6, speed: 'medium', range: 5.0, targets: 'ground-air', unitType: 'ground', splashRadius: 0.5
   },
   { 
     id: 'cleopatra', name: 'Cleopatra', elixir: 4, rarity: 'legendary', type: 'troop', 
     hp: 900, damage: 100, description: 'Charms enemy troops to fight for you temporarily.', 
-    era: 'Ancient Egypt', emoji: '👸', level: 1, count: 0, maxCount: 2,
+    era: 'Ancient Egypt', emoji: '👸', level: 1, count: 0, maxCount: 2, unlockArena: 11,
     hitSpeed: 1.5, speed: 'medium', range: 5.5, targets: 'ground-air', unitType: 'ground',
     ability: { name: 'Charm', description: 'Converts nearest enemy for 5s', cooldown: 12 }
   },
   { 
     id: 'kraken', name: 'Kraken', elixir: 8, rarity: 'legendary', type: 'troop', 
     hp: 4000, damage: 300, description: 'Massive sea monster. Grabs and crushes multiple enemies.', 
-    era: 'Mythology', emoji: '🐙', level: 1, count: 0, maxCount: 2,
+    era: 'Mythology', emoji: '🐙', level: 1, count: 0, maxCount: 2, unlockArena: 14,
     hitSpeed: 2.2, speed: 'slow', range: 'melee-long', targets: 'ground-air', unitType: 'ground', splashRadius: 2.0
   },
   { 
     id: 'wizard', name: 'Grand Wizard', elixir: 5, rarity: 'legendary', type: 'troop', 
     hp: 700, damage: 180, description: 'Shoots fireballs that deal splash damage. Hits air and ground.', 
-    era: 'Fantasy', emoji: '🔮', level: 1, count: 0, maxCount: 2,
+    era: 'Fantasy', emoji: '🔮', level: 1, count: 0, maxCount: 2, unlockArena: 13,
     hitSpeed: 1.4, speed: 'medium', range: 5.5, targets: 'ground-air', unitType: 'ground', splashRadius: 1.0
   },
 
@@ -451,17 +457,19 @@ export const allCards: GameCard[] = [
   { 
     id: 'alexander-the-great', name: 'Alexander the Great', elixir: 6, rarity: 'champion', type: 'troop', 
     hp: 3000, damage: 350, description: 'Conquers everything. Ability: Macedonian Charge - dashes forward dealing massive damage.', 
-    era: 'Ancient Greece', emoji: '🦁', level: 1, count: 0, maxCount: 1,
+    era: 'Ancient Greece', emoji: '🦁', level: 1, count: 0, maxCount: 1, unlockArena: 15,
     hitSpeed: 1.3, speed: 'fast', range: 'melee-long', targets: 'ground', unitType: 'ground',
-    ability: { name: 'Macedonian Charge', description: 'Dash 5 tiles dealing 500 damage', cooldown: 10 }
+    ability: { name: 'Macedonian Charge', description: 'Dash 5 tiles dealing 500 damage', cooldown: 10 },
+    heroBonus: { name: 'Conqueror\'s Will', description: '+30% movement speed for all allied troops' }
   },
   { 
     id: 'joan-of-arc', name: 'Joan of Arc', elixir: 5, rarity: 'champion', type: 'troop', 
-    hp: 2500, damage: 200, description: 'Divine warrior maiden. Ability: Rally Cry - buffs all allies attack speed by 50% for 5s. Passive: Inspired - all allied troops permanently deal +20% damage while Joan is alive on the field.',
-    era: 'Medieval France', emoji: '⚜️', level: 1, count: 0, maxCount: 1,
+    hp: 2500, damage: 200, description: 'Divine warrior maiden. Ability: Rally Cry - buffs all allies attack speed by 50% for 5s.',
+    era: 'Medieval France', emoji: '⚜️', level: 1, count: 0, maxCount: 1, unlockArena: 15,
     hitSpeed: 1.4, speed: 'medium', range: 'melee-medium', targets: 'ground', unitType: 'ground',
     ability: { name: 'Rally Cry', description: '+50% attack speed for all allies for 5s', cooldown: 12 },
-    passive: { name: 'Inspired', description: 'All allied troops deal +20% damage while Joan is alive' }
+    passive: { name: 'Inspired', description: 'All allied troops deal +20% damage while Joan is alive' },
+    heroBonus: { name: 'Divine Protection', description: '+20% damage to all allies while Joan is alive on the field' }
   },
 
 ];
