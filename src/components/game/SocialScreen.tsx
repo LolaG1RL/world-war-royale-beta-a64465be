@@ -693,36 +693,124 @@ const SocialScreen = () => {
       )}
 
       {tab === 'global' && (
-        <div className="flex-1 overflow-y-auto">
-          {loadingLeaderboard ? (
-            <div className="flex items-center justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
-          ) : leaderboard.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8">
-              <Trophy className="w-10 h-10 text-muted-foreground/30 mb-2" />
-              <div className="text-xs text-muted-foreground">No players yet</div>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Sub-tabs */}
+          <div className="flex bg-[hsl(220,20%,12%)] border-b border-border">
+            {(['local', 'worldwide', 'top100'] as const).map(st => (
+              <button key={st} onClick={() => setGlobalSubTab(st)} className={`flex-1 py-1.5 text-[9px] font-bold uppercase tracking-wider ${globalSubTab === st ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
+                {st === 'local' ? `🏠 Local` : st === 'worldwide' ? '🌍 Worldwide' : '👑 Top #100'}
+              </button>
+            ))}
+          </div>
+
+          {/* Location info */}
+          {globalSubTab === 'local' && (
+            <div className="px-3 py-2 bg-[hsl(220,20%,11%)] border-b border-border/50 flex items-center justify-between">
+              <div className="text-[9px] text-muted-foreground">📍 Your location: <span className="text-foreground font-bold">{userCountry || 'Detecting...'}</span></div>
+              {myLocalRank && <div className="text-[9px] text-primary font-bold">Your rank: #{myLocalRank}</div>}
             </div>
-          ) : (
-            leaderboard.map((entry, i) => {
-              const isYou = entry.user_id === user?.id;
-              return (
-                <div key={entry.user_id} className={`flex items-center gap-3 px-3 py-2 border-b border-border/50 ${isYou ? 'bg-primary/10' : ''}`}>
-                  <div className={`text-[10px] font-bold w-5 text-center ${i === 0 ? 'text-primary' : i === 1 ? 'text-muted-foreground' : i === 2 ? 'text-[hsl(25,70%,50%)]' : 'text-muted-foreground'}`}>
-                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
-                  </div>
-                  <div className="w-7 h-7 rounded-lg bg-[hsl(210,60%,40%)] border border-[hsl(210,70%,55%)] flex items-center justify-center">
-                    <span className="text-[9px] font-black text-foreground">{entry.level}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-bold text-foreground truncate">
-                      {entry.username} {isYou && <span className="text-[8px] text-primary">(You)</span>}
+          )}
+          {globalSubTab === 'worldwide' && myWorldRank && (
+            <div className="px-3 py-2 bg-[hsl(220,20%,11%)] border-b border-border/50">
+              <div className="text-[9px] text-primary font-bold">🌍 Your worldwide rank: #{myWorldRank}</div>
+            </div>
+          )}
+
+          {/* Rewards info banner */}
+          {(globalSubTab === 'top100' || globalSubTab === 'local') && (
+            <button
+              onClick={() => setShowRewardsPanel(!showRewardsPanel)}
+              className="mx-3 mt-2 mb-1 px-3 py-2 bg-gradient-to-r from-[hsl(38,80%,20%)] to-[hsl(38,60%,15%)] border border-primary/30 rounded-lg text-[9px] font-bold text-primary flex items-center justify-between"
+            >
+              <span>🏅 {globalSubTab === 'top100' ? 'Top 100 Rewards — Exclusive Banners & Emotes' : 'Top 10 National Rewards'}</span>
+              <span className="text-[8px]">{showRewardsPanel ? '▲' : '▼'}</span>
+            </button>
+          )}
+
+          {/* Rewards panel */}
+          <AnimatePresence>
+            {showRewardsPanel && (globalSubTab === 'top100' || globalSubTab === 'local') && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="mx-3 overflow-hidden"
+              >
+                <div className="bg-[hsl(220,20%,11%)] border border-border rounded-lg p-2 mb-1 max-h-40 overflow-y-auto">
+                  {(globalSubTab === 'top100' ? TOP_100_REWARDS.slice(0, 20) : TOP_10_LOCAL_REWARDS).map(r => (
+                    <div key={r.rank} className="flex items-center gap-2 py-1 border-b border-border/30 last:border-0">
+                      <span className="text-[9px] font-bold w-8 text-center text-foreground">{r.label}</span>
+                      <div className="flex-1 flex flex-wrap gap-1">
+                        <span className="text-[8px] text-foreground">💰{r.gold.toLocaleString()}</span>
+                        <span className="text-[8px] text-foreground">💎{r.gems}</span>
+                        {r.exclusiveBanner && <span className="text-[7px] bg-primary/20 text-primary px-1 rounded">{r.exclusiveBanner}</span>}
+                        {r.exclusiveEmote && <span className="text-[7px] bg-purple-500/20 text-purple-400 px-1 rounded">{r.exclusiveEmote}</span>}
+                      </div>
                     </div>
-                    <div className="text-[8px] text-muted-foreground">{entry.player_tag} • {entry.wins}W</div>
+                  ))}
+                  {globalSubTab === 'top100' && (
+                    <div className="text-[8px] text-muted-foreground text-center py-1">...and 80 more ranked rewards</div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Leaderboard list */}
+          <div className="flex-1 overflow-y-auto">
+            {loadingLeaderboard ? (
+              <div className="flex items-center justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+            ) : (() => {
+              const data = globalSubTab === 'local' ? localLeaderboard
+                : globalSubTab === 'top100' ? leaderboard.slice(0, 100)
+                : leaderboard;
+
+              if (data.length === 0) return (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <Trophy className="w-10 h-10 text-muted-foreground/30 mb-2" />
+                  <div className="text-xs text-muted-foreground">
+                    {globalSubTab === 'local' ? 'No players from your country yet' : 'No players yet'}
                   </div>
-                  <div className="text-[10px] font-bold text-foreground flex items-center gap-1">🏆 {entry.trophies.toLocaleString()}</div>
                 </div>
               );
-            })
-          )}
+
+              return data.map((entry, i) => {
+                const isYou = entry.user_id === user?.id;
+                const rank = i + 1;
+                const isTop100 = globalSubTab === 'top100';
+                const isLocal = globalSubTab === 'local';
+                const reward = isTop100 ? TOP_100_REWARDS.find(r => r.rank === rank) : isLocal && rank <= 10 ? TOP_10_LOCAL_REWARDS.find(r => r.rank === rank) : null;
+
+                return (
+                  <div key={entry.user_id} className={`flex items-center gap-2 px-3 py-2 border-b border-border/50 ${isYou ? 'bg-primary/10' : ''} ${reward ? 'bg-[hsl(38,30%,10%,0.3)]' : ''}`}>
+                    <div className={`text-[10px] font-bold w-6 text-center ${rank === 1 ? 'text-primary' : rank === 2 ? 'text-muted-foreground' : rank === 3 ? 'text-[hsl(25,70%,50%)]' : 'text-muted-foreground'}`}>
+                      {rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}
+                    </div>
+                    <div className="w-7 h-7 rounded-lg bg-[hsl(210,60%,40%)] border border-[hsl(210,70%,55%)] flex items-center justify-center">
+                      <span className="text-[9px] font-black text-foreground">{entry.level}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-bold text-foreground truncate">
+                        {entry.username} {isYou && <span className="text-[8px] text-primary">(You)</span>}
+                      </div>
+                      <div className="text-[8px] text-muted-foreground">
+                        {entry.player_tag} • {entry.wins}W
+                        {globalSubTab === 'worldwide' && entry.country && <span> • {entry.country}</span>}
+                      </div>
+                      {reward && (
+                        <div className="flex gap-1 mt-0.5 flex-wrap">
+                          <span className="text-[7px] bg-primary/10 text-primary px-1 rounded">💰{reward.gold.toLocaleString()}</span>
+                          <span className="text-[7px] bg-primary/10 text-primary px-1 rounded">💎{reward.gems}</span>
+                          {reward.exclusiveBanner && <span className="text-[6px] bg-primary/20 text-primary px-1 rounded">{reward.exclusiveBanner}</span>}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-[10px] font-bold text-foreground flex items-center gap-1">🏆 {entry.trophies.toLocaleString()}</div>
+                  </div>
+                );
+              });
+            })()}
+          </div>
         </div>
       )}
 
