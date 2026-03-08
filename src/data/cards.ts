@@ -38,6 +38,9 @@ export interface ClanData {
   badge: string;
   description: string;
   donations: number;
+  bannerColor: string;
+  iconEmoji: string;
+  iconColor: string;
 }
 
 export interface PlayerProfile {
