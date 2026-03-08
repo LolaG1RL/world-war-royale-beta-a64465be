@@ -87,6 +87,7 @@ const getStoredRiverData = () => {
 
 const RiverRaceScreen = () => {
   const { setScreen, profile, setProfile, clan, setDeck } = useGame();
+  const { language } = useSettings();
   const { user } = useAuth();
 
   const [mode, setMode] = useState<RiverMode>('map');

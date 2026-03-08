@@ -16,6 +16,8 @@ type SubTab = 'backgrounds' | 'emblems' | 'badges';
 
 const BannerCustomizer = () => {
   const { profile, setScreen } = useGame();
+  const { language } = useSettings();
+  const T = (key: string) => t(key, language);
   const [banner, setBanner] = useState<PlayerBanner>(getPlayerBanner());
   const [subTab, setSubTab] = useState<SubTab>('backgrounds');
   const [ownedBgs] = useState(() => getOwnedBackgrounds());
@@ -69,7 +71,7 @@ const BannerCustomizer = () => {
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,25%,12%)] border-b border-border">
         <div className="w-8" />
-        <h2 className="font-display font-bold text-foreground text-sm">BATTLE BANNER</h2>
+        <h2 className="font-display font-bold text-foreground text-sm">{T('banner.title')}</h2>
         <span className="text-xs font-bold text-primary">{banner.badgeIds.length}/3</span>
       </div>
 
@@ -82,7 +84,7 @@ const BannerCustomizer = () => {
       <div className="flex bg-[hsl(220,20%,14%)] border-b border-border">
         {(['backgrounds', 'emblems', 'badges'] as SubTab[]).map(t => (
           <button key={t} onClick={() => setSubTab(t)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${subTab === t ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
-            {t === 'backgrounds' ? '🖼️ BG' : t === 'emblems' ? '🎭 Emblem' : '🏅 Badges'}
+            {tab === 'backgrounds' ? T('banner.bg') : tab === 'emblems' ? T('banner.emblem') : T('banner.badges_tab')}
           </button>
         ))}
       </div>
@@ -93,7 +95,7 @@ const BannerCustomizer = () => {
           <>
             {ownedBackgrounds.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground text-xs">
-                No backgrounds owned yet.<br />Buy some in the Shop → Banners tab!
+                {T('banner.no_bg')}<br />{T('banner.buy_shop')}
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2">
@@ -118,7 +120,7 @@ const BannerCustomizer = () => {
           <>
             {ownedEmblemsList.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground text-xs">
-                No emblems owned yet.<br />Buy some in the Shop → Banners tab!
+                {T('banner.no_emblems')}<br />{T('banner.buy_shop')}
               </div>
             ) : (
               <div className="grid grid-cols-4 gap-2">
@@ -138,7 +140,7 @@ const BannerCustomizer = () => {
 
         {subTab === 'badges' && (
           <>
-            <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-1.5">Equipped ({banner.badgeIds.length}/3)</div>
+            <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-1.5">{T('banner.equipped')} ({banner.badgeIds.length}/3)</div>
             <div className="flex gap-1.5 mb-3">
               {[0, 1, 2].map(i => {
                 const bid = banner.badgeIds[i];
@@ -153,14 +155,14 @@ const BannerCustomizer = () => {
 
             {ownedBadgesList.length === 0 ? (
               <div className="text-center py-4 text-muted-foreground text-xs">
-                No badges earned yet.<br />Win battles to unlock achievement badges!
+                {T('banner.no_badges')}<br />{T('banner.win_battles')}
               </div>
             ) : (
               <>
                 {/* Achievement badges */}
                 {ownedBadgesList.filter(b => b.type === 'achievement').length > 0 && (
                   <>
-                    <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-1.5">Achievement Badges</div>
+                    <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-1.5">{T('banner.achievement_badges')}</div>
                     <div className="grid grid-cols-4 gap-2 mb-3">
                       {ownedBadgesList.filter(b => b.type === 'achievement').map(badge => {
                         const equipped = banner.badgeIds.includes(badge.id);
@@ -178,7 +180,7 @@ const BannerCustomizer = () => {
                 {/* Cosmetic badges */}
                 {ownedBadgesList.filter(b => b.type === 'cosmetic').length > 0 && (
                   <>
-                    <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-1.5">Cosmetic Badges</div>
+                    <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-1.5">{T('banner.cosmetic_badges')}</div>
                     <div className="grid grid-cols-4 gap-2">
                       {ownedBadgesList.filter(b => b.type === 'cosmetic').map(badge => {
                         const equipped = banner.badgeIds.includes(badge.id);
