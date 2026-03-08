@@ -728,27 +728,27 @@ const EventsScreen = () => {
 
         {tab === 'tournaments' && (
           <div className="p-3 space-y-2">
-            {tournaments.map(t => {
-              const prog = getEventProgress(t.id);
+            {tournaments.map(tourney => {
+              const prog = getEventProgress(tourney.id);
               return (
-                <motion.button key={t.id} whileTap={{ scale: 0.98 }} onClick={() => setSelectedEvent(t)} className={`w-full bg-gradient-to-r from-card to-[hsl(220,20%,14%)] border rounded-xl p-3 flex items-center gap-3 transition-colors ${prog.completed ? 'border-hp-green/30' : 'border-primary/30 hover:border-primary/50'}`}>
+                <motion.button key={tourney.id} whileTap={{ scale: 0.98 }} onClick={() => setSelectedEvent(tourney)} className={`w-full bg-gradient-to-r from-card to-[hsl(220,20%,14%)] border rounded-xl p-3 flex items-center gap-3 transition-colors ${prog.completed ? 'border-hp-green/30' : 'border-primary/30 hover:border-primary/50'}`}>
                   <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
-                    <span className="text-xl">{t.emoji}</span>
+                    <span className="text-xl">{tourney.emoji}</span>
                   </div>
                   <div className="flex-1 text-left">
-                    <div className="text-xs font-bold text-foreground">{t.name}</div>
-                    <div className="text-[9px] text-muted-foreground">{t.description}</div>
+                    <div className="text-xs font-bold text-foreground">{tourney.name}</div>
+                    <div className="text-[9px] text-muted-foreground">{tourney.description}</div>
                     {prog.wins > 0 && (
-                      <div className="text-[8px] text-hp-green mt-0.5">{prog.wins} wins</div>
+                      <div className="text-[8px] text-hp-green mt-0.5">{prog.wins} {t('events.wins_plural', language).toLowerCase()}</div>
                     )}
                     <div className="flex gap-1 mt-1 flex-wrap">
-                      {t.milestones?.slice(0, 3).map((ms, mi) => (
+                      {tourney.milestones?.slice(0, 3).map((ms, mi) => (
                         <span key={mi} className="text-[7px] bg-primary/10 border border-primary/20 px-1 py-0.5 rounded text-primary">{ms.wins}W: {rewardLabel(ms.reward)}</span>
                       ))}
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <div className="text-[8px] text-primary font-bold">{fmtHours(t.hoursLeft)}</div>
+                    <div className="text-[8px] text-primary font-bold">{fmtHours(tourney.hoursLeft)}</div>
                     <div className="text-[9px] text-hp-green font-bold mt-0.5">{t('events.free', language)}</div>
                     <ChevronRight className="w-3 h-3 text-muted-foreground mt-0.5" />
                   </div>
