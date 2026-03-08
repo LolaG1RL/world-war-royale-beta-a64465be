@@ -675,31 +675,31 @@ const ShopScreen = () => {
           </>
         )}
 
-        {/* Banners tab - daily rotating deals */}
+        {/* Banners tab - daily rotating deals (only unowned items) */}
         {tab === 'banners' && (
           <>
-            <div className="mb-3 bg-gradient-to-r from-[hsl(270,50%,25%)] to-[hsl(220,40%,20%)] rounded-xl p-3 border border-purple-400/30">
+            <div className="mb-3 bg-gradient-to-r from-purple-900/50 to-slate-800/50 rounded-xl p-3 border border-purple-400/30">
               <div className="text-[10px] text-purple-300 font-bold uppercase tracking-wider">Daily Banner Deals</div>
               <div className="text-[8px] text-foreground/70 mt-0.5">Refreshes in {countdown}</div>
             </div>
 
             <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🖼️ Today's Backgrounds</div>
             <div className="grid grid-cols-2 gap-2 mb-4">
-              {getDailyBgDeals(ownedBgs).map(({ item: bg, discountPct }, idx) => {
-                const discountCost = Math.round(bg.cost * (1 - discountPct / 100));
-                const discountCost = Math.round(bg.cost * (1 - discountPct / 100));
+              {getDailyBgDeals(ownedBgs).length === 0 ? (
+                <div className="col-span-2 text-center text-muted-foreground text-xs py-4">You own all available backgrounds!</div>
+              ) : getDailyBgDeals(ownedBgs).map(({ item: bg, discountPct }) => {
+                const finalCost = Math.round(bg.cost * (1 - discountPct / 100));
+                const canAfford = bg.currency === 'gold' ? profile.gold >= finalCost : profile.gems >= finalCost;
                 return (
                   <button
                     key={bg.id}
                     onClick={() => {
-                      if (owned) { toast.info('Already owned! Equip in Cards → Banner tab'); return; }
-                      const currency = bg.currency === 'gold' ? profile.gold : profile.gems;
-                      if (currency < discountCost) { toast.error(`Not enough ${bg.currency}!`); return; }
+                      if (!canAfford) { toast.error(`Not enough ${bg.currency}!`); return; }
                       setConfirmAction({
                         label: bg.name,
-                        cost: `${bg.currency === 'gold' ? '💰' : '💎'} ${discountCost}`,
+                        cost: `${bg.currency === 'gold' ? '💰' : '💎'} ${finalCost}`,
                         onConfirm: () => {
-                          setProfile(p => bg.currency === 'gold' ? { ...p, gold: p.gold - discountCost } : { ...p, gems: p.gems - discountCost });
+                          setProfile(p => bg.currency === 'gold' ? { ...p, gold: p.gold - finalCost } : { ...p, gems: p.gems - finalCost });
                           addOwnedBackground(bg.id);
                           setOwnedBgs(getOwnedBackgrounds());
                           toast.success(`${bg.name} unlocked!`);
@@ -707,16 +707,16 @@ const ShopScreen = () => {
                         },
                       });
                     }}
-                    className={`relative h-16 rounded-xl overflow-hidden border-2 ${owned ? 'border-hp-green/50' : 'border-border'}`}
+                    className={`relative h-16 rounded-xl overflow-hidden border-2 ${canAfford ? 'border-border hover:border-primary/50' : 'border-border/30 opacity-60'}`}
                     style={{ background: bg.css }}
                   >
                     {bg.animated && bg.animationSvg && <div className="absolute inset-0" dangerouslySetInnerHTML={{ __html: bg.animationSvg }} />}
-                    {discountPct > 0 && !owned && (
+                    {discountPct > 0 && (
                       <div className="absolute top-1 right-1 bg-accent text-accent-foreground text-[7px] font-black px-1 rounded">-{discountPct}%</div>
                     )}
-                    <div className="absolute bottom-0 left-0 right-0 bg-[hsl(0,0%,0%,0.6)] px-1.5 py-0.5 flex items-center justify-between">
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1.5 py-0.5 flex items-center justify-between">
                       <span className="text-[8px] font-bold text-foreground">{bg.name}</span>
-                      <span className="text-[7px] text-muted-foreground">{owned ? '✓ Owned' : `${bg.currency === 'gold' ? '💰' : '💎'} ${discountCost}`}</span>
+                      <span className="text-[7px] text-muted-foreground">{bg.currency === 'gold' ? '💰' : '💎'} {finalCost}</span>
                     </div>
                   </button>
                 );
@@ -725,21 +725,21 @@ const ShopScreen = () => {
 
             <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🎭 Today's Emblems</div>
             <div className="grid grid-cols-4 gap-2 mb-4">
-              {getDailyEmbDeals(ownedEmbs).map(({ item: emb, discountPct }) => {
-                const discountCost = Math.round(emb.cost * (1 - discountPct / 100));
-                const discountCost = Math.round(emb.cost * (1 - discountPct / 100));
+              {getDailyEmbDeals(ownedEmbs).length === 0 ? (
+                <div className="col-span-4 text-center text-muted-foreground text-xs py-4">You own all available emblems!</div>
+              ) : getDailyEmbDeals(ownedEmbs).map(({ item: emb, discountPct }) => {
+                const finalCost = Math.round(emb.cost * (1 - discountPct / 100));
+                const canAfford = emb.currency === 'gold' ? profile.gold >= finalCost : profile.gems >= finalCost;
                 return (
                   <button
                     key={emb.id}
                     onClick={() => {
-                      if (owned) { toast.info('Already owned!'); return; }
-                      const currency = emb.currency === 'gold' ? profile.gold : profile.gems;
-                      if (currency < discountCost) { toast.error(`Not enough ${emb.currency}!`); return; }
+                      if (!canAfford) { toast.error(`Not enough ${emb.currency}!`); return; }
                       setConfirmAction({
                         label: emb.name,
-                        cost: `${emb.currency === 'gold' ? '💰' : '💎'} ${discountCost}`,
+                        cost: `${emb.currency === 'gold' ? '💰' : '💎'} ${finalCost}`,
                         onConfirm: () => {
-                          setProfile(p => emb.currency === 'gold' ? { ...p, gold: p.gold - discountCost } : { ...p, gems: p.gems - discountCost });
+                          setProfile(p => emb.currency === 'gold' ? { ...p, gold: p.gold - finalCost } : { ...p, gems: p.gems - finalCost });
                           addOwnedEmblem(emb.id);
                           setOwnedEmbs(getOwnedEmblems());
                           toast.success(`${emb.name} unlocked!`);
@@ -747,19 +747,24 @@ const ShopScreen = () => {
                         },
                       });
                     }}
-                    className={`relative aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 border-2 ${owned ? 'border-hp-green/50 bg-card' : 'border-border bg-muted/10'}`}
+                    className={`relative aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 border-2 ${canAfford ? 'border-border hover:border-primary/50 bg-muted/10' : 'border-border/30 bg-muted/5 opacity-60'}`}
                   >
-                    {discountPct > 0 && !owned && (
+                    {discountPct > 0 && (
                       <div className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-[6px] font-black px-1 rounded z-10">-{discountPct}%</div>
                     )}
                     <span className={`text-xl ${(emb as any).animated ? 'animate-pulse' : ''}`}>{(emb as any).emoji}</span>
                     <span className="text-[7px] font-bold text-foreground">{emb.name}</span>
-                    <span className="text-[7px] text-muted-foreground">{owned ? '✓' : `${emb.currency === 'gold' ? '💰' : '💎'} ${discountCost}`}</span>
+                    <span className="text-[7px] text-muted-foreground">{emb.currency === 'gold' ? '💰' : '💎'} {finalCost}</span>
                   </button>
                 );
               })}
             </div>
 
+            <div className="text-center py-4 text-muted-foreground text-xs">
+              <span className="text-lg">🏅</span><br />
+              Badges are earned through achievements!<br />
+              Check Cards → Banner to equip your earned badges.
+            </div>
           </>
         )}
 
