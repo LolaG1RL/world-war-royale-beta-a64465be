@@ -89,6 +89,40 @@ const WAR_PASS_REWARDS: PassReward[] = [
   { tier: 28, crownsNeeded: 224, free: { type: 'gold', amount: 4000, emoji: '💰', label: '4K Gold' }, paid: { type: 'gems', amount: 100, emoji: '💎', label: '100 Gems' } },
   { tier: 29, crownsNeeded: 245, free: { type: 'chest', amount: 1, emoji: '⚡', label: 'Lightning Chest' }, paid: { type: 'cards', amount: 3, emoji: '🃏', label: '3 Legendary' } },
   { tier: 30, crownsNeeded: 270, free: { type: 'chest', amount: 1, emoji: '👑', label: 'Legendary Chest' }, paid: { type: 'emote', amount: 1, emoji: '👑', label: 'Champion Emote' } },
+  // ── Extended tiers 31–60 ──
+  { tier: 31, crownsNeeded: 295, free: { type: 'gold', amount: 3000, emoji: '💰', label: '3K Gold' }, paid: { type: 'gems', amount: 40, emoji: '💎', label: '40 Gems' } },
+  { tier: 32, crownsNeeded: 322, free: { type: 'cards', amount: 5, emoji: '🃏', label: '5 Cards' }, paid: { type: 'gold', amount: 4000, emoji: '💰', label: '4K Gold' } },
+  { tier: 33, crownsNeeded: 350, free: { type: 'gems', amount: 12, emoji: '💎', label: '12 Gems' }, paid: { type: 'chest', amount: 1, emoji: '💰', label: 'Gold Chest' } },
+  { tier: 34, crownsNeeded: 380, free: { type: 'gold', amount: 3500, emoji: '💰', label: '3.5K Gold' }, paid: { type: 'gems', amount: 50, emoji: '💎', label: '50 Gems' } },
+  { tier: 35, crownsNeeded: 412, free: { type: 'chest', amount: 1, emoji: '✨', label: 'Magic Chest' }, paid: { type: 'gold', amount: 5000, emoji: '💰', label: '5K Gold' } },
+  { tier: 36, crownsNeeded: 446, free: { type: 'cards', amount: 4, emoji: '🃏', label: '4 Rare Cards' }, paid: { type: 'gems', amount: 60, emoji: '💎', label: '60 Gems' } },
+  { tier: 37, crownsNeeded: 482, free: { type: 'gold', amount: 4000, emoji: '💰', label: '4K Gold' }, paid: { type: 'chest', amount: 1, emoji: '⚡', label: 'Lightning Chest' } },
+  { tier: 38, crownsNeeded: 520, free: { type: 'gems', amount: 15, emoji: '💎', label: '15 Gems' }, paid: { type: 'cards', amount: 3, emoji: '🃏', label: '3 Epic Cards' } },
+  { tier: 39, crownsNeeded: 560, free: { type: 'chest', amount: 1, emoji: '💰', label: 'Gold Chest' }, paid: { type: 'gold', amount: 6000, emoji: '💰', label: '6K Gold' } },
+  { tier: 40, crownsNeeded: 602, free: { type: 'chest', amount: 1, emoji: '👑', label: 'Legendary Chest' }, paid: { type: 'gems', amount: 80, emoji: '💎', label: '80 Gems' } },
+  { tier: 41, crownsNeeded: 646, free: { type: 'gold', amount: 5000, emoji: '💰', label: '5K Gold' }, paid: { type: 'chest', amount: 1, emoji: '✨', label: 'Magic Chest' } },
+  { tier: 42, crownsNeeded: 692, free: { type: 'cards', amount: 6, emoji: '🃏', label: '6 Cards' }, paid: { type: 'gold', amount: 7000, emoji: '💰', label: '7K Gold' } },
+  { tier: 43, crownsNeeded: 740, free: { type: 'gems', amount: 18, emoji: '💎', label: '18 Gems' }, paid: { type: 'gems', amount: 90, emoji: '💎', label: '90 Gems' } },
+  { tier: 44, crownsNeeded: 790, free: { type: 'gold', amount: 5500, emoji: '💰', label: '5.5K Gold' }, paid: { type: 'cards', amount: 3, emoji: '🃏', label: '3 Legendary' } },
+  { tier: 45, crownsNeeded: 842, free: { type: 'chest', amount: 1, emoji: '⚡', label: 'Lightning Chest' }, paid: { type: 'gold', amount: 8000, emoji: '💰', label: '8K Gold' } },
+  { tier: 46, crownsNeeded: 896, free: { type: 'cards', amount: 5, emoji: '🃏', label: '5 Rare Cards' }, paid: { type: 'gems', amount: 100, emoji: '💎', label: '100 Gems' } },
+  { tier: 47, crownsNeeded: 952, free: { type: 'gold', amount: 6000, emoji: '💰', label: '6K Gold' }, paid: { type: 'chest', amount: 1, emoji: '✨', label: 'Magic Chest' } },
+  { tier: 48, crownsNeeded: 1010, free: { type: 'gems', amount: 20, emoji: '💎', label: '20 Gems' }, paid: { type: 'gold', amount: 10000, emoji: '💰', label: '10K Gold' } },
+  { tier: 49, crownsNeeded: 1070, free: { type: 'chest', amount: 1, emoji: '👑', label: 'Legendary Chest' }, paid: { type: 'gems', amount: 120, emoji: '💎', label: '120 Gems' } },
+  // ★ Tier 50 Pass+ = Season Exclusive Emote
+  { tier: 50, crownsNeeded: 1132, free: { type: 'gold', amount: 8000, emoji: '💰', label: '8K Gold' }, paid: { type: 'season-emote', amount: 1, emoji: '⚜️', label: '⚜️ S1 Emote' } },
+  { tier: 51, crownsNeeded: 1196, free: { type: 'gems', amount: 25, emoji: '💎', label: '25 Gems' }, paid: { type: 'gold', amount: 12000, emoji: '💰', label: '12K Gold' } },
+  { tier: 52, crownsNeeded: 1262, free: { type: 'cards', amount: 4, emoji: '🃏', label: '4 Epic Cards' }, paid: { type: 'gems', amount: 130, emoji: '💎', label: '130 Gems' } },
+  { tier: 53, crownsNeeded: 1330, free: { type: 'gold', amount: 9000, emoji: '💰', label: '9K Gold' }, paid: { type: 'chest', amount: 1, emoji: '⚡', label: 'Lightning Chest' } },
+  { tier: 54, crownsNeeded: 1400, free: { type: 'chest', amount: 1, emoji: '✨', label: 'Magic Chest' }, paid: { type: 'gold', amount: 15000, emoji: '💰', label: '15K Gold' } },
+  // ★ Tier 55 Pass+ = 2 Season Exclusive Animated Banner Parts
+  { tier: 55, crownsNeeded: 1472, free: { type: 'gems', amount: 30, emoji: '💎', label: '30 Gems' }, paid: { type: 'season-banner', amount: 2, emoji: '🏴', label: '🏴 S1 Banner Set' } },
+  { tier: 56, crownsNeeded: 1546, free: { type: 'gold', amount: 10000, emoji: '💰', label: '10K Gold' }, paid: { type: 'gems', amount: 150, emoji: '💎', label: '150 Gems' } },
+  { tier: 57, crownsNeeded: 1622, free: { type: 'cards', amount: 3, emoji: '🃏', label: '3 Legendary' }, paid: { type: 'gold', amount: 18000, emoji: '💰', label: '18K Gold' } },
+  { tier: 58, crownsNeeded: 1700, free: { type: 'gems', amount: 35, emoji: '💎', label: '35 Gems' }, paid: { type: 'chest', amount: 1, emoji: '👑', label: 'Legendary Chest' } },
+  { tier: 59, crownsNeeded: 1780, free: { type: 'chest', amount: 1, emoji: '👑', label: 'Legendary Chest' }, paid: { type: 'gems', amount: 200, emoji: '💎', label: '200 Gems' } },
+  // ★ Tier 60 Pass+ = Season Exclusive Hero (always active)
+  { tier: 60, crownsNeeded: 1862, free: { type: 'gold', amount: 15000, emoji: '💰', label: '15K Gold' }, paid: { type: 'season-hero', amount: 1, emoji: '⚜️', label: '⚜️ Joan of Arc' } },
 ];
 
 const WarPassScreen = () => {
