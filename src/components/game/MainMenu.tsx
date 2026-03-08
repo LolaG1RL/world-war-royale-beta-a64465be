@@ -133,7 +133,7 @@ const MainMenu = () => {
         {/* Player banner + Resources row */}
         <div className="flex items-center gap-2 px-3 py-1.5">
           <button onClick={() => setScreen('profile')} className="flex-1 min-w-0 hover:opacity-80 transition-opacity">
-            <BattleBannerDisplay banner={playerBanner} name={profile.name} trophies={profile.trophies} clanName={clan?.name} size="sm" />
+            <BattleBannerDisplay banner={playerBanner} name={profile.name} trophies={profile.trophies} clanName={clan?.name} clanBanner={clan ? { bannerColor: clan.bannerColor, bannerShape: clan.bannerShape, iconId: clan.iconId, iconColor: clan.iconColor } : undefined} size="sm" />
           </button>
           {/* Resources */}
           <div className="flex items-center gap-1 flex-shrink-0">
@@ -240,7 +240,7 @@ const MainMenu = () => {
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => setScreen('battle')}
+            onClick={() => setScreen('matchmaking')}
             className="btn-battle text-lg flex items-center gap-2"
           >
             <Swords className="w-5 h-5" />

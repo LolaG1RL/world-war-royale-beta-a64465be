@@ -463,6 +463,14 @@ const translations: TranslationMap = {
   'events.claim_btn': { en: 'Claim', es: 'Reclamar', fr: 'Récupérer', de: 'Abholen', pt: 'Resgatar', ja: '受取', ko: '수령', zh: '领取', ar: 'مطالبة', ru: 'Забрать' },
   'trophy.arena_label': { en: 'Arena', es: 'Arena', fr: 'Arène', de: 'Arena', pt: 'Arena', ja: 'アリーナ', ko: '아레나', zh: '竞技场', ar: 'الحلبة', ru: 'Арена' },
   'trophy.never_drop': { en: 'never', es: 'nunca', fr: 'jamais', de: 'nie', pt: 'nunca', ja: '決して', ko: '절대', zh: '永远不会', ar: 'أبداً', ru: 'никогда' },
+
+  // ═══ Matchmaking ═══
+  'matchmaking.searching': { en: 'Searching for opponent', es: 'Buscando oponente', fr: 'Recherche d\'adversaire', de: 'Gegner suchen', pt: 'Procurando oponente', ja: '対戦相手を検索中', ko: '상대를 찾는 중', zh: '搜索对手', ar: 'البحث عن خصم', ru: 'Поиск соперника' },
+  'matchmaking.looking_for': { en: 'Looking for a real player in your trophy range...', es: 'Buscando un jugador real en tu rango de trofeos...', fr: 'Recherche d\'un joueur réel dans votre fourchette de trophées...', de: 'Suche nach einem echten Spieler in deinem Trophäenbereich...', pt: 'Procurando um jogador real na sua faixa de troféus...', ja: 'あなたのトロフィー帯の実プレイヤーを検索中...', ko: '트로피 범위 내 실제 플레이어를 찾는 중...', zh: '在你的奖杯范围内寻找真实玩家...', ar: 'البحث عن لاعب حقيقي في نطاق كؤوسك...', ru: 'Поиск реального игрока в вашем диапазоне трофеев...' },
+  'matchmaking.found': { en: 'OPPONENT FOUND!', es: '¡OPONENTE ENCONTRADO!', fr: 'ADVERSAIRE TROUVÉ!', de: 'GEGNER GEFUNDEN!', pt: 'OPONENTE ENCONTRADO!', ja: '対戦相手発見！', ko: '상대를 찾았습니다!', zh: '找到对手！', ar: 'تم العثور على خصم!', ru: 'СОПЕРНИК НАЙДЕН!' },
+  'matchmaking.no_players': { en: 'No players available', es: 'No hay jugadores disponibles', fr: 'Aucun joueur disponible', de: 'Keine Spieler verfügbar', pt: 'Nenhum jogador disponível', ja: 'プレイヤーが見つかりません', ko: '사용 가능한 플레이어 없음', zh: '没有可用玩家', ar: 'لا لاعبين متاحين', ru: 'Нет доступных игроков' },
+  'matchmaking.ai_opponent': { en: 'Matching with AI opponent...', es: 'Emparejando con IA...', fr: 'Match contre l\'IA...', de: 'Gegen KI-Gegner...', pt: 'Emparelhando com IA...', ja: 'AI対戦相手とマッチング...', ko: 'AI 상대와 매칭 중...', zh: '与AI对手匹配...', ar: 'المطابقة مع خصم ذكاء اصطناعي...', ru: 'Подбор ИИ-противника...' },
+  'matchmaking.ai_fallback_hint': { en: 'If no player is found, you\'ll face an AI opponent', es: 'Si no se encuentra jugador, enfrentarás una IA', fr: 'Si aucun joueur n\'est trouvé, vous affronterez une IA', de: 'Wenn kein Spieler gefunden wird, kämpfst du gegen eine KI', pt: 'Se nenhum jogador for encontrado, você enfrentará uma IA', ja: 'プレイヤーが見つからない場合、AIと対戦します', ko: '플레이어를 찾지 못하면 AI 상대와 대전합니다', zh: '如果找不到玩家，将与AI对战', ar: 'إذا لم يتم العثور على لاعب، ستواجه ذكاء اصطناعي', ru: 'Если игрок не найден, вас ждёт ИИ-противник' },
 };
 
 // Get a translation by key
