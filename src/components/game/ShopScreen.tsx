@@ -66,36 +66,42 @@ function savePurchasedDeal(index: number) {
   localStorage.setItem('daily_deals_purchased', JSON.stringify({ date: getTodayKey(), indices: Array.from(current) }));
 }
 
-function getFreebiesClaimed(): boolean {
+function getFreebiesClaimed(): Set<number> {
   try {
     const stored = localStorage.getItem('daily_freebies_claimed');
-    if (!stored) return false;
-    return JSON.parse(stored).date === getTodayKey();
-  } catch { return false; }
+    if (!stored) return new Set();
+    const parsed = JSON.parse(stored);
+    if (parsed.date !== getTodayKey()) return new Set();
+    return new Set(parsed.indices as number[]);
+  } catch { return new Set(); }
 }
 
-function setFreebiesClaimedStorage() {
-  localStorage.setItem('daily_freebies_claimed', JSON.stringify({ date: getTodayKey() }));
+function saveFreebieClaimedIndex(index: number) {
+  const current = getFreebiesClaimed();
+  current.add(index);
+  localStorage.setItem('daily_freebies_claimed', JSON.stringify({ date: getTodayKey(), indices: Array.from(current) }));
 }
 
-function generateDailyFreebies(): RewardItem[] {
-  const rewards: RewardItem[] = [];
-  const roll = () => {
-    const r = Math.random();
-    if (r < 0.60) return allCards.filter(c => c.rarity === 'common');
-    if (r < 0.85) return allCards.filter(c => c.rarity === 'rare');
-    if (r < 0.97) return allCards.filter(c => c.rarity === 'epic');
-    return allCards.filter(c => c.rarity === 'legendary');
+function getDailyFreebieCards() {
+  const today = new Date();
+  const seed = (today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()) * 7;
+  let s = seed;
+  const pick = (arr: typeof allCards) => {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    return arr[s % arr.length];
   };
-  for (let i = 0; i < 3; i++) {
-    const pool = roll();
-    const card = pool[Math.floor(Math.random() * pool.length)];
-    const count = card.rarity === 'common' ? 2 + Math.floor(Math.random() * 3) :
-                  card.rarity === 'rare' ? 1 + Math.floor(Math.random() * 2) : 1;
-    rewards.push({ emoji: card.emoji, name: card.name, count, rarity: card.rarity });
+  // Weighted: 2 commons, 1 rare (small chance epic)
+  const results: { emoji: string; name: string; amount: number; rarity: string }[] = [];
+  for (let i = 0; i < 2; i++) {
+    const card = pick(allCards.filter(c => c.rarity === 'common'));
+    results.push({ emoji: card.emoji, name: card.name, amount: 2 + (s % 3), rarity: 'common' });
   }
-  rewards.push({ emoji: '💰', name: 'Gold', count: 15 + Math.floor(Math.random() * 35), rarity: 'common' });
-  return rewards;
+  s = (s * 1103515245 + 12345) & 0x7fffffff;
+  const rareRoll = s % 100;
+  const pool = rareRoll < 80 ? allCards.filter(c => c.rarity === 'rare') : allCards.filter(c => c.rarity === 'epic');
+  const card = pick(pool);
+  results.push({ emoji: card.emoji, name: card.name, amount: 1, rarity: card.rarity });
+  return results;
 }
 
 function useCountdownToMidnight() {
