@@ -66,7 +66,39 @@ function savePurchasedDeal(index: number) {
   localStorage.setItem('daily_deals_purchased', JSON.stringify({ date: getTodayKey(), indices: Array.from(current) }));
 }
 
-function useCountdownToMidnight() {
+function getFreebiesClaimed(): boolean {
+  try {
+    const stored = localStorage.getItem('daily_freebies_claimed');
+    if (!stored) return false;
+    return JSON.parse(stored).date === getTodayKey();
+  } catch { return false; }
+}
+
+function setFreebiesClaimedStorage() {
+  localStorage.setItem('daily_freebies_claimed', JSON.stringify({ date: getTodayKey() }));
+}
+
+function generateDailyFreebies(): RewardItem[] {
+  const rewards: RewardItem[] = [];
+  const roll = () => {
+    const r = Math.random();
+    if (r < 0.60) return allCards.filter(c => c.rarity === 'common');
+    if (r < 0.85) return allCards.filter(c => c.rarity === 'rare');
+    if (r < 0.97) return allCards.filter(c => c.rarity === 'epic');
+    return allCards.filter(c => c.rarity === 'legendary');
+  };
+  for (let i = 0; i < 3; i++) {
+    const pool = roll();
+    const card = pool[Math.floor(Math.random() * pool.length)];
+    const count = card.rarity === 'common' ? 2 + Math.floor(Math.random() * 3) :
+                  card.rarity === 'rare' ? 1 + Math.floor(Math.random() * 2) : 1;
+    rewards.push({ emoji: card.emoji, name: card.name, count, rarity: card.rarity });
+  }
+  rewards.push({ emoji: '💰', name: 'Gold', count: 15 + Math.floor(Math.random() * 35), rarity: 'common' });
+  return rewards;
+}
+
+
   const [timeLeft, setTimeLeft] = useState('');
   useEffect(() => {
     const tick = () => {
