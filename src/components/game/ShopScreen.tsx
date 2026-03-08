@@ -260,6 +260,7 @@ const ShopScreen = () => {
   const emoteDeals = useMemo(() => getDailyEmoteDeals(), []);
   const [purchasedEmotes, setPurchasedEmotes] = useState<Set<number>>(() => getEmoteDealsPurchased());
   const [ownedEmoteIds, setOwnedEmoteIds] = useState(() => getOwnedEmotes());
+  const [confirmAction, setConfirmAction] = useState<{ label: string; cost: string; onConfirm: () => void } | null>(null);
 
   const filtered = tab === 'featured' ? shopItems :
     tab === 'cards' ? shopItems.filter(i => i.type === 'card') :
@@ -390,6 +391,45 @@ const ShopScreen = () => {
         {rewardPopup && <RewardReveal rewards={rewardPopup} onClose={() => setRewardPopup(null)} />}
       </AnimatePresence>
 
+      {/* Confirm purchase dialog */}
+      <AnimatePresence>
+        {confirmAction && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+            onClick={() => setConfirmAction(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="w-[80%] max-w-xs bg-card border border-border rounded-2xl p-5 text-center"
+            >
+              <h3 className="font-display font-bold text-sm text-foreground mb-1">Confirm Purchase</h3>
+              <p className="text-[11px] text-muted-foreground mb-1">Buy <span className="text-foreground font-bold">{confirmAction.label}</span>?</p>
+              <p className="text-lg font-bold text-primary mb-4">{confirmAction.cost}</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setConfirmAction(null)}
+                  className="flex-1 py-2 rounded-xl bg-muted text-muted-foreground text-xs font-bold uppercase"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmAction.onConfirm}
+                  className="flex-1 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase"
+                >
+                  Buy
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,25%,12%)] border-b border-border">
         <button onClick={() => setScreen('menu')} className="text-muted-foreground"><X className="w-4 h-4" /></button>
@@ -426,7 +466,11 @@ const ShopScreen = () => {
                   <motion.button
                     key={`deal-${i}`}
                     whileTap={!bought ? { scale: 0.95 } : undefined}
-                    onClick={() => handleDailyDealPurchase(deal, i)}
+                    onClick={() => setConfirmAction({
+                      label: deal.name,
+                      cost: `${deal.currency === 'gold' ? '💰' : '💎'} ${deal.cost}`,
+                      onConfirm: () => { handleDailyDealPurchase(deal, i); setConfirmAction(null); }
+                    })}
                     disabled={bought || !canAfford}
                     className={`bg-card border-2 ${bought ? 'border-muted-foreground/20 opacity-40' : RARITY_COLORS[deal.rarity]} rounded-xl p-2 flex flex-col items-center gap-1 transition-colors relative ${!bought && canAfford ? 'hover:brightness-110' : ''}`}
                   >
@@ -502,7 +546,11 @@ const ShopScreen = () => {
                 <motion.button
                   key={item.id}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => handlePurchase(item.id)}
+                  onClick={() => setConfirmAction({
+                    label: item.name,
+                    cost: item.currency === 'real' ? `$${item.cost}` : `${item.currency === 'gold' ? '💰' : '💎'} ${item.cost}`,
+                    onConfirm: () => { handlePurchase(item.id); setConfirmAction(null); }
+                  })}
                   disabled={!canAfford || purchasing === item.id}
                   className={`bg-card border rounded-xl p-2 flex flex-col items-center gap-1 transition-colors ${canAfford ? 'border-border hover:border-primary/30' : 'border-border/30 opacity-50'}`}
                 >
@@ -543,12 +591,19 @@ const ShopScreen = () => {
                     whileTap={!bought ? { scale: 0.95 } : undefined}
                     onClick={() => {
                       if (bought || !canAfford) return;
-                      setProfile(p => ({ ...p, gems: p.gems - deal.cost }));
-                      addOwnedEmote(deal.emote.id);
-                      setOwnedEmoteIds(prev => [...prev, deal.emote.id]);
-                      saveEmoteDealPurchased(i);
-                      setPurchasedEmotes(prev => new Set([...prev, i]));
-                      showRewards([{ emoji: '😀', name: deal.emote.name, count: 1, rarity: deal.emote.rarity }]);
+                      setConfirmAction({
+                        label: deal.emote.name,
+                        cost: `💎 ${deal.cost}`,
+                        onConfirm: () => {
+                          setProfile(p => ({ ...p, gems: p.gems - deal.cost }));
+                          addOwnedEmote(deal.emote.id);
+                          setOwnedEmoteIds(prev => [...prev, deal.emote.id]);
+                          saveEmoteDealPurchased(i);
+                          setPurchasedEmotes(prev => new Set([...prev, i]));
+                          showRewards([{ emoji: '😀', name: deal.emote.name, count: 1, rarity: deal.emote.rarity }]);
+                          setConfirmAction(null);
+                        }
+                      });
                     }}
                     disabled={bought || !canAfford}
                     className={`bg-card border-2 ${bought ? 'border-muted-foreground/20 opacity-40' : deal.emote.rarity === 'legendary' ? 'border-primary' : deal.emote.rarity === 'epic' ? 'border-purple-400' : deal.emote.rarity === 'rare' ? 'border-blue-400' : 'border-muted-foreground/40'} rounded-xl p-2 flex flex-col items-center gap-1 relative`}
@@ -588,7 +643,11 @@ const ShopScreen = () => {
             ))}
           </div>
           <button
-            onClick={handleWarPassPurchase}
+            onClick={() => setConfirmAction({
+              label: 'War Pass+',
+              cost: '$4.99',
+              onConfirm: () => { handleWarPassPurchase(); setConfirmAction(null); }
+            })}
             disabled={purchasing === 'war-pass'}
             className="w-full mt-3 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold uppercase disabled:opacity-50 flex items-center justify-center gap-2"
           >

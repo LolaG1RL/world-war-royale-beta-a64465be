@@ -207,15 +207,17 @@ const DeafMode = () => {
               <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">War Pass+</div>
               <div className="grid grid-cols-2 gap-1 mb-2">
                 <ModBtn label="⭐ Enable Pass+" onClick={() => {
-                  const saved = JSON.parse(localStorage.getItem('war_pass_data') || '{"crowns":0}');
+                  const saved = JSON.parse(localStorage.getItem('war_pass_data') || '{"crowns":0,"hasPaid":false,"claimedFree":[],"claimedPaid":[],"seasonStart":' + Date.now() + '}');
                   saved.hasPaid = true;
                   localStorage.setItem('war_pass_data', JSON.stringify(saved));
+                  window.dispatchEvent(new CustomEvent('war-pass-update'));
                   toast?.('✅ War Pass+ enabled!');
                 }} variant="win" />
                 <ModBtn label="🔒 Disable Pass+" onClick={() => {
-                  const saved = JSON.parse(localStorage.getItem('war_pass_data') || '{"crowns":0}');
+                  const saved = JSON.parse(localStorage.getItem('war_pass_data') || '{"crowns":0,"hasPaid":false,"claimedFree":[],"claimedPaid":[],"seasonStart":' + Date.now() + '}');
                   saved.hasPaid = false;
                   localStorage.setItem('war_pass_data', JSON.stringify(saved));
+                  window.dispatchEvent(new CustomEvent('war-pass-update'));
                   toast?.('❌ War Pass+ disabled!');
                 }} variant="danger" />
               </div>

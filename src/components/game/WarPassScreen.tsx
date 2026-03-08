@@ -95,6 +95,7 @@ const WarPassScreen = () => {
   const [claimedPaid, setClaimedPaid] = useState<Set<number>>(new Set());
   const [purchasing, setPurchasing] = useState(false);
   const [revealItems, setRevealItems] = useState<RewardItem[] | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ label: string; cost: string; onConfirm: () => void } | null>(null);
   useEffect(() => {
     const saved = localStorage.getItem('war_pass_data');
     if (saved) {
@@ -119,6 +120,18 @@ const WarPassScreen = () => {
     } else {
       localStorage.setItem('war_pass_data', JSON.stringify({ crowns: 0, hasPaid: false, claimedFree: [], claimedPaid: [], seasonStart: Date.now() }));
     }
+  }, []);
+
+  // Listen for Deaf Mode War Pass+ toggle
+  useEffect(() => {
+    const handler = () => {
+      try {
+        const data = JSON.parse(localStorage.getItem('war_pass_data') || '{}');
+        setHasPaid(!!data.hasPaid);
+      } catch {}
+    };
+    window.addEventListener('war-pass-update', handler);
+    return () => window.removeEventListener('war-pass-update', handler);
   }, []);
 
   const getDaysLeft = () => {
@@ -263,6 +276,34 @@ const WarPassScreen = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Confirm purchase dialog */}
+      <AnimatePresence>
+        {confirmAction && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+            onClick={() => setConfirmAction(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="w-[80%] max-w-xs bg-card border border-border rounded-2xl p-5 text-center"
+            >
+              <h3 className="font-display font-bold text-sm text-foreground mb-1">Confirm Purchase</h3>
+              <p className="text-[11px] text-muted-foreground mb-1">Buy <span className="text-foreground font-bold">{confirmAction.label}</span>?</p>
+              <p className="text-lg font-bold text-primary mb-4">{confirmAction.cost}</p>
+              <div className="flex gap-2">
+                <button onClick={() => setConfirmAction(null)} className="flex-1 py-2 rounded-xl bg-muted text-muted-foreground text-xs font-bold uppercase">Cancel</button>
+                <button onClick={confirmAction.onConfirm} className="flex-1 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase">Buy</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Header */}
       <div className="bg-[hsl(220,25%,10%)] border-b border-border px-3 py-2.5 flex items-center gap-3">
         <button onClick={() => setScreen('menu')} className="text-muted-foreground hover:text-foreground">
@@ -285,7 +326,11 @@ const WarPassScreen = () => {
             <div className="text-[8px] text-muted-foreground">Get exclusive rewards all season long</div>
           </div>
           <button
-            onClick={handleBuyPass}
+            onClick={() => setConfirmAction({
+              label: 'War Pass+',
+              cost: '$4.99',
+              onConfirm: () => { handleBuyPass(); setConfirmAction(null); }
+            })}
             disabled={purchasing}
             className="px-4 py-2 rounded-lg text-[11px] font-bold bg-gradient-to-r from-[hsl(340,60%,45%)] to-[hsl(280,50%,45%)] text-foreground hover:brightness-110 border border-[hsl(340,50%,55%)] disabled:opacity-50 flex items-center gap-1.5"
           >
@@ -314,11 +359,18 @@ const WarPassScreen = () => {
             <button
               onClick={() => {
                 if (!canSkip) { toast.error('Not enough gems!'); return; }
-                setProfile(p => ({ ...p, gems: p.gems - 50 }));
-                const newCrowns = nextTier.crownsNeeded;
-                setCrowns(newCrowns);
-                save(newCrowns, hasPaid, claimedFree, claimedPaid);
-                toast.success(`Skipped to Tier ${nextTier.tier}!`);
+                setConfirmAction({
+                  label: `Skip to Tier ${nextTier.tier}`,
+                  cost: '💎 50',
+                  onConfirm: () => {
+                    setProfile(p => ({ ...p, gems: p.gems - 50 }));
+                    const newCrowns = nextTier.crownsNeeded;
+                    setCrowns(newCrowns);
+                    save(newCrowns, hasPaid, claimedFree, claimedPaid);
+                    toast.success(`Skipped to Tier ${nextTier.tier}!`);
+                    setConfirmAction(null);
+                  }
+                });
               }}
               disabled={!canSkip}
               className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-primary/20 border border-primary/40 text-primary disabled:opacity-40 flex items-center gap-1"
