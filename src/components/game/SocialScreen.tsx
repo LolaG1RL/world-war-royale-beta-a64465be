@@ -467,7 +467,7 @@ const SocialScreen = () => {
     // Worldwide
     const { data: progress } = await supabase
       .from('player_progress')
-      .select('user_id, trophies, level, wins, country')
+      .select('user_id, trophies, level, wins, country, equipped_emblem')
       .order('trophies', { ascending: false })
       .limit(200);
 
@@ -485,6 +485,7 @@ const SocialScreen = () => {
           username: prof?.username || 'Unknown',
           player_tag: prof?.player_tag || '',
           country: (p as any).country || null,
+          equipped_emblem: (p as any).equipped_emblem || 'emb-shield',
         };
       });
       setLeaderboard(entries);
