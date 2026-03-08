@@ -344,8 +344,8 @@ const BattleArena = () => {
           // Damage enemy units
           if (!targetsBuildings) {
             units.forEach(enemy => {
-              if (enemy.side !== enemySide || enemy.hp <= 0) continue;
-              if (!canTarget(card, enemy.card)) continue;
+              if (enemy.side !== enemySide || enemy.hp <= 0) return;
+              if (!canTarget(card, enemy.card)) return;
               
               const dist = Math.sqrt((unit.x - enemy.x) ** 2 + (unit.y - enemy.y) ** 2);
               if (dist <= range + (splash > 0 ? splash : 0)) {
