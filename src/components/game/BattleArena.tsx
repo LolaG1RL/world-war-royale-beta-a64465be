@@ -10,6 +10,8 @@ import BattleBannerDisplay from './BattleBannerDisplay';
 import { getPlayerBanner } from '@/data/banners';
 import { playBattleMusic, playOvertimeMusic, stopMusic } from '@/lib/music';
 import { playCardSfx } from '@/lib/sfx';
+import { t } from '@/lib/i18n';
+import { useSettings } from '@/context/SettingsContext';
 
 interface DeployedUnit {
   id: string;
@@ -41,6 +43,7 @@ interface TowerData {
 
 const BattleArena = () => {
   const { deck, setScreen, setBattleResult, setProfile, profile } = useGame();
+  const { language } = useSettings();
   const isRiverRace = !!localStorage.getItem('river_race_battle');
   const [showIntro, setShowIntro] = useState(true);
   const playerBanner = getPlayerBanner();
