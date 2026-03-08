@@ -1,10 +1,14 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { Language } from '@/lib/i18n';
 
 interface Settings {
   sfxEnabled: boolean;
   musicEnabled: boolean;
-  sfxVolume: number; // 0-1
-  musicVolume: number; // 0-1
+  sfxVolume: number;
+  musicVolume: number;
+  language: Language;
+  visualsEnabled: boolean;
+  particlesEnabled: boolean;
 }
 
 interface SettingsState extends Settings {
@@ -12,6 +16,9 @@ interface SettingsState extends Settings {
   setMusicEnabled: (v: boolean) => void;
   setSfxVolume: (v: number) => void;
   setMusicVolume: (v: number) => void;
+  setLanguage: (v: Language) => void;
+  setVisualsEnabled: (v: boolean) => void;
+  setParticlesEnabled: (v: boolean) => void;
 }
 
 const defaultSettings: Settings = {
@@ -19,6 +26,9 @@ const defaultSettings: Settings = {
   musicEnabled: true,
   sfxVolume: 0.7,
   musicVolume: 0.5,
+  language: 'en',
+  visualsEnabled: true,
+  particlesEnabled: true,
 };
 
 const SettingsContext = createContext<SettingsState | null>(null);
@@ -48,6 +58,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       setMusicEnabled: (v) => setSettings(s => ({ ...s, musicEnabled: v })),
       setSfxVolume: (v) => setSettings(s => ({ ...s, sfxVolume: v })),
       setMusicVolume: (v) => setSettings(s => ({ ...s, musicVolume: v })),
+      setLanguage: (v) => setSettings(s => ({ ...s, language: v })),
+      setVisualsEnabled: (v) => setSettings(s => ({ ...s, visualsEnabled: v })),
+      setParticlesEnabled: (v) => setSettings(s => ({ ...s, particlesEnabled: v })),
     }}>
       {children}
     </SettingsContext.Provider>

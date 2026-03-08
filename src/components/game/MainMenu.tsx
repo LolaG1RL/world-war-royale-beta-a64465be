@@ -14,11 +14,12 @@ import { getPlayerBanner } from '@/data/banners';
 import ArenaPreview from './ArenaPreview';
 import RevealScreen, { RevealItem } from './RevealScreen';
 import { updateSfxSettings, playCoinCollect } from '@/lib/sfx';
+import { t, tArena } from '@/lib/i18n';
 
 const MainMenu = () => {
   const { profile, deck, chests, setScreen, setActiveTab, setProfile } = useGame();
   const { signOut, user } = useAuth();
-  const { sfxEnabled, sfxVolume } = useSettings();
+  const { sfxEnabled, sfxVolume, language } = useSettings();
   const arena = getArenaForTrophies(profile.trophies);
   const playerBanner = getPlayerBanner();
 
@@ -140,7 +141,7 @@ const MainMenu = () => {
               <span className="text-[8px] font-black text-primary">{profile.level}</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-[7px] font-bold text-foreground leading-none">LVL</span>
+              <span className="text-[7px] font-bold text-foreground leading-none">{t('menu.lvl', language)}</span>
               <div className="w-8 h-1 rounded-full bg-muted mt-0.5 overflow-hidden">
                 <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${xpProgress}%` }} />
               </div>
@@ -148,7 +149,7 @@ const MainMenu = () => {
           </button>
         </div>
         <div className="text-[10px] text-muted-foreground">
-          <span className="text-foreground font-semibold">{arena.emoji} {arena.name}</span>
+          <span className="text-foreground font-semibold">{arena.emoji} {tArena(arena.name, language)}</span>
         </div>
       </div>
 
@@ -159,8 +160,8 @@ const MainMenu = () => {
           <button onClick={() => { setActiveTab('trophy-road'); setScreen('trophy-road'); }} className="flex-1 bg-[hsl(220,15%,16%)] border border-border rounded-lg py-2 px-2 flex items-center gap-2 hover:bg-[hsl(220,15%,20%)] transition-colors relative">
             <Map className="w-4 h-4 text-primary" />
             <div className="text-left">
-              <div className="text-[9px] font-bold text-foreground">Trophy Road</div>
-              <div className="text-[7px] text-muted-foreground">Arena {arena.id}</div>
+              <div className="text-[9px] font-bold text-foreground">{t('menu.trophy_road', language)}</div>
+              <div className="text-[7px] text-muted-foreground">{t('menu.arena', language)} {arena.id}</div>
             </div>
             {unclaimedTrophy > 0 && (
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full flex items-center justify-center">
@@ -171,8 +172,8 @@ const MainMenu = () => {
           <button onClick={() => setScreen('events')} className="flex-1 bg-[hsl(220,15%,16%)] border border-border rounded-lg py-2 px-2 flex items-center gap-2 hover:bg-[hsl(220,15%,20%)] transition-colors">
             <Star className="w-4 h-4 text-legendary" />
             <div className="text-left">
-              <div className="text-[9px] font-bold text-foreground">Events</div>
-              <div className="text-[7px] text-muted-foreground">Special Challenge</div>
+              <div className="text-[9px] font-bold text-foreground">{t('menu.events', language)}</div>
+              <div className="text-[7px] text-muted-foreground">{t('menu.special_challenge', language)}</div>
             </div>
           </button>
         </div>
@@ -180,8 +181,8 @@ const MainMenu = () => {
           <button onClick={() => setScreen('mailbox')} className="flex-1 bg-[hsl(220,15%,16%)] border border-border rounded-lg py-2 px-2 flex items-center gap-2 hover:bg-[hsl(220,15%,20%)] transition-colors relative">
             <Mail className="w-4 h-4 text-primary" />
             <div className="text-left">
-              <div className="text-[9px] font-bold text-foreground">Mailbox</div>
-              <div className="text-[7px] text-muted-foreground">Messages</div>
+              <div className="text-[9px] font-bold text-foreground">{t('menu.mailbox', language)}</div>
+              <div className="text-[7px] text-muted-foreground">{t('menu.messages', language)}</div>
             </div>
             {unreadMail > 0 && (
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full flex items-center justify-center">
@@ -192,8 +193,8 @@ const MainMenu = () => {
           <button onClick={() => setScreen('war-pass')} className="flex-1 bg-gradient-to-r from-[hsl(280,30%,16%)] to-[hsl(320,30%,16%)] border border-[hsl(280,20%,25%)] rounded-lg py-2 px-2 flex items-center gap-2 hover:from-[hsl(280,30%,20%)] hover:to-[hsl(320,30%,20%)] transition-colors relative">
             <Crown className="w-4 h-4 text-[hsl(280,60%,65%)]" />
             <div className="text-left">
-              <div className="text-[9px] font-bold text-foreground">War Pass</div>
-              <div className="text-[7px] text-muted-foreground">Earn Crowns</div>
+              <div className="text-[9px] font-bold text-foreground">{t('menu.war_pass', language)}</div>
+              <div className="text-[7px] text-muted-foreground">{t('menu.earn_crowns', language)}</div>
             </div>
             {unclaimedWarPass > 0 && (
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full flex items-center justify-center">
@@ -220,22 +221,22 @@ const MainMenu = () => {
             className="btn-battle text-lg flex items-center gap-2"
           >
             <Swords className="w-5 h-5" />
-            BATTLE
+            {t('menu.battle', language)}
           </motion.button>
 
           {/* 1v1 / 2v2 toggle */}
           <div className="flex gap-2 mt-3">
             <button className="px-4 py-1.5 rounded-full bg-primary/20 border border-primary/40 text-[10px] font-bold text-primary">1v1</button>
             <button className="px-4 py-1.5 rounded-full bg-secondary text-[10px] font-bold text-muted-foreground border border-border">2v2</button>
-            <button className="px-4 py-1.5 rounded-full bg-secondary text-[10px] font-bold text-muted-foreground border border-border">Party</button>
+            <button className="px-4 py-1.5 rounded-full bg-secondary text-[10px] font-bold text-muted-foreground border border-border">{t('menu.party', language)}</button>
           </div>
         </div>
 
         {/* Current deck preview */}
         <div className="px-3 mb-1">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold">Current Deck</span>
-            <button onClick={() => { setActiveTab('cards'); setScreen('deck'); }} className="text-[9px] text-primary font-bold">Edit Deck →</button>
+            <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold">{t('menu.current_deck', language)}</span>
+            <button onClick={() => { setActiveTab('cards'); setScreen('deck'); }} className="text-[9px] text-primary font-bold">{t('menu.edit_deck', language)}</button>
           </div>
           <div className="grid grid-cols-8 gap-0.5">
             {deck.slice(0, 8).map((card) => (
@@ -266,14 +267,14 @@ const MainMenu = () => {
               {/* Header */}
               <div className="flex items-center justify-between px-4 py-3 bg-[hsl(220,25%,12%)] border-b border-border">
                 <button onClick={() => setShowLevelModal(false)} className="text-muted-foreground text-sm font-bold">✕</button>
-                <h3 className="font-display font-bold text-foreground text-sm">LEVEL REWARDS</h3>
+                <h3 className="font-display font-bold text-foreground text-sm">{t('menu.level_rewards', language)}</h3>
                 <div className="text-[10px] font-bold text-primary">Lvl {profile.level}</div>
               </div>
 
               {/* XP bar */}
               <div className="px-4 py-3 bg-[hsl(220,20%,11%)] border-b border-border">
                 <div className="flex items-center justify-between text-[10px] mb-1">
-                  <span className="text-muted-foreground">XP Progress</span>
+                  <span className="text-muted-foreground">{t('menu.xp_progress', language)}</span>
                   <span className="font-bold text-foreground">{profile.xp} / {xpForCurrentLevel}</span>
                 </div>
                 <div className="h-2.5 rounded-full bg-muted overflow-hidden">
@@ -335,7 +336,7 @@ const MainMenu = () => {
                           }}
                           className="px-3 py-1 bg-primary/20 border border-primary/40 rounded-full text-[9px] font-bold text-primary animate-pulse"
                         >
-                          CLAIM
+                          {t('menu.claim', language)}
                         </button>
                       )}
                       {isFuture && <span className="text-[8px] text-muted-foreground">🔒</span>}
