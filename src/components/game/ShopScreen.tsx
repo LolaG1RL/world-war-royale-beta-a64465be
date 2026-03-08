@@ -6,6 +6,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { allEmotes, getOwnedEmotes, addOwnedEmote } from '@/data/emotes';
+import {
+  allBackgrounds, allEmblems, allBadges,
+  getOwnedBackgrounds, getOwnedEmblems, getOwnedBadges,
+  addOwnedBackground, addOwnedEmblem, addOwnedBadge,
+  getUnlockedAchievementBadges,
+} from '@/data/banners';
 
 // Stripe price IDs for real-money items
 const STRIPE_PRICES: Record<string, string> = {
@@ -249,7 +255,10 @@ const RewardReveal = ({ rewards, onClose }: { rewards: RewardItem[]; onClose: ()
 
 const ShopScreen = () => {
   const { setScreen, profile, setProfile, setDeck, deck } = useGame();
-  const [tab, setTab] = useState<'featured' | 'cards' | 'chests' | 'gems' | 'emotes'>('featured');
+  const [tab, setTab] = useState<'featured' | 'cards' | 'chests' | 'gems' | 'emotes' | 'banners'>('featured');
+  const [ownedBgs, setOwnedBgs] = useState(() => getOwnedBackgrounds());
+  const [ownedEmbs, setOwnedEmbs] = useState(() => getOwnedEmblems());
+  const [ownedBadgesSet, setOwnedBadgesSet] = useState(() => getOwnedBadges());
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [rewardPopup, setRewardPopup] = useState<RewardItem[] | null>(null);
   const [purchasedDeals, setPurchasedDeals] = useState<Set<number>>(() => getPurchasedDeals());
@@ -442,9 +451,9 @@ const ShopScreen = () => {
 
       {/* Shop tabs */}
       <div className="flex bg-[hsl(220,20%,14%)] border-b border-border overflow-x-auto">
-        {(['featured', 'cards', 'chests', 'emotes', 'gems'] as const).map(t => (
+        {(['featured', 'cards', 'chests', 'emotes', 'banners', 'gems'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap px-2 ${tab === t ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
-            {t}
+            {t === 'banners' ? '🏴' : ''} {t}
           </button>
         ))}
       </div>
@@ -628,7 +637,113 @@ const ShopScreen = () => {
           </>
         )}
 
-        {/* War Pass */}
+        {/* Banners tab */}
+        {tab === 'banners' && (
+          <>
+            <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🖼️ Backgrounds</div>
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {allBackgrounds.map(bg => {
+                const owned = ownedBgs.has(bg.id);
+                return (
+                  <button
+                    key={bg.id}
+                    onClick={() => {
+                      if (owned) { toast.info('Already owned! Equip in Cards → Banner tab'); return; }
+                      const currency = bg.currency === 'gold' ? profile.gold : profile.gems;
+                      if (currency < bg.cost) { toast.error(`Not enough ${bg.currency}!`); return; }
+                      setConfirmAction({
+                        label: bg.name,
+                        cost: `${bg.currency === 'gold' ? '💰' : '💎'} ${bg.cost}`,
+                        onConfirm: () => {
+                          setProfile(p => bg.currency === 'gold' ? { ...p, gold: p.gold - bg.cost } : { ...p, gems: p.gems - bg.cost });
+                          addOwnedBackground(bg.id);
+                          setOwnedBgs(getOwnedBackgrounds());
+                          toast.success(`${bg.name} unlocked!`);
+                          setConfirmAction(null);
+                        },
+                      });
+                    }}
+                    className={`relative h-16 rounded-xl overflow-hidden border-2 ${owned ? 'border-hp-green/50' : 'border-border'}`}
+                    style={{ background: bg.css }}
+                  >
+                    {bg.animated && bg.animationSvg && <div className="absolute inset-0" dangerouslySetInnerHTML={{ __html: bg.animationSvg }} />}
+                    <div className="absolute bottom-0 left-0 right-0 bg-[hsl(0,0%,0%,0.6)] px-1.5 py-0.5 flex items-center justify-between">
+                      <span className="text-[8px] font-bold text-foreground">{bg.name}</span>
+                      <span className="text-[7px] text-muted-foreground">{owned ? '✓' : `${bg.currency === 'gold' ? '💰' : '💎'} ${bg.cost}`}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🎭 Emblems</div>
+            <div className="grid grid-cols-4 gap-2 mb-4">
+              {allEmblems.map(emb => {
+                const owned = ownedEmbs.has(emb.id);
+                return (
+                  <button
+                    key={emb.id}
+                    onClick={() => {
+                      if (owned) { toast.info('Already owned!'); return; }
+                      const currency = emb.currency === 'gold' ? profile.gold : profile.gems;
+                      if (currency < emb.cost) { toast.error(`Not enough ${emb.currency}!`); return; }
+                      setConfirmAction({
+                        label: emb.name,
+                        cost: `${emb.currency === 'gold' ? '💰' : '💎'} ${emb.cost}`,
+                        onConfirm: () => {
+                          setProfile(p => emb.currency === 'gold' ? { ...p, gold: p.gold - emb.cost } : { ...p, gems: p.gems - emb.cost });
+                          addOwnedEmblem(emb.id);
+                          setOwnedEmbs(getOwnedEmblems());
+                          toast.success(`${emb.name} unlocked!`);
+                          setConfirmAction(null);
+                        },
+                      });
+                    }}
+                    className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 border-2 ${owned ? 'border-hp-green/50 bg-card' : 'border-border bg-muted/10'}`}
+                  >
+                    <span className={`text-xl ${emb.animated ? 'animate-pulse' : ''}`}>{emb.emoji}</span>
+                    <span className="text-[7px] font-bold text-foreground">{emb.name}</span>
+                    <span className="text-[7px] text-muted-foreground">{owned ? '✓' : `${emb.currency === 'gold' ? '💰' : '💎'} ${emb.cost}`}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🏅 Cosmetic Badges</div>
+            <div className="grid grid-cols-4 gap-2">
+              {allBadges.filter(b => b.type === 'cosmetic').map(badge => {
+                const owned = ownedBadgesSet.has(badge.id);
+                return (
+                  <button
+                    key={badge.id}
+                    onClick={() => {
+                      if (owned) { toast.info('Already owned!'); return; }
+                      const currency = badge.currency === 'gold' ? profile.gold : profile.gems;
+                      if (currency < badge.cost) { toast.error(`Not enough ${badge.currency}!`); return; }
+                      setConfirmAction({
+                        label: badge.name,
+                        cost: `${badge.currency === 'gold' ? '💰' : '💎'} ${badge.cost}`,
+                        onConfirm: () => {
+                          setProfile(p => badge.currency === 'gold' ? { ...p, gold: p.gold - badge.cost } : { ...p, gems: p.gems - badge.cost });
+                          addOwnedBadge(badge.id);
+                          setOwnedBadgesSet(getOwnedBadges());
+                          toast.success(`${badge.name} badge unlocked!`);
+                          setConfirmAction(null);
+                        },
+                      });
+                    }}
+                    className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 border-2 ${owned ? 'border-hp-green/50 bg-card' : 'border-border bg-muted/10'}`}
+                  >
+                    <span className="text-lg">{badge.emoji}</span>
+                    <span className="text-[7px] font-bold text-foreground">{badge.name}</span>
+                    <span className="text-[7px] text-muted-foreground">{owned ? '✓' : `${badge.currency === 'gold' ? '💰' : '💎'} ${badge.cost}`}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
+
         <div className="mt-4 bg-gradient-to-r from-[hsl(340,60%,25%)] to-[hsl(280,50%,22%)] rounded-xl p-4 border border-[hsl(340,60%,40%)]">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🎖️</span>
