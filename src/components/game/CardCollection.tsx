@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { GameCard } from '@/data/cards';
 import { allEmotes, getOwnedEmotes, getEquippedEmotes, setEquippedEmotes } from '@/data/emotes';
-import { BottomNav } from './ShopScreen';
+import { BottomNav } from './BottomNav';
 import { getCardEntry, getUpgradeRequirements, canUpgrade, upgradeCard, addCards } from '@/data/cardInventory';
 import { toast } from 'sonner';
 import BannerCustomizer from './BannerCustomizer';
@@ -162,103 +162,149 @@ const CardCollection = () => {
             </div>
           </div>
 
-          {/* Card detail modal with upgrade */}
+          {/* Card detail modal - Clash Royale style */}
           <AnimatePresence>
             {selectedCard && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-[hsl(0,0%,0%,0.85)] backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                className="absolute inset-0 z-50"
                 onClick={() => setSelectedCard(null)}
               >
+                <div
+                  className="absolute inset-0 bg-background/90"
+                  style={{
+                    backgroundImage:
+                      'linear-gradient(135deg, hsl(var(--background)) 25%, hsl(var(--card)) 25%, hsl(var(--card)) 50%, hsl(var(--background)) 50%, hsl(var(--background)) 75%, hsl(var(--card)) 75%, hsl(var(--card)) 100%)',
+                    backgroundSize: '36px 36px',
+                  }}
+                />
+
                 <motion.div
-                  initial={{ scale: 0.8, y: 20 }}
-                  animate={{ scale: 1, y: 0 }}
-                  className="bg-card border border-border rounded-2xl p-5 max-w-xs w-full shadow-2xl"
-                  onClick={e => e.stopPropagation()}
+                  initial={{ scale: 0.92, y: 20, opacity: 0 }}
+                  animate={{ scale: 1, y: 0, opacity: 1 }}
+                  exit={{ scale: 0.96, y: 10, opacity: 0 }}
+                  className="relative h-full w-full max-w-md mx-auto flex flex-col"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   {(() => {
                     const entry = getCardEntry(selectedCard.id);
                     const req = getUpgradeRequirements(selectedCard.id, selectedCard.rarity);
                     const canUp = canUpgrade(selectedCard.id, selectedCard.rarity, profile.gold);
                     const enriched = { ...selectedCard, level: entry.level, count: entry.count };
-                    
+                    const progressValue = req && !req.maxLevel ? Math.min(100, (entry.count / req.cardsNeeded) * 100) : 100;
+                    const targetLabel = enriched.targets
+                      ? enriched.targets === 'ground-air'
+                        ? 'Ground + Air'
+                        : enriched.targets === 'buildings'
+                          ? 'Buildings'
+                          : enriched.targets.charAt(0).toUpperCase() + enriched.targets.slice(1)
+                      : enriched.type === 'spell'
+                        ? 'Area'
+                        : 'Ground';
+
+                    const detailRows = [
+                      { label: 'Type', value: enriched.type.toUpperCase() },
+                      { label: 'Targets', value: targetLabel },
+                      { label: 'Elixir Cost', value: String(enriched.elixir) },
+                      { label: 'Hitpoints', value: enriched.hp ? String(enriched.hp) : '—' },
+                      { label: 'Damage', value: String(enriched.damage) },
+                      { label: 'Hit Speed', value: enriched.hitSpeed ? `${enriched.hitSpeed}s` : '—' },
+                      { label: 'Speed', value: enriched.speed ? enriched.speed.replace('-', ' ') : '—' },
+                      { label: 'Range', value: typeof enriched.range === 'number' ? `${enriched.range}` : (enriched.range || '—').replace('-', ' ') },
+                      { label: 'Count', value: String(enriched.deployCount || 1) },
+                    ];
+
                     return (
                       <>
-                        <div className="flex justify-center mb-3">
-                          <CardComponent card={enriched} size="lg" showElixir showLevel />
-                        </div>
-                        <h3 className="font-display font-bold text-foreground text-lg text-center">{enriched.name}</h3>
-                        <div className="flex items-center justify-center gap-2 mt-1">
-                          <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
-                            enriched.rarity === 'common' ? 'bg-common/20 text-common' :
-                            enriched.rarity === 'rare' ? 'bg-[hsl(210,60%,50%,0.2)] text-[hsl(210,60%,60%)]' :
-                            enriched.rarity === 'epic' ? 'bg-epic/20 text-epic' :
-                            enriched.rarity === 'legendary' ? 'bg-legendary/20 text-legendary' :
-                            'bg-[hsl(340,60%,50%,0.2)] text-[hsl(340,60%,60%)]'
-                          }`}>{enriched.rarity}</span>
-                          <span className="text-[10px] text-muted-foreground">• {enriched.era}</span>
-                        </div>
-                        <p className="text-foreground/80 text-xs text-center mt-3 leading-relaxed">{enriched.description}</p>
-                        <div className="grid grid-cols-3 gap-2 mt-3">
-                          {enriched.hp && (
-                            <div className="bg-muted rounded-lg p-2 text-center">
-                              <div className="text-[8px] text-muted-foreground uppercase">Hitpoints</div>
-                              <div className="text-sm font-bold text-hp-green">{enriched.hp}</div>
-                            </div>
-                          )}
-                          <div className="bg-muted rounded-lg p-2 text-center">
-                            <div className="text-[8px] text-muted-foreground uppercase">Damage</div>
-                            <div className="text-sm font-bold text-accent">{enriched.damage}</div>
-                          </div>
-                          <div className="bg-muted rounded-lg p-2 text-center">
-                            <div className="text-[8px] text-muted-foreground uppercase">Elixir</div>
-                            <div className="text-sm font-bold text-elixir">{enriched.elixir}</div>
-                          </div>
+                        <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+                          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Card Info</div>
+                          <button
+                            onClick={() => setSelectedCard(null)}
+                            className="w-8 h-8 rounded-full bg-muted text-foreground font-black"
+                          >
+                            ×
+                          </button>
                         </div>
 
-                        {/* Upgrade section */}
-                        <div className="mt-3 bg-muted rounded-lg p-2">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-[9px] text-muted-foreground">Level {entry.level}</span>
-                            {req && !req.maxLevel ? (
-                              <span className="text-[9px] text-muted-foreground">{entry.count}/{req.cardsNeeded} cards</span>
-                            ) : (
-                              <span className="text-[9px] text-primary font-bold">MAX LEVEL</span>
+                        <div className="px-4 pb-4 flex-1 overflow-y-auto">
+                          <h3 className="font-display font-black text-center text-2xl text-foreground leading-tight">{enriched.name}</h3>
+                          <div className="mt-2 flex items-center justify-center gap-2">
+                            <span className="text-[10px] font-bold text-primary">Level {entry.level}</span>
+                            {enriched.targets === 'buildings' && (
+                              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/40">
+                                WIN CONDITION
+                              </span>
                             )}
                           </div>
-                          {req && !req.maxLevel && (
-                            <div className="h-2 bg-[hsl(0,0%,0%,0.3)] rounded-full overflow-hidden">
-                              <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${Math.min(100, (entry.count / req.cardsNeeded) * 100)}%` }} />
+
+                          <div className="mt-3 rounded-xl border border-border bg-card p-3">
+                            <div className="flex justify-center mb-3">
+                              <CardComponent card={enriched} size="lg" showElixir showLevel />
                             </div>
-                          )}
+
+                            <div className="rounded-lg bg-muted/70 p-2 border border-border">
+                              <div className="flex items-center justify-between text-[10px] font-bold mb-1.5">
+                                <span className="text-muted-foreground uppercase">Card Level Progress</span>
+                                <span className="text-foreground">
+                                  {req && !req.maxLevel ? `${entry.count}/${req.cardsNeeded}` : 'MAX'}
+                                </span>
+                              </div>
+                              <div className="h-2 rounded-full bg-background/70 overflow-hidden">
+                                <div className="h-full bg-primary rounded-full" style={{ width: `${progressValue}%` }} />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="mt-3 rounded-xl border border-border bg-card overflow-hidden">
+                            {detailRows.map((row) => (
+                              <div key={row.label} className="flex items-center justify-between px-3 py-2 border-b border-border last:border-b-0">
+                                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">{row.label}</span>
+                                <span className="text-xs font-bold text-foreground">{row.value}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="mt-3 rounded-xl border border-border bg-card px-3 py-2.5">
+                            <p className="text-xs text-foreground/90 leading-relaxed">{enriched.description}</p>
+                          </div>
                         </div>
 
-                        {/* Upgrade button */}
-                        {req && !req.maxLevel && (
+                        <div className="px-4 pb-4 pt-2 border-t border-border bg-background/90">
+                          {req && !req.maxLevel && (
+                            <button
+                              onClick={() => {
+                                handleUpgrade(enriched);
+                                const newEntry = getCardEntry(selectedCard.id);
+                                setSelectedCard({ ...selectedCard, level: newEntry.level, count: newEntry.count });
+                              }}
+                              disabled={!canUp}
+                              className={`w-full py-2.5 rounded-xl font-black text-xs uppercase tracking-wider ${
+                                canUp ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground cursor-not-allowed'
+                              }`}
+                            >
+                              Upgrade • 💰 {req.goldNeeded.toLocaleString()}
+                            </button>
+                          )}
+
                           <button
                             onClick={() => {
-                              handleUpgrade(enriched);
-                              const newEntry = getCardEntry(selectedCard.id);
-                              setSelectedCard({ ...selectedCard, level: newEntry.level, count: newEntry.count });
+                              toggleDeck(enriched);
+                              setSelectedCard(null);
                             }}
-                            disabled={!canUp}
-                            className={`w-full mt-2 py-2 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 ${
-                              canUp ? 'bg-hp-green text-foreground' : 'bg-muted text-muted-foreground cursor-not-allowed'
+                            className={`w-full mt-2 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider ${
+                              isInDeck(enriched)
+                                ? 'bg-accent text-accent-foreground'
+                                : currentDeck.length < 8
+                                  ? 'bg-secondary text-foreground'
+                                  : 'bg-muted text-muted-foreground cursor-not-allowed'
                             }`}
+                            disabled={!isInDeck(enriched) && currentDeck.length >= 8}
                           >
-                            Upgrade 💰 {req.goldNeeded.toLocaleString()}
+                            {isInDeck(enriched) ? 'Remove from Deck' : 'Add to Deck'}
                           </button>
-                        )}
-
-                        <button
-                          onClick={() => { toggleDeck(enriched); setSelectedCard(null); }}
-                          className={`w-full mt-2 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider ${isInDeck(enriched) ? 'bg-accent text-accent-foreground' : currentDeck.length < 8 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground cursor-not-allowed'}`}
-                          disabled={!isInDeck(enriched) && currentDeck.length >= 8}
-                        >
-                          {isInDeck(enriched) ? 'Remove from Deck' : 'Add to Deck'}
-                        </button>
+                        </div>
                       </>
                     );
                   })()}

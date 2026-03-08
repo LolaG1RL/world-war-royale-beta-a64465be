@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
-import { BottomNav } from './ShopScreen';
+import { BottomNav } from './BottomNav';
 import { trophyRoadRewards, arenas, getArenaForTrophies, allCards } from '@/data/cards';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Lock, Check, Trophy, Gift, X } from 'lucide-react';

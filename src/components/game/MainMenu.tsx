@@ -4,10 +4,11 @@ import { useAuth } from '@/context/AuthContext';
 import { getArenaForTrophies, trophyRoadRewards } from '@/data/cards';
 import CardComponent from './CardComponent';
 import { motion } from 'framer-motion';
-import { Swords, Trophy, Users, ShoppingBag, Crown, Map, Star, Gift, Zap, Mail } from 'lucide-react';
+import { Swords, Trophy, Crown, Map, Star, Mail } from 'lucide-react';
 import splashImage from '@/assets/world-war-royale-splash.png';
 import logoImage from '@/assets/world-war-royale-logo.png';
 import { supabase } from '@/integrations/supabase/client';
+import { BottomNav } from './BottomNav';
 
 const MainMenu = () => {
   const { profile, deck, chests, setScreen, setActiveTab } = useGame();
@@ -234,23 +235,9 @@ const MainMenu = () => {
       </div>
 
       {/* Bottom navigation - CR style */}
-      <div className="relative z-10 flex items-stretch bg-[hsl(220,20%,10%)] border-t-2 border-primary/20">
-        <NavTab icon={<ShoppingBag className="w-4 h-4" />} label="Shop" onClick={() => setScreen('shop')} />
-        <NavTab icon={<Crown className="w-4 h-4" />} label="Cards" onClick={() => { setActiveTab('cards'); setScreen('deck'); }} />
-        <NavTab icon={<Swords className="w-4 h-4" />} label="Battle" active onClick={() => setScreen('menu')} />
-        <NavTab icon={<Users className="w-4 h-4" />} label="Social" onClick={() => setScreen('social')} />
-        <NavTab icon={<Zap className="w-4 h-4" />} label="Events" onClick={() => setScreen('events')} />
-      </div>
+      <BottomNav active="battle" setScreen={setScreen} />
     </div>
   );
 };
-
-const NavTab = ({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active?: boolean; onClick?: () => void }) => (
-  <button onClick={onClick} className={`nav-tab flex-1 ${active ? 'active' : ''}`}>
-    <div className={`${active ? 'text-primary' : 'text-muted-foreground'} transition-colors`}>{icon}</div>
-    <span className={`text-[9px] ${active ? 'text-primary' : ''}`}>{label}</span>
-    {active && <div className="absolute bottom-0 left-1/4 right-1/4 h-0.5 bg-primary rounded-full" />}
-  </button>
-);
 
 export default MainMenu;

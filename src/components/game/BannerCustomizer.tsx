@@ -8,7 +8,7 @@ import {
   addOwnedBadge, getUnlockedAchievementBadges,
 } from '@/data/banners';
 import BattleBannerDisplay from './BattleBannerDisplay';
-import { BottomNav } from './ShopScreen';
+import { BottomNav } from './BottomNav';
 
 type SubTab = 'backgrounds' | 'emblems' | 'badges';
 

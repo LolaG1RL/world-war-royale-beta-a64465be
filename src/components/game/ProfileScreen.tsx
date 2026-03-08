@@ -1,7 +1,7 @@
 import { useGame } from '@/context/GameContext';
 import { useAuth } from '@/context/AuthContext';
 import { getArenaForTrophies } from '@/data/cards';
-import { BottomNav } from './ShopScreen';
+import { BottomNav } from './BottomNav';
 import { ChevronLeft, Copy, Shield, Award, Target, Crown, Star, LogOut, Check } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';

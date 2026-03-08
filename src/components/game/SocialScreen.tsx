@@ -1,6 +1,6 @@
 import { useGame } from '@/context/GameContext';
 import { useAuth } from '@/context/AuthContext';
-import { BottomNav } from './ShopScreen';
+import { BottomNav } from './BottomNav';
 import { allCards } from '@/data/cards';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { MessageCircle, UserPlus, Search, Shield, Swords as SwordsIcon, Plus, Trophy, ChevronLeft, ChevronRight, Loader2, X, Check, UserMinus, ArrowUp, Repeat, Gift } from 'lucide-react';
