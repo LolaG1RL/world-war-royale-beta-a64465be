@@ -1,12 +1,90 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useGame } from '@/context/GameContext';
 import { allCards } from '@/data/cards';
+import { addCards } from '@/data/cardInventory';
 import { supabase } from '@/integrations/supabase/client';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
 const DEAF_MODE_EMAIL = 'tuasfait@gmail.com';
+
+interface RevealItem {
+  emoji: string;
+  name: string;
+  count: number;
+  rarity: string;
+}
+
+const RevealScreen = ({ items, onClose }: { items: RevealItem[]; onClose: () => void }) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-[hsl(220,30%,4%,0.95)]"
+  >
+    {/* Particle effects */}
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {Array.from({ length: 20 }).map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, y: '100%', x: `${Math.random() * 100}%` }}
+          animate={{ opacity: [0, 1, 0], y: '-20%' }}
+          transition={{ duration: 3 + Math.random() * 2, repeat: Infinity, delay: Math.random() * 3 }}
+          className="absolute w-1 h-1 rounded-full bg-primary/40"
+        />
+      ))}
+    </div>
+
+    {/* Light burst */}
+    <motion.div
+      initial={{ scale: 0, opacity: 1 }}
+      animate={{ scale: 3, opacity: 0 }}
+      transition={{ duration: 1 }}
+      className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary/30 rounded-full blur-xl"
+    />
+
+    <h2 className="font-display font-bold text-lg text-[hsl(0,70%,60%)] text-center mb-4 relative z-10">🔧 DEAF MODE 🔧</h2>
+
+    <div className="grid grid-cols-3 gap-2 max-h-[50vh] overflow-y-auto px-4 relative z-10">
+      <AnimatePresence>
+        {items.map((r, i) => (
+          <motion.div
+            key={i}
+            initial={{ scale: 0, rotateY: 180 }}
+            animate={{ scale: 1, rotateY: 0 }}
+            transition={{ delay: i * 0.15, type: 'spring', stiffness: 200 }}
+            className={`bg-card border rounded-xl p-3 text-center ${
+              r.rarity === 'legendary' ? 'border-legendary/50 shadow-[0_0_10px_hsl(38,90%,50%,0.3)]' :
+              r.rarity === 'epic' ? 'border-epic/40' :
+              r.rarity === 'rare' ? 'border-[hsl(210,60%,50%,0.4)]' :
+              'border-border'
+            }`}
+          >
+            <span className="text-2xl">{r.emoji}</span>
+            <div className="text-[8px] font-bold text-foreground mt-1">{r.name}</div>
+            <div className={`text-[10px] font-bold mt-0.5 ${
+              r.rarity === 'legendary' ? 'text-legendary' :
+              r.rarity === 'epic' ? 'text-epic' :
+              r.rarity === 'rare' ? 'text-[hsl(210,60%,60%)]' :
+              'text-foreground'
+            }`}>x{r.count}</div>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
+
+    <motion.button
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: Math.min(items.length * 0.15, 1) + 0.3 }}
+      onClick={onClose}
+      className="btn-battle text-sm mt-6 relative z-10"
+    >
+      Continue
+    </motion.button>
+  </motion.div>
+);
 
 const DeafMode = () => {
   const { user } = useAuth();
@@ -17,9 +95,16 @@ const DeafMode = () => {
   const dragStart = useRef({ x: 0, y: 0, px: 0, py: 0 });
   const wasDragged = useRef(false);
 
+  // Reveal screen state
+  const [revealItems, setRevealItems] = useState<RevealItem[] | null>(null);
+
+  // Card spawn state
+  const [spawnCardId, setSpawnCardId] = useState('');
+  const [spawnAmount, setSpawnAmount] = useState(1);
+
   // Mail sending state
   const [mailTab, setMailTab] = useState<'mods' | 'mail'>('mods');
-  const [mailTarget, setMailTarget] = useState(''); // tag or username
+  const [mailTarget, setMailTarget] = useState('');
   const [mailWorldwide, setMailWorldwide] = useState(false);
   const [mailTitle, setMailTitle] = useState('');
   const [mailBody, setMailBody] = useState('');
@@ -30,8 +115,11 @@ const DeafMode = () => {
   const [mailSending, setMailSending] = useState(false);
   const [mailStatus, setMailStatus] = useState('');
 
-  // Only show for the special email
   if (user?.email !== DEAF_MODE_EMAIL) return null;
+
+  const showReveal = (items: RevealItem[]) => {
+    setRevealItems(items);
+  };
 
   const handlePointerDown = (e: React.PointerEvent) => {
     setDragging(true);
@@ -59,16 +147,55 @@ const DeafMode = () => {
   const inBattle = screen === 'battle';
 
   const modActions = {
-    addGems: (n: number) => setProfile(p => ({ ...p, gems: p.gems + n })),
-    addGold: (n: number) => setProfile(p => ({ ...p, gold: p.gold + n })),
-    setLevel: (n: number) => setProfile(p => ({ ...p, level: Math.max(1, Math.min(14, n)) })),
-    addTrophies: (n: number) => setProfile(p => ({ ...p, trophies: Math.max(0, p.trophies + n), maxTrophies: Math.max(p.maxTrophies, p.trophies + n) })),
+    addGems: (n: number) => {
+      setProfile(p => ({ ...p, gems: p.gems + n }));
+      showReveal([{ emoji: '💎', name: 'Gems', count: n, rarity: 'epic' }]);
+    },
+    addGold: (n: number) => {
+      setProfile(p => ({ ...p, gold: p.gold + n }));
+      showReveal([{ emoji: '💰', name: 'Gold', count: n, rarity: 'common' }]);
+    },
+    setLevel: (n: number) => {
+      setProfile(p => ({ ...p, level: Math.max(1, Math.min(14, n)) }));
+      showReveal([{ emoji: '⬆️', name: `Level ${n}`, count: 1, rarity: 'rare' }]);
+    },
+    addTrophies: (n: number) => {
+      setProfile(p => ({ ...p, trophies: Math.max(0, p.trophies + n), maxTrophies: Math.max(p.maxTrophies, p.trophies + n) }));
+      showReveal([{ emoji: '🏆', name: n >= 0 ? 'Trophies Added' : 'Trophies Removed', count: Math.abs(n), rarity: n >= 0 ? 'legendary' : 'common' }]);
+    },
+    resetTrophies: () => {
+      setProfile(p => ({ ...p, trophies: 0 }));
+      showReveal([{ emoji: '🏆', name: 'Trophies Reset', count: 0, rarity: 'common' }]);
+    },
     unlockAllCards: () => {
       const fullDeck = allCards.slice(0, 8);
       setDeck(fullDeck);
+      showReveal([{ emoji: '🃏', name: 'Deck Reset', count: 8, rarity: 'rare' }]);
     },
     maxCards: () => {
       setProfile(p => ({ ...p, level: 14 }));
+      showReveal([{ emoji: '⭐', name: 'Max Level', count: 14, rarity: 'legendary' }]);
+    },
+    spawnCards: () => {
+      if (!spawnCardId || spawnAmount <= 0) { toast.error('Select a card and amount'); return; }
+      const card = allCards.find(c => c.id === spawnCardId);
+      if (!card) return;
+      addCards(card.id, spawnAmount);
+      showReveal([{ emoji: card.emoji, name: card.name, count: spawnAmount, rarity: card.rarity }]);
+    },
+    enableWarPass: () => {
+      const saved = JSON.parse(localStorage.getItem('war_pass_data') || '{"crowns":0,"hasPaid":false,"claimedFree":[],"claimedPaid":[],"seasonStart":' + Date.now() + '}');
+      saved.hasPaid = true;
+      localStorage.setItem('war_pass_data', JSON.stringify(saved));
+      window.dispatchEvent(new CustomEvent('war-pass-update'));
+      showReveal([{ emoji: '⭐', name: 'War Pass+ Enabled', count: 1, rarity: 'legendary' }]);
+    },
+    disableWarPass: () => {
+      const saved = JSON.parse(localStorage.getItem('war_pass_data') || '{"crowns":0,"hasPaid":false,"claimedFree":[],"claimedPaid":[],"seasonStart":' + Date.now() + '}');
+      saved.hasPaid = false;
+      localStorage.setItem('war_pass_data', JSON.stringify(saved));
+      window.dispatchEvent(new CustomEvent('war-pass-update'));
+      showReveal([{ emoji: '🔒', name: 'War Pass+ Disabled', count: 0, rarity: 'common' }]);
     },
     instaWin: () => {
       window.dispatchEvent(new CustomEvent('deaf-mod', { detail: { action: 'insta-win' } }));
@@ -93,7 +220,6 @@ const DeafMode = () => {
       let recipientId: string | null = null;
 
       if (!mailWorldwide && mailTarget.trim()) {
-        // Resolve target to user_id
         const tag = mailTarget.trim();
         const { data: profile } = await supabase
           .from('profiles')
@@ -122,12 +248,13 @@ const DeafMode = () => {
       if (error) {
         setMailStatus('Error: ' + error.message);
       } else {
-        setMailStatus(mailWorldwide ? '✅ Sent worldwide!' : `✅ Sent to ${mailTarget}!`);
+        showReveal([{ emoji: '✉️', name: mailWorldwide ? 'Sent Worldwide' : `Sent to ${mailTarget}`, count: 1, rarity: 'epic' }]);
         setMailTitle('');
         setMailBody('');
         setMailGold(0);
         setMailGems(0);
         setMailTarget('');
+        setMailStatus('');
       }
     } catch (e: any) {
       setMailStatus('Error: ' + e.message);
@@ -137,6 +264,13 @@ const DeafMode = () => {
 
   return (
     <>
+      {/* Reveal screen overlay */}
+      <AnimatePresence>
+        {revealItems && (
+          <RevealScreen items={revealItems} onClose={() => setRevealItems(null)} />
+        )}
+      </AnimatePresence>
+
       {/* Draggable cube */}
       <div
         className="fixed z-[9999] touch-none select-none"
@@ -174,7 +308,7 @@ const DeafMode = () => {
 
           {mailTab === 'mods' ? (
             <>
-              {/* Out-of-battle mods */}
+              {/* Resources */}
               <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Resources</div>
               <div className="grid grid-cols-2 gap-1 mb-2">
                 <ModBtn label="💎 +100 Gems" onClick={() => modActions.addGems(100)} />
@@ -188,7 +322,7 @@ const DeafMode = () => {
                 <ModBtn label="🏆 +100 Trophies" onClick={() => modActions.addTrophies(100)} />
                 <ModBtn label="🏆 +1000 Trophies" onClick={() => modActions.addTrophies(1000)} />
                 <ModBtn label="🏆 -100 Trophies" onClick={() => modActions.addTrophies(-100)} variant="danger" />
-                <ModBtn label="🏆 Reset to 0" onClick={() => setProfile(p => ({ ...p, trophies: 0 }))} variant="danger" />
+                <ModBtn label="🏆 Reset to 0" onClick={modActions.resetTrophies} variant="danger" />
               </div>
 
               <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Level</div>
@@ -198,28 +332,36 @@ const DeafMode = () => {
                 ))}
               </div>
 
+              {/* Card Spawning */}
+              <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">🃏 Spawn Cards</div>
+              <div className="space-y-1 mb-2">
+                <select value={spawnCardId} onChange={e => setSpawnCardId(e.target.value)}
+                  className="w-full bg-[hsl(220,15%,14%)] border border-border rounded px-2 py-1.5 text-[9px] text-foreground">
+                  <option value="">Select card...</option>
+                  {allCards.map(c => (
+                    <option key={c.id} value={c.id}>{c.emoji} {c.name} ({c.rarity})</option>
+                  ))}
+                </select>
+                <div className="flex gap-1">
+                  <input type="number" min={1} max={9999} value={spawnAmount} onChange={e => setSpawnAmount(Math.max(1, Number(e.target.value)))}
+                    className="flex-1 bg-[hsl(220,15%,14%)] border border-border rounded px-2 py-1 text-[10px] text-foreground" />
+                  <button onClick={modActions.spawnCards}
+                    className="px-3 py-1 bg-[hsl(120,40%,15%)] hover:bg-[hsl(120,40%,20%)] text-[hsl(120,60%,65%)] border border-[hsl(120,30%,25%)] rounded text-[9px] font-bold transition-colors">
+                    Spawn
+                  </button>
+                </div>
+              </div>
+
               <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Cards</div>
               <div className="grid grid-cols-2 gap-1 mb-2">
                 <ModBtn label="Max Level" onClick={modActions.maxCards} />
-                <ModBtn label="Reset Deck" onClick={() => setDeck(allCards.slice(0, 8))} />
+                <ModBtn label="Reset Deck" onClick={modActions.unlockAllCards} />
               </div>
 
               <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">War Pass+</div>
               <div className="grid grid-cols-2 gap-1 mb-2">
-                <ModBtn label="⭐ Enable Pass+" onClick={() => {
-                  const saved = JSON.parse(localStorage.getItem('war_pass_data') || '{"crowns":0,"hasPaid":false,"claimedFree":[],"claimedPaid":[],"seasonStart":' + Date.now() + '}');
-                  saved.hasPaid = true;
-                  localStorage.setItem('war_pass_data', JSON.stringify(saved));
-                  window.dispatchEvent(new CustomEvent('war-pass-update'));
-                  toast?.('✅ War Pass+ enabled!');
-                }} variant="win" />
-                <ModBtn label="🔒 Disable Pass+" onClick={() => {
-                  const saved = JSON.parse(localStorage.getItem('war_pass_data') || '{"crowns":0,"hasPaid":false,"claimedFree":[],"claimedPaid":[],"seasonStart":' + Date.now() + '}');
-                  saved.hasPaid = false;
-                  localStorage.setItem('war_pass_data', JSON.stringify(saved));
-                  window.dispatchEvent(new CustomEvent('war-pass-update'));
-                  toast?.('❌ War Pass+ disabled!');
-                }} variant="danger" />
+                <ModBtn label="⭐ Enable Pass+" onClick={modActions.enableWarPass} variant="win" />
+                <ModBtn label="🔒 Disable Pass+" onClick={modActions.disableWarPass} variant="danger" />
               </div>
 
               {inBattle && (
@@ -239,13 +381,11 @@ const DeafMode = () => {
             <div className="space-y-2">
               <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Send Mail to Players</div>
 
-              {/* Worldwide toggle */}
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={mailWorldwide} onChange={e => setMailWorldwide(e.target.checked)} className="rounded" />
                 <span className="text-[10px] text-foreground font-bold">🌍 Send Worldwide (all players)</span>
               </label>
 
-              {/* Target player */}
               {!mailWorldwide && (
                 <input
                   value={mailTarget}
@@ -255,7 +395,6 @@ const DeafMode = () => {
                 />
               )}
 
-              {/* Mail type & icon */}
               <div className="flex gap-1">
                 <select value={mailType} onChange={e => setMailType(e.target.value)} className="flex-1 bg-[hsl(220,15%,14%)] border border-border rounded-lg px-2 py-1 text-[9px] text-foreground">
                   <option value="admin">🔧 Dev Team</option>
@@ -269,7 +408,6 @@ const DeafMode = () => {
                 </select>
               </div>
 
-              {/* Title */}
               <input
                 value={mailTitle}
                 onChange={e => setMailTitle(e.target.value)}
@@ -277,7 +415,6 @@ const DeafMode = () => {
                 className="w-full bg-[hsl(220,15%,14%)] border border-border rounded-lg px-2 py-1.5 text-[10px] text-foreground placeholder:text-muted-foreground"
               />
 
-              {/* Body */}
               <textarea
                 value={mailBody}
                 onChange={e => setMailBody(e.target.value)}
@@ -286,7 +423,6 @@ const DeafMode = () => {
                 className="w-full bg-[hsl(220,15%,14%)] border border-border rounded-lg px-2 py-1.5 text-[10px] text-foreground placeholder:text-muted-foreground resize-none"
               />
 
-              {/* Rewards */}
               <div className="flex gap-2">
                 <div className="flex-1">
                   <label className="text-[8px] text-muted-foreground">💰 Gold reward</label>
@@ -298,7 +434,6 @@ const DeafMode = () => {
                 </div>
               </div>
 
-              {/* Send button */}
               <button
                 onClick={sendMail}
                 disabled={mailSending}
