@@ -150,6 +150,7 @@ const WarPassScreen = () => {
         </button>
         <Crown className="w-5 h-5 text-primary" />
         <h1 className="font-display font-bold text-sm text-foreground flex-1">War Pass</h1>
+        <div className="text-[8px] text-muted-foreground mr-2">⏳ {getDaysLeft()}d left</div>
         <div className="flex items-center gap-1 bg-primary/20 px-2 py-0.5 rounded-full border border-primary/30">
           <span className="text-xs">👑</span>
           <span className="text-[10px] font-bold text-primary">{crowns}</span>
