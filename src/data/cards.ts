@@ -502,7 +502,7 @@ export const defaultProfile: PlayerProfile = {
   trophies: 0,
   maxTrophies: 0,
   arena: 1,
-  arenaName: 'Training Camp',
+  arenaName: 'Boot Camp',
   wins: 0,
   losses: 0,
   threeCrownWins: 0,
