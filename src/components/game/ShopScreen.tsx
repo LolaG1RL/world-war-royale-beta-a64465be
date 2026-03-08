@@ -98,7 +98,7 @@ function generateDailyFreebies(): RewardItem[] {
   return rewards;
 }
 
-
+function useCountdownToMidnight() {
   const [timeLeft, setTimeLeft] = useState('');
   useEffect(() => {
     const tick = () => {
