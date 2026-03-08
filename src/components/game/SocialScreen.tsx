@@ -917,6 +917,45 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
             )}
           </AnimatePresence>
 
+          {/* Card request panel */}
+          <AnimatePresence>
+            {showRequest && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                className="bg-[hsl(120,15%,11%)] border-b border-border overflow-hidden">
+                <div className="p-3 space-y-2">
+                  <div className="text-[9px] font-bold text-hp-green uppercase tracking-wider">🙏 Request a Card</div>
+                  {!canRequest() && (
+                    <div className="text-[9px] text-destructive">⏳ Cooldown: {getRequestTimeLeft()}</div>
+                  )}
+                  <div>
+                    <label className="text-[8px] text-muted-foreground">Card you own to request:</label>
+                    <select value={requestCardId} onChange={e => setRequestCardId(e.target.value)}
+                      className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-[9px] text-foreground">
+                      <option value="">Select card...</option>
+                      {ownedCards.map(c => {
+                        const entry = getCardEntry(c.id);
+                        return <option key={c.id} value={c.id}>{c.emoji} {c.name} ({c.rarity}) — x{entry.count}</option>;
+                      })}
+                    </select>
+                  </div>
+                  {requestCardId && (() => {
+                    const card = allCards.find(c => c.id === requestCardId);
+                    if (!card) return null;
+                    return (
+                      <div className="text-[8px] text-muted-foreground">
+                        Max donations/day: <span className="text-foreground font-bold">{DONATION_LIMITS[card.rarity]}</span> • 12h cooldown between requests
+                      </div>
+                    );
+                  })()}
+                  <button onClick={sendCardRequest} disabled={!requestCardId || sending || !canRequest()}
+                    className="w-full py-1.5 bg-hp-green text-foreground rounded-lg text-[10px] font-bold disabled:opacity-50">
+                    Request Card
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Chat messages */}
           <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5">
             {messages.length === 0 && (
@@ -925,10 +964,13 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
             {messages.map(msg => {
               const isMe = msg.user_id === user?.id;
               const isTrade = msg.message_type === 'trade_request';
+              const isRequest = msg.message_type === 'card_request';
               return (
                 <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] rounded-xl px-3 py-1.5 ${
-                    isTrade
+                    isRequest
+                      ? 'bg-[hsl(120,20%,15%)] border border-[hsl(120,25%,25%)]'
+                      : isTrade
                       ? 'bg-[hsl(280,30%,18%)] border border-[hsl(280,30%,30%)]'
                       : isMe
                       ? 'bg-primary/20 border border-primary/30'
@@ -938,6 +980,14 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                       <div className="text-[8px] font-bold text-primary mb-0.5">{msg.username}</div>
                     )}
                     <div className="text-[10px] text-foreground">{msg.content}</div>
+                    {isRequest && !isMe && msg.trade_card_wanted && (
+                      <button
+                        onClick={() => donateCard(msg)}
+                        className="mt-1 px-3 py-1 bg-hp-green/20 text-hp-green rounded-lg text-[9px] font-bold flex items-center gap-1 hover:bg-hp-green/30 transition-colors"
+                      >
+                        <Gift className="w-3 h-3" /> Donate
+                      </button>
+                    )}
                     <div className="text-[7px] text-muted-foreground text-right mt-0.5">{formatTime(msg.created_at)}</div>
                   </div>
                 </div>
