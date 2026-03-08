@@ -478,8 +478,8 @@ const BattleArena = () => {
     const card = hand[selectedCard];
     if (!card || elixir < card.elixir) return;
     
-    // Only deploy on player's side
-    if (ay < 50) return;
+    // Troops can only deploy on player's side; spells can target anywhere
+    if (card.type !== 'spell' && ay < 50) return;
     
     setElixir(p => p - card.elixir);
     
