@@ -122,7 +122,14 @@ const SocialScreen = () => {
 
   // Global leaderboard
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [localLeaderboard, setLocalLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+  const [globalSubTab, setGlobalSubTab] = useState<'local' | 'worldwide' | 'top100'>('worldwide');
+  const [userCountry, setUserCountry] = useState<string | null>(null);
+  const [userCountryCode, setUserCountryCode] = useState<string | null>(null);
+  const [myWorldRank, setMyWorldRank] = useState<number | null>(null);
+  const [myLocalRank, setMyLocalRank] = useState<number | null>(null);
+  const [showRewardsPanel, setShowRewardsPanel] = useState(false);
 
   // Load user's clan from DB on mount
   useEffect(() => {
