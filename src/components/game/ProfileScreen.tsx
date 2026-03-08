@@ -7,6 +7,7 @@ import { ChevronLeft, Copy, Shield, Award, Target, Crown, Star, LogOut, Check, S
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { t, tArena } from '@/lib/i18n';
+import { allBadges, getUnlockedAchievementBadges, getOwnedBadges, getPlayerBanner } from '@/data/banners';
 
 const ProfileScreen = () => {
   const { setScreen, profile, deck } = useGame();
@@ -35,14 +36,16 @@ const ProfileScreen = () => {
     { label: t('profile.total_donations', language), value: profile.totalDonations, icon: '📦' },
   ];
 
-  const badges = [
-    { name: t('profile.badge.grand_champion', language), emoji: '🏆', earned: false },
-    { name: t('profile.badge.war_hero', language), emoji: '⚔️', earned: profile.warDayWins > 0 },
-    { name: t('profile.badge.card_master', language), emoji: '🃏', earned: profile.clanCardsCollected > 0 },
-    { name: t('profile.badge.generous_donor', language), emoji: '📦', earned: profile.totalDonations > 0 },
-    { name: t('profile.badge.legendary_player', language), emoji: '🌟', earned: profile.maxTrophies >= 4000 },
-    { name: t('profile.badge.speed_demon', language), emoji: '⚡', earned: profile.wins >= 100 },
-  ];
+  // Use actual achievement badges from the banner system
+  const unlockedIds = getUnlockedAchievementBadges(profile);
+  const ownedBadges = getOwnedBadges();
+  const equippedBadgeIds = getPlayerBanner().badgeIds;
+
+  const badges = allBadges.map(badge => ({
+    ...badge,
+    earned: badge.type === 'achievement' ? unlockedIds.includes(badge.id) : ownedBadges.has(badge.id),
+    equipped: equippedBadgeIds.includes(badge.id),
+  }));
 
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
@@ -135,6 +138,8 @@ const ProfileScreen = () => {
               <div key={i} className={`bg-card border rounded-lg p-2 text-center ${badge.earned ? 'border-primary/30' : 'border-border opacity-40'}`}>
                 <span className="text-xl">{badge.emoji}</span>
                 <div className="text-[8px] font-bold text-foreground mt-0.5">{badge.name}</div>
+                {badge.equipped && <div className="text-[6px] text-primary font-bold">✓ {t('banner.equipped', language)}</div>}
+                {badge.earned && !badge.equipped && <div className="text-[6px] text-muted-foreground">{badge.description}</div>}
               </div>
             ))}
           </div>

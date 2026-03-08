@@ -4,13 +4,22 @@ import {
   BannerBackground, BannerEmblem, BannerBadge,
   PlayerBanner,
 } from '@/data/banners';
+import ClanFlag from './ClanFlag';
 
-/** Renders a banner card (background + emblem + badges + optional clan) */
+export interface ClanBannerData {
+  bannerColor: string;
+  bannerShape: string;
+  iconId: string;
+  iconColor: string;
+}
+
+/** Renders a banner card (background + emblem + badges + optional clan flag) */
 const BattleBannerDisplay = ({
   banner,
   name,
   trophies,
   clanName,
+  clanBanner,
   size = 'md',
   className = '',
 }: {
@@ -18,6 +27,7 @@ const BattleBannerDisplay = ({
   name: string;
   trophies: number;
   clanName?: string;
+  clanBanner?: ClanBannerData;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }) => {
@@ -31,6 +41,7 @@ const BattleBannerDisplay = ({
   const textSize = size === 'lg' ? 'text-sm' : size === 'md' ? 'text-xs' : 'text-[10px]';
   const emojiSize = size === 'lg' ? 'text-2xl' : size === 'md' ? 'text-xl' : 'text-base';
   const badgeSize = size === 'lg' ? 'text-sm w-6 h-6' : size === 'md' ? 'text-xs w-5 h-5' : 'text-[10px] w-4 h-4';
+  const flagSize = size === 'lg' ? 'sm' as const : 'sm' as const;
 
   return (
     <div className={`${dims} rounded-xl overflow-hidden relative flex items-center ${className}`} style={{ background: bg.css }}>
@@ -48,7 +59,20 @@ const BattleBannerDisplay = ({
       <div className="flex-1 min-w-0">
         <div className={`font-display font-bold text-foreground ${textSize} truncate drop-shadow`}>{name}</div>
         {clanName && (
-          <div className="text-[8px] text-foreground/60 truncate drop-shadow">🏴 {clanName}</div>
+          <div className="flex items-center gap-0.5 truncate">
+            {clanBanner ? (
+              <ClanFlag
+                bannerColor={clanBanner.bannerColor}
+                bannerShape={clanBanner.bannerShape}
+                iconId={clanBanner.iconId}
+                iconColor={clanBanner.iconColor}
+                size="sm"
+              />
+            ) : (
+              <span className="text-[8px]">🏴</span>
+            )}
+            <span className="text-[8px] text-foreground/60 truncate drop-shadow">{clanName}</span>
+          </div>
         )}
         <div className="flex items-center gap-1">
           <span className="text-primary text-[10px]">🏆</span>
