@@ -1,7 +1,7 @@
 import { useGame } from '@/context/GameContext';
 import { shopItems, allCards } from '@/data/cards';
 import { ShoppingBag, Swords, Users, Crown, Zap, X, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,86 +13,132 @@ const STRIPE_PRICES: Record<string, string> = {
   'shop-12': 'price_1T8c8eF8KfKkJquqBrjotFic',  // War Pass - $4.99
 };
 
+// Daily deal pool - cards scaled by rarity
+const DAILY_DEAL_POOL = [
+  { name: 'Roman Legionary', emoji: '🛡️', type: 'card' as const, rarity: 'common' as const, amount: 10, cost: 5, currency: 'gold' as const },
+  { name: 'Egyptian Archer', emoji: '🏹', type: 'card' as const, rarity: 'common' as const, amount: 10, cost: 5, currency: 'gold' as const },
+  { name: 'Skeleton Horde', emoji: '💀', type: 'card' as const, rarity: 'common' as const, amount: 10, cost: 5, currency: 'gold' as const },
+  { name: 'Viking Raider', emoji: '⚔️', type: 'card' as const, rarity: 'common' as const, amount: 10, cost: 5, currency: 'gold' as const },
+  { name: 'Samurai', emoji: '🗡️', type: 'card' as const, rarity: 'rare' as const, amount: 4, cost: 50, currency: 'gold' as const },
+  { name: 'Mongol Cavalry', emoji: '🐴', type: 'card' as const, rarity: 'rare' as const, amount: 4, cost: 50, currency: 'gold' as const },
+  { name: 'War Elephant', emoji: '🐘', type: 'card' as const, rarity: 'rare' as const, amount: 4, cost: 50, currency: 'gold' as const },
+  { name: 'Dragon Warrior', emoji: '🐲', type: 'card' as const, rarity: 'epic' as const, amount: 2, cost: 500, currency: 'gold' as const },
+  { name: 'Orc Berserker', emoji: '👹', type: 'card' as const, rarity: 'epic' as const, amount: 2, cost: 500, currency: 'gold' as const },
+  { name: 'Zeus', emoji: '⚡', type: 'card' as const, rarity: 'legendary' as const, amount: 1, cost: 40000, currency: 'gold' as const },
+  { name: 'Silver Chest', emoji: '🪙', type: 'chest' as const, rarity: 'common' as const, amount: 1, cost: 50, currency: 'gold' as const },
+  { name: 'Gold Chest', emoji: '💰', type: 'chest' as const, rarity: 'rare' as const, amount: 1, cost: 150, currency: 'gold' as const },
+  { name: 'Magical Chest', emoji: '✨', type: 'chest' as const, rarity: 'epic' as const, amount: 1, cost: 250, currency: 'gems' as const },
+  { name: '500 Gold', emoji: '💰', type: 'gold' as const, rarity: 'common' as const, amount: 500, cost: 25, currency: 'gems' as const },
+  { name: '1500 Gold', emoji: '💰', type: 'gold' as const, rarity: 'rare' as const, amount: 1500, cost: 60, currency: 'gems' as const },
+  { name: '10 Gems', emoji: '💎', type: 'gems' as const, rarity: 'common' as const, amount: 10, cost: 200, currency: 'gold' as const },
+];
+
+function getDailyDeals() {
+  // Seed based on date so deals change daily but are consistent within a day
+  const today = new Date();
+  const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+  // Simple seeded shuffle
+  const shuffled = [...DAILY_DEAL_POOL];
+  let s = seed;
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const j = s % (i + 1);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, 6);
+}
+
+function useCountdownToMidnight() {
+  const [timeLeft, setTimeLeft] = useState('');
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0);
+      const diff = midnight.getTime() - now.getTime();
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const sec = Math.floor((diff % 60000) / 1000);
+      setTimeLeft(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+  return timeLeft;
+}
+
+const RARITY_COLORS: Record<string, string> = {
+  common: 'border-muted-foreground/40',
+  rare: 'border-blue-400',
+  epic: 'border-purple-400',
+  legendary: 'border-primary',
+};
+
+const RARITY_LABELS: Record<string, string> = {
+  common: 'Common',
+  rare: 'Rare',
+  epic: 'Epic',
+  legendary: 'Legendary',
+};
+
 const ShopScreen = () => {
   const { setScreen, profile, setProfile, setDeck, deck } = useGame();
   const [tab, setTab] = useState<'featured' | 'cards' | 'chests' | 'gems'>('featured');
   const [purchasing, setPurchasing] = useState<string | null>(null);
+  const countdown = useCountdownToMidnight();
+  const dailyDeals = useMemo(() => getDailyDeals(), []);
 
   const filtered = tab === 'featured' ? shopItems :
     tab === 'cards' ? shopItems.filter(i => i.type === 'card') :
     tab === 'chests' ? shopItems.filter(i => i.type === 'chest') :
     shopItems.filter(i => i.type === 'gems' || i.type === 'gold');
 
+  const handleDailyDealPurchase = (deal: typeof DAILY_DEAL_POOL[0], index: number) => {
+    const currency = deal.currency === 'gold' ? profile.gold : profile.gems;
+    if (currency < deal.cost) {
+      toast.error(`Not enough ${deal.currency}!`);
+      return;
+    }
+    const newProfile = { ...profile };
+    if (deal.currency === 'gold') newProfile.gold -= deal.cost;
+    else newProfile.gems -= deal.cost;
+
+    if (deal.type === 'gold') newProfile.gold += deal.amount;
+    else if (deal.type === 'gems') newProfile.gems += deal.amount;
+    else if (deal.type === 'chest') toast.success(`Opened ${deal.name}!`);
+    else toast.success(`Got x${deal.amount} ${deal.name}!`);
+
+    if (deal.type === 'gold') toast.success(`Got ${deal.amount} Gold!`);
+    else if (deal.type === 'gems') toast.success(`Got ${deal.amount} Gems!`);
+
+    setProfile(newProfile);
+  };
+
   const handlePurchase = async (itemId: string) => {
     const item = shopItems.find(i => i.id === itemId);
     if (!item) return;
-
     setPurchasing(itemId);
-
-    // Real money purchase via Stripe
     if (item.currency === 'real') {
       const priceId = STRIPE_PRICES[itemId];
-      if (!priceId) {
-        toast.error('Item not available for purchase');
-        setPurchasing(null);
-        return;
-      }
+      if (!priceId) { toast.error('Item not available'); setPurchasing(null); return; }
       try {
-        const { data, error } = await supabase.functions.invoke('create-payment', {
-          body: { priceId },
-        });
+        const { data, error } = await supabase.functions.invoke('create-payment', { body: { priceId } });
         if (error) throw error;
-        if (data?.url) {
-          window.open(data.url, '_blank');
-        }
-      } catch (err: any) {
-        toast.error(err.message || 'Payment failed');
-      }
+        if (data?.url) window.open(data.url, '_blank');
+      } catch (err: any) { toast.error(err.message || 'Payment failed'); }
       setPurchasing(null);
       return;
     }
-
-    // In-game currency purchase
     const currency = item.currency === 'gold' ? profile.gold : profile.gems;
-    if (currency < item.cost) {
-      toast.error(`Not enough ${item.currency}!`);
-      setPurchasing(null);
-      return;
-    }
-
-    // Deduct currency
+    if (currency < item.cost) { toast.error(`Not enough ${item.currency}!`); setPurchasing(null); return; }
     const newProfile = { ...profile };
-    if (item.currency === 'gold') {
-      newProfile.gold -= item.cost;
-    } else {
-      newProfile.gems -= item.cost;
-    }
-
-    // Grant rewards
+    if (item.currency === 'gold') newProfile.gold -= item.cost; else newProfile.gems -= item.cost;
     switch (item.type) {
-      case 'chest': {
-        // Grant random cards based on chest type
-        const cardCount = item.name.includes('Legendary') ? 1 : item.name.includes('Magical') ? 12 : item.name.includes('Gold') ? 6 : 3;
-        toast.success(`Opened ${item.name}! Got ${cardCount} cards`);
-        break;
-      }
-      case 'card': {
-        const card = allCards.find(c => c.name === item.name);
-        if (card && !deck.find(c => c.id === card.id)) {
-          toast.success(`Got ${item.name}!`);
-        } else {
-          toast.success(`Got cards for ${item.name}!`);
-        }
-        break;
-      }
-      case 'gold': {
-        const goldAmount = parseInt(item.description.replace(/[^0-9]/g, ''));
-        newProfile.gold += goldAmount;
-        toast.success(`Got ${goldAmount.toLocaleString()} Gold!`);
-        break;
-      }
+      case 'chest': { const cc = item.name.includes('Legendary') ? 1 : item.name.includes('Magical') ? 12 : item.name.includes('Gold') ? 6 : 3; toast.success(`Opened ${item.name}! Got ${cc} cards`); break; }
+      case 'card': { toast.success(`Got cards for ${item.name}!`); break; }
+      case 'gold': { const g = parseInt(item.description.replace(/[^0-9]/g, '')); newProfile.gold += g; toast.success(`Got ${g.toLocaleString()} Gold!`); break; }
     }
-
     setProfile(newProfile);
     setPurchasing(null);
   };
@@ -100,16 +146,10 @@ const ShopScreen = () => {
   const handleWarPassPurchase = async () => {
     setPurchasing('war-pass');
     try {
-      const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: { priceId: STRIPE_PRICES['shop-12'] },
-      });
+      const { data, error } = await supabase.functions.invoke('create-payment', { body: { priceId: STRIPE_PRICES['shop-12'] } });
       if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
-    } catch (err: any) {
-      toast.error(err.message || 'Payment failed');
-    }
+      if (data?.url) window.open(data.url, '_blank');
+    } catch (err: any) { toast.error(err.message || 'Payment failed'); }
     setPurchasing(null);
   };
 
@@ -134,16 +174,44 @@ const ShopScreen = () => {
         ))}
       </div>
 
-      {/* Daily deals banner */}
-      {tab === 'featured' && (
-        <div className="mx-3 mt-3 bg-gradient-to-r from-[hsl(38,80%,25%)] to-[hsl(28,90%,20%)] rounded-xl p-3 border border-primary/30">
-          <div className="text-[10px] text-primary font-bold uppercase tracking-wider">Daily Deals</div>
-          <div className="text-[8px] text-foreground/70 mt-0.5">Refreshes in 12:34:56</div>
-        </div>
-      )}
-
       {/* Shop items grid */}
       <div className="flex-1 overflow-y-auto p-3">
+        {/* Daily Deals section */}
+        {tab === 'featured' && (
+          <>
+            <div className="mb-3 bg-gradient-to-r from-[hsl(38,80%,25%)] to-[hsl(28,90%,20%)] rounded-xl p-3 border border-primary/30">
+              <div className="text-[10px] text-primary font-bold uppercase tracking-wider">Daily Deals</div>
+              <div className="text-[8px] text-foreground/70 mt-0.5">Refreshes in {countdown}</div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              {dailyDeals.map((deal, i) => {
+                const canAfford = deal.currency === 'gold' ? profile.gold >= deal.cost : profile.gems >= deal.cost;
+                return (
+                  <motion.button
+                    key={`deal-${i}`}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleDailyDealPurchase(deal, i)}
+                    disabled={!canAfford}
+                    className={`bg-card border-2 ${RARITY_COLORS[deal.rarity]} rounded-xl p-2 flex flex-col items-center gap-1 transition-colors ${canAfford ? 'hover:brightness-110' : 'opacity-50'}`}
+                  >
+                    <span className="text-2xl mt-1">{deal.emoji}</span>
+                    <span className="text-[9px] font-bold text-foreground text-center leading-tight">{deal.name}</span>
+                    <span className="text-[7px] text-muted-foreground">x{deal.amount}</span>
+                    <span className={`text-[7px] font-bold ${deal.rarity === 'legendary' ? 'text-primary' : deal.rarity === 'epic' ? 'text-purple-400' : deal.rarity === 'rare' ? 'text-blue-400' : 'text-muted-foreground'}`}>
+                      {RARITY_LABELS[deal.rarity]}
+                    </span>
+                    <div className={`mt-auto w-full py-1 rounded-lg text-[9px] font-bold text-center ${
+                      deal.currency === 'gold' ? 'bg-primary/20 text-primary' : 'bg-elixir/20 text-elixir'
+                    }`}>
+                      {deal.currency === 'gold' ? '💰' : '💎'} {deal.cost}
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </>
+        )}
+
         <div className="grid grid-cols-3 gap-2">
           {filtered.map(item => {
             const canAfford = item.currency === 'real' ? true :
