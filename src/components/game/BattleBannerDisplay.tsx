@@ -1,7 +1,6 @@
-import { motion } from 'framer-motion';
 import {
   allBackgrounds, allEmblems, allBadges,
-  BannerBackground, BannerEmblem, BannerBadge,
+  BannerBadge,
   PlayerBanner,
 } from '@/data/banners';
 import ClanFlag from './ClanFlag';
