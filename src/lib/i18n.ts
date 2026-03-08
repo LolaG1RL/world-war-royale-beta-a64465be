@@ -452,41 +452,22 @@ const translations: TranslationMap = {
   'mail.m_ago': { en: 'm ago', es: 'min', fr: 'min', de: 'Min.', pt: 'min atrás', ja: '分前', ko: '분 전', zh: '分钟前', ar: 'دقيقة', ru: 'мин. назад' },
   'mail.h_ago': { en: 'h ago', es: 'h', fr: 'h', de: 'Std.', pt: 'h atrás', ja: '時間前', ko: '시간 전', zh: '小时前', ar: 'ساعة', ru: 'ч. назад' },
 
-  // ═══ Additional Shop ═══
+  // ═══ Additional unique keys ═══
   'shop.confirm_title': { en: 'Confirm Purchase', es: 'Confirmar Compra', fr: "Confirmer l'Achat", de: 'Kauf bestätigen', pt: 'Confirmar Compra', ja: '購入確認', ko: '구매 확인', zh: '确认购买', ar: 'تأكيد الشراء', ru: 'Подтвердить покупку' },
   'shop.buy_label': { en: 'Buy', es: 'Comprar', fr: 'Acheter', de: 'Kaufen', pt: 'Comprar', ja: '購入', ko: '구매', zh: '购买', ar: 'شراء', ru: 'Купить' },
   'shop.cancel_label': { en: 'Cancel', es: 'Cancelar', fr: 'Annuler', de: 'Abbrechen', pt: 'Cancelar', ja: 'キャンセル', ko: '취소', zh: '取消', ar: 'إلغاء', ru: 'Отмена' },
-  'shop.war_pass_plus': { en: 'WAR PASS+', es: 'PASE DE GUERRA+', fr: 'PASSE DE GUERRE+', de: 'KRIEGSPASS+', pt: 'PASSE DE GUERRA+', ja: 'ウォーパス+', ko: '워패스+', zh: '战争通行证+', ar: 'تصريح الحرب+', ru: 'ВОЕННЫЙ ПРОПУСК+' },
-  'shop.war_pass_desc': { en: 'Unlock premium rewards all season', es: 'Desbloquea recompensas premium toda la temporada', fr: 'Débloquez les récompenses premium toute la saison', de: 'Schalte Premium-Belohnungen die ganze Saison frei', pt: 'Desbloqueie recompensas premium toda temporada', ja: 'シーズン中のプレミアム報酬を解放', ko: '시즌 내내 프리미엄 보상 잠금 해제', zh: '解锁全赛季高级奖励', ar: 'افتح المكافآت المميزة طوال الموسم', ru: 'Разблокируйте премиум-награды на весь сезон' },
-  'shop.buy_war_pass': { en: 'Buy War Pass+ - $4.99', es: 'Comprar Pase+ - $4.99', fr: 'Acheter Passe+ - 4,99$', de: 'Pass+ kaufen - 4,99$', pt: 'Comprar Passe+ - $4.99', ja: 'ウォーパス+購入 - $4.99', ko: '워패스+ 구매 - $4.99', zh: '购买通行证+ - $4.99', ar: 'شراء التصريح+ - $4.99', ru: 'Купить Пропуск+ - $4.99' },
-  'shop.own_all_bg': { en: "You own all today's backgrounds!", es: '¡Ya tienes todos los fondos de hoy!', fr: "Vous possédez tous les fonds du jour!", de: 'Du besitzt alle heutigen Hintergründe!', pt: 'Você já tem todos os fundos de hoje!', ja: '本日の背景はすべて所持済み！', ko: '오늘의 배경을 모두 보유 중!', zh: '你已拥有今日所有背景！', ar: 'تملك جميع خلفيات اليوم!', ru: 'У вас все фоны дня!' },
-  'shop.own_all_emb': { en: "You own all today's emblems!", es: '¡Ya tienes todos los emblemas de hoy!', fr: "Vous possédez tous les emblèmes du jour!", de: 'Du besitzt alle heutigen Embleme!', pt: 'Você já tem todos os emblemas de hoje!', ja: '本日のエンブレムはすべて所持済み！', ko: '오늘의 엠블럼을 모두 보유 중!', zh: '你已拥有今日所有徽章！', ar: 'تملك جميع شعارات اليوم!', ru: 'У вас все эмблемы дня!' },
-  'shop.badges_earned': { en: 'Badges are earned through achievements!', es: '¡Las insignias se obtienen mediante logros!', fr: 'Les badges sont obtenus via les succès!', de: 'Abzeichen werden durch Erfolge verdient!', pt: 'Insígnias são obtidas por conquistas!', ja: 'バッジは実績で獲得します！', ko: '배지는 업적으로 획득합니다!', zh: '徽章通过成就获得！', ar: 'الشارات تُكتسب من الإنجازات!', ru: 'Значки зарабатываются достижениями!' },
-  'shop.badges_equip': { en: 'Check Cards → Banner to equip your earned badges.', es: 'Revisa Cartas → Estandarte para equipar insignias.', fr: 'Allez dans Cartes → Bannière pour équiper vos badges.', de: 'Gehe zu Karten → Banner um Abzeichen auszurüsten.', pt: 'Vá em Cartas → Bandeira para equipar insígnias.', ja: 'カード→バナーでバッジを装備', ko: '카드 → 배너에서 배지를 장착하세요.', zh: '前往卡牌→旗帜装备徽章。', ar: 'تحقق من البطاقات → اللافتة لتجهيز الشارات.', ru: 'Карты → Баннер для экипировки значков.' },
-  'shop.already_purchased': { en: 'Already purchased today!', es: '¡Ya comprado hoy!', fr: "Déjà acheté aujourd'hui!", de: 'Heute bereits gekauft!', pt: 'Já comprado hoje!', ja: '本日は購入済み！', ko: '오늘 이미 구매했습니다!', zh: '今天已购买！', ar: 'تم الشراء اليوم بالفعل!', ru: 'Уже куплено сегодня!' },
-
-  // ═══ Additional Events ═══
+  'shop.badges_equip': { en: 'Check Cards → Banner to equip your earned badges.', es: 'Revisa Cartas → Estandarte para equipar.', fr: 'Allez dans Cartes → Bannière pour équiper.', de: 'Karten → Banner zum Ausrüsten.', pt: 'Cartas → Bandeira para equipar.', ja: 'カード→バナーでバッジを装備', ko: '카드 → 배너에서 장착', zh: '卡牌→旗帜装备', ar: 'البطاقات → اللافتة لتجهيز', ru: 'Карты → Баннер для экипировки.' },
   'events.already_completed': { en: 'Already completed!', es: '¡Ya completado!', fr: 'Déjà terminé!', de: 'Bereits abgeschlossen!', pt: 'Já concluído!', ja: 'すでに完了！', ko: '이미 완료!', zh: '已完成！', ar: 'مكتمل بالفعل!', ru: 'Уже завершено!' },
   'events.too_many_losses': { en: 'Too many losses!', es: '¡Demasiadas derrotas!', fr: 'Trop de défaites!', de: 'Zu viele Niederlagen!', pt: 'Derrotas demais!', ja: '敗北が多すぎ！', ko: '패배가 너무 많습니다!', zh: '失败次数太多！', ar: 'هزائم كثيرة!', ru: 'Слишком много поражений!' },
   'events.claim': { en: 'Claim', es: 'Reclamar', fr: 'Récupérer', de: 'Abholen', pt: 'Resgatar', ja: '受取', ko: '수령', zh: '领取', ar: 'مطالبة', ru: 'Забрать' },
   'events.claimed_check': { en: '✓ Claimed', es: '✓ Reclamado', fr: '✓ Récupéré', de: '✓ Abgeholt', pt: '✓ Resgatado', ja: '✓ 受取済', ko: '✓ 수령됨', zh: '✓ 已领取', ar: '✓ تمت المطالبة', ru: '✓ Забрано' },
-  'events.exclusive_emote': { en: '😀 Exclusive Emote', es: '😀 Emote Exclusivo', fr: '😀 Emote Exclusif', de: '😀 Exklusives Emote', pt: '😀 Emote Exclusivo', ja: '😀 限定エモート', ko: '😀 독점 이모트', zh: '😀 独家表情', ar: '😀 تعبير حصري', ru: '😀 Эксклюзивная эмоция' },
-  'events.exclusive_bg': { en: '🖼️ Exclusive BG', es: '🖼️ Fondo Exclusivo', fr: '🖼️ Fond Exclusif', de: '🖼️ Exklusiver HG', pt: '🖼️ Fundo Exclusivo', ja: '🖼️ 限定背景', ko: '🖼️ 독점 배경', zh: '🖼️ 独家背景', ar: '🖼️ خلفية حصرية', ru: '🖼️ Эксклюзивный фон' },
-  'events.exclusive_emb': { en: '🎭 Exclusive Emblem', es: '🎭 Emblema Exclusivo', fr: '🎭 Emblème Exclusif', de: '🎭 Exklusives Emblem', pt: '🎭 Emblema Exclusivo', ja: '🎭 限定エンブレム', ko: '🎭 독점 엠블럼', zh: '🎭 独家徽章', ar: '🎭 شعار حصري', ru: '🎭 Эксклюзивная эмблема' },
-  'events.free': { en: 'Free', es: 'Gratis', fr: 'Gratuit', de: 'Kostenlos', pt: 'Grátis', ja: '無料', ko: '무료', zh: '免费', ar: 'مجاني', ru: 'Бесплатно' },
-  'events.done': { en: 'DONE', es: 'HECHO', fr: 'TERMINÉ', de: 'FERTIG', pt: 'FEITO', ja: '完了', ko: '완료', zh: '完成', ar: 'تم', ru: 'ГОТОВО' },
   'events.win_label': { en: 'Win', es: 'Victoria', fr: 'Victoire', de: 'Sieg', pt: 'Vitória', ja: '勝利', ko: '승리', zh: '胜利', ar: 'انتصار', ru: 'Победа' },
   'events.already_claimed': { en: 'Already claimed!', es: '¡Ya reclamado!', fr: 'Déjà récupéré!', de: 'Bereits abgeholt!', pt: 'Já resgatado!', ja: 'すでに受取済み！', ko: '이미 수령했습니다!', zh: '已领取！', ar: 'تمت المطالبة!', ru: 'Уже забрано!' },
-
-  // ═══ Additional Social (unique keys only) ═══
   'social.costs_gems': { en: 'Costs 100 gems', es: 'Cuesta 100 gemas', fr: 'Coûte 100 gemmes', de: 'Kostet 100 Juwelen', pt: 'Custa 100 gemas', ja: '100ジェム', ko: '보석 100개', zh: '花费100宝石', ar: 'يكلف 100 حجر', ru: 'Стоит 100 самоцветов' },
-
-  // ═══ Additional Trophy Road ═══
   'trophy.arena_label': { en: 'Arena', es: 'Arena', fr: 'Arène', de: 'Arena', pt: 'Arena', ja: 'アリーナ', ko: '아레나', zh: '竞技场', ar: 'الحلبة', ru: 'Арена' },
   'trophy.trophies_word': { en: 'trophies', es: 'trofeos', fr: 'trophées', de: 'Trophäen', pt: 'troféus', ja: 'トロフィー', ko: '트로피', zh: '奖杯', ar: 'كؤوس', ru: 'трофеев' },
   'trophy.cards_word': { en: 'cards', es: 'cartas', fr: 'cartes', de: 'Karten', pt: 'cartas', ja: 'カード', ko: '카드', zh: '卡牌', ar: 'بطاقات', ru: 'карт' },
   'trophy.trophies_to': { en: 'trophies to', es: 'trofeos para', fr: 'trophées pour', de: 'Trophäen bis', pt: 'troféus para', ja: 'トロフィーで', ko: '트로피로', zh: '奖杯到', ar: 'كؤوس إلى', ru: 'трофеев до' },
-  'trophy.legends_max': { en: '🏆 LEGENDS — Max Arena!', es: '🏆 LEYENDAS — ¡Arena Máxima!', fr: '🏆 LÉGENDES — Arène Max!', de: '🏆 LEGENDEN — Max Arena!', pt: '🏆 LENDAS — Arena Máxima!', ja: '🏆 レジェンド — 最高アリーナ！', ko: '🏆 레전드 — 최대 아레나!', zh: '🏆 传奇 — 最高竞技场！', ar: '🏆 الأساطير — أقصى حلبة!', ru: '🏆 ЛЕГЕНДЫ — Макс. Арена!' },
   'trophy.cards_unlocked_in': { en: '🃏 Cards unlocked in', es: '🃏 Cartas desbloqueadas en', fr: '🃏 Cartes débloquées dans', de: '🃏 Karten freigeschaltet in', pt: '🃏 Cartas desbloqueadas em', ja: '🃏 で解放されるカード', ko: '🃏 에서 해제되는 카드', zh: '🃏 中解锁的卡牌', ar: '🃏 بطاقات مفتوحة في', ru: '🃏 Карты в' },
   'trophy.never_drop': { en: 'never', es: 'nunca', fr: 'jamais', de: 'nie', pt: 'nunca', ja: '決して', ko: '절대', zh: '永远不会', ar: 'أبداً', ru: 'никогда' },
 };
