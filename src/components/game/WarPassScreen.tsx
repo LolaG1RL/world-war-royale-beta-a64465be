@@ -475,6 +475,7 @@ const WarPassScreen = () => {
           );
         })}
       </div>
+      <BottomNav active="battle" setScreen={setScreen} />
     </div>
   );
 };
