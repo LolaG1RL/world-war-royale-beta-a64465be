@@ -50,7 +50,7 @@ const AuthGate = () => {
       <div className="h-screen w-full max-w-md mx-auto flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="text-4xl mb-3 animate-float">⚔️</div>
-          <p className="text-xs text-muted-foreground font-display tracking-widest">LOADING...</p>
+          <p className="text-xs text-muted-foreground font-display tracking-widest">⚔️ LOADING...</p>
         </div>
       </div>
     );

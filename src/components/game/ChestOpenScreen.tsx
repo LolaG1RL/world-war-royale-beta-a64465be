@@ -1,10 +1,14 @@
 import { useGame } from '@/context/GameContext';
+import { useSettings } from '@/context/SettingsContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { allCards } from '@/data/cards';
+import { t } from '@/lib/i18n';
 
 const ChestOpenScreen = () => {
   const { setScreen, chests, setChests, setProfile } = useGame();
+  const { language } = useSettings();
+  const T = (key: string) => t(key, language);
   const [opened, setOpened] = useState(false);
   const [rewards, setRewards] = useState<{ emoji: string; name: string; count: number; rarity: string }[]>([]);
 
@@ -60,15 +64,15 @@ const ChestOpenScreen = () => {
             {readyChest?.emoji || '💰'}
           </motion.div>
           <h2 className="font-display font-bold text-xl text-foreground mb-1">{readyChest?.name || 'Chest'}</h2>
-          <p className="text-[10px] text-muted-foreground mb-6">Contains {readyChest?.cards || 3} cards</p>
+          <p className="text-[10px] text-muted-foreground mb-6">{T('chest.contains')} {readyChest?.cards || 3} {T('chest.cards')}</p>
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={openChest}
             className="btn-battle text-base"
           >
-            OPEN CHEST
+            {T('chest.open_chest')}
           </motion.button>
-          <button onClick={() => setScreen('menu')} className="block mt-4 text-xs text-muted-foreground mx-auto">Go Back</button>
+          <button onClick={() => setScreen('menu')} className="block mt-4 text-xs text-muted-foreground mx-auto">{T('chest.go_back')}</button>
         </motion.div>
       ) : (
         <motion.div
@@ -84,7 +88,7 @@ const ChestOpenScreen = () => {
             className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary/30 rounded-full blur-xl"
           />
 
-          <h2 className="font-display font-bold text-lg text-primary text-center mb-4">REWARDS!</h2>
+          <h2 className="font-display font-bold text-lg text-primary text-center mb-4">{T('chest.rewards')}</h2>
           
           <div className="grid grid-cols-3 gap-2 max-h-[50vh] overflow-y-auto">
             <AnimatePresence>
@@ -121,7 +125,7 @@ const ChestOpenScreen = () => {
             onClick={() => setScreen('menu')}
             className="btn-battle text-sm mx-auto block mt-6"
           >
-            Continue
+            {T('battle.continue')}
           </motion.button>
         </motion.div>
       )}
