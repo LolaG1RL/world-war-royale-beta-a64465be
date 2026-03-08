@@ -186,16 +186,6 @@ export const defaultProfile: PlayerProfile = {
   starPoints: 0,
 };
 
-export const defaultClan: ClanData = {
-  name: 'War Veterans',
-  tag: '#WR2026',
-  members: 38,
-  maxMembers: 50,
-  trophies: 42000,
-  badge: '⚔️',
-  description: 'Warriors from all eras unite! Active clan, donate daily, war weekly.',
-  donations: 1250,
-};
 
 export const shopItems: ShopItem[] = [
   { id: 'shop-1', name: 'Silver Chest', emoji: '🪙', type: 'chest', cost: 100, currency: 'gold', description: 'Contains 3 cards' },
