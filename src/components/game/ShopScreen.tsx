@@ -400,10 +400,10 @@ const ShopScreen = () => {
       </div>
 
       {/* Shop tabs */}
-      <div className="flex bg-[hsl(220,20%,14%)] border-b border-border">
-        {(['featured', 'cards', 'chests', 'gems'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider ${tab === t ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
-            {t}
+      <div className="flex bg-[hsl(220,20%,14%)] border-b border-border overflow-x-auto">
+        {(['featured', 'cards', 'chests', 'gems', 'emotes'] as const).map(t => (
+          <button key={t} onClick={() => setTab(t)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap px-2 ${tab === t ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
+            {t === 'emotes' ? '😀' : t}
           </button>
         ))}
       </div>
