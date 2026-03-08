@@ -886,6 +886,24 @@ const BattleArena = () => {
           ))}
         </AnimatePresence>
 
+        {/* Spell Projectiles */}
+        <AnimatePresence>
+          {spellProjectiles.map(p => (
+            <motion.div
+              key={p.id}
+              initial={{ left: `${p.x}%`, top: `${p.y}%`, scale: 1.5, opacity: 1 }}
+              animate={{ left: `${p.targetX}%`, top: `${p.targetY}%`, scale: 2, opacity: 1 }}
+              exit={{ scale: 3, opacity: 0 }}
+              transition={{ duration: 0.4, ease: 'easeIn' }}
+              className="absolute z-40 pointer-events-none"
+              style={{ transform: 'translate(-50%, -50%)' }}
+            >
+              <span className="text-2xl drop-shadow-[0_0_8px_rgba(255,100,0,0.8)]">{p.emoji}</span>
+              <div className="absolute inset-0 rounded-full bg-primary/30 blur-md animate-pulse" />
+            </motion.div>
+          ))}
+        </AnimatePresence>
+
         {/* Emote display */}
         <AnimatePresence>
           {activeEmote && (

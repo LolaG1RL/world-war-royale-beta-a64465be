@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getCardEntry, addCards, removeCards, canRequest, setRequestCooldown, getRequestTimeLeft, getSkipCooldownCost, skipRequestCooldown, DONATION_LIMITS, getDonationsToday, recordDonation } from '@/data/cardInventory';
 import { allEmotes, getEquippedEmotes } from '@/data/emotes';
+import { countryCodeToFlag } from '@/lib/countryFlags';
 
 const BANNER_COLORS = [
   '#b91c1c', '#dc2626', '#ef4444',
