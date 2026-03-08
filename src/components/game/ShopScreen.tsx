@@ -294,6 +294,12 @@ const RewardReveal = ({ rewards, onClose }: { rewards: RewardItem[]; onClose: ()
 const ShopScreen = () => {
   const { setScreen, profile, setProfile, setDeck, deck } = useGame();
   const [tab, setTab] = useState<'featured' | 'cards' | 'chests' | 'gems' | 'emotes' | 'banners'>('featured');
+  const isWarPassActive = (() => {
+    try {
+      const data = JSON.parse(localStorage.getItem('war_pass_data') || '{}');
+      return !!data.hasPaid;
+    } catch { return false; }
+  })();
   const [ownedBgs, setOwnedBgs] = useState(() => getOwnedBackgrounds());
   const [ownedEmbs, setOwnedEmbs] = useState(() => getOwnedEmblems());
   const [ownedBadgesSet, setOwnedBadgesSet] = useState(() => getOwnedBadges());
