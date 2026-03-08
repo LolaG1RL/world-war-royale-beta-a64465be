@@ -3,17 +3,26 @@ import { useAuth } from '@/context/AuthContext';
 import { useSettings } from '@/context/SettingsContext';
 import { getArenaForTrophies } from '@/data/cards';
 import { BottomNav } from './BottomNav';
-import { ChevronLeft, Copy, Shield, Award, Target, Crown, Star, LogOut, Check } from 'lucide-react';
+import { ChevronLeft, Copy, Shield, Award, Target, Crown, Star, LogOut, Check, Settings, Volume2, VolumeX, Music, Zap, Globe, Sparkles, Eye } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { t, tArena } from '@/lib/i18n';
+import { LANGUAGES } from '@/lib/i18n';
+import { playButtonClick } from '@/lib/sfx';
 
 const ProfileScreen = () => {
   const { setScreen, profile, deck } = useGame();
   const { signOut, playerTag } = useAuth();
-  const { language } = useSettings();
+  const {
+    language, setLanguage,
+    sfxEnabled, musicEnabled, sfxVolume, musicVolume,
+    setSfxEnabled, setMusicEnabled, setSfxVolume, setMusicVolume,
+    visualsEnabled, particlesEnabled, setVisualsEnabled, setParticlesEnabled,
+  } = useSettings();
   const arena = getArenaForTrophies(profile.trophies);
   const [copied, setCopied] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const T = (key: string) => t(key, language);
 
   const copyTag = () => {
     if (playerTag) {
@@ -50,7 +59,7 @@ const ProfileScreen = () => {
       <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,25%,12%)] border-b border-border">
         <button onClick={() => setScreen('menu')} className="text-muted-foreground"><ChevronLeft className="w-5 h-5" /></button>
         <h2 className="font-display font-bold text-foreground text-sm uppercase tracking-wider">{t('profile.title', language)}</h2>
-        <button className="text-muted-foreground text-[10px]">⚙️</button>
+        <button onClick={() => setShowSettings(!showSettings)} className="text-muted-foreground"><Settings className="w-4 h-4" /></button>
       </div>
 
       <div className="flex-1 overflow-y-auto">
