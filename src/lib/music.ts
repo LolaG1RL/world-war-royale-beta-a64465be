@@ -40,20 +40,28 @@ interface ArenaMusic {
   bassType: OscillatorType;
 }
 
-// Different music per arena tier
+// Different music per arena tier (15 arenas)
 const ARENA_MUSIC: Record<number, ArenaMusic> = {
-  1: { bpm: 100, key: ['C4', 'E4', 'G4', 'C5'], bass: ['C3', 'G3', 'C3', 'E3'], lead: ['E5', 'G5', 'C5', 'D5'], waveType: 'triangle', bassType: 'sine' },
-  2: { bpm: 110, key: ['D4', 'F4', 'A4', 'D5'], bass: ['D3', 'A3', 'D3', 'F3'], lead: ['D5', 'F4', 'A4', 'D5'], waveType: 'triangle', bassType: 'sine' },
-  3: { bpm: 115, key: ['E4', 'G4', 'B4', 'E5'], bass: ['E3', 'B3', 'E3', 'G3'], lead: ['E5', 'G4', 'B4', 'E5'], waveType: 'square', bassType: 'triangle' },
-  4: { bpm: 120, key: ['F4', 'A4', 'C5', 'F4'], bass: ['F3', 'C3', 'F3', 'A3'], lead: ['C5', 'A4', 'F4', 'C5'], waveType: 'square', bassType: 'triangle' },
-  5: { bpm: 125, key: ['G4', 'B4', 'D5', 'G4'], bass: ['G3', 'D3', 'G3', 'B3'], lead: ['D5', 'B4', 'G4', 'D5'], waveType: 'sawtooth', bassType: 'square' },
-  6: { bpm: 128, key: ['A4', 'C5', 'E5', 'A4'], bass: ['A3', 'E3', 'A3', 'C3'], lead: ['E5', 'C5', 'A4', 'E5'], waveType: 'sawtooth', bassType: 'square' },
-  7: { bpm: 130, key: ['C4', 'E4', 'G4', 'B4'], bass: ['C3', 'G3', 'E3', 'B3'], lead: ['G5', 'E5', 'C5', 'G5'], waveType: 'sawtooth', bassType: 'triangle' },
+  1:  { bpm: 100, key: ['C4', 'E4', 'G4', 'C5'], bass: ['C3', 'G3', 'C3', 'E3'], lead: ['E5', 'G5', 'C5', 'D5'], waveType: 'triangle', bassType: 'sine' },
+  2:  { bpm: 105, key: ['D4', 'F4', 'A4', 'D5'], bass: ['D3', 'A3', 'D3', 'F3'], lead: ['D5', 'F4', 'A4', 'D5'], waveType: 'triangle', bassType: 'sine' },
+  3:  { bpm: 110, key: ['E4', 'G4', 'B4', 'E5'], bass: ['E3', 'B3', 'E3', 'G3'], lead: ['E5', 'G4', 'B4', 'E5'], waveType: 'triangle', bassType: 'triangle' },
+  4:  { bpm: 112, key: ['F4', 'A4', 'C5', 'F4'], bass: ['F3', 'C3', 'F3', 'A3'], lead: ['C5', 'A4', 'F4', 'C5'], waveType: 'square', bassType: 'triangle' },
+  5:  { bpm: 115, key: ['G4', 'B4', 'D5', 'G4'], bass: ['G3', 'D3', 'G3', 'B3'], lead: ['D5', 'B4', 'G4', 'D5'], waveType: 'square', bassType: 'triangle' },
+  6:  { bpm: 118, key: ['A4', 'C5', 'E5', 'A4'], bass: ['A3', 'E3', 'A3', 'C3'], lead: ['E5', 'C5', 'A4', 'E5'], waveType: 'square', bassType: 'square' },
+  7:  { bpm: 120, key: ['C4', 'E4', 'G4', 'B4'], bass: ['C3', 'G3', 'E3', 'B3'], lead: ['G5', 'E5', 'C5', 'G5'], waveType: 'sawtooth', bassType: 'triangle' },
+  8:  { bpm: 122, key: ['D4', 'F4', 'A4', 'C5'], bass: ['D3', 'A3', 'F3', 'C3'], lead: ['A4', 'C5', 'D5', 'F4'], waveType: 'sawtooth', bassType: 'square' },
+  9:  { bpm: 125, key: ['E4', 'G4', 'B4', 'D5'], bass: ['E3', 'B3', 'G3', 'D3'], lead: ['B4', 'D5', 'E5', 'G4'], waveType: 'sawtooth', bassType: 'square' },
+  10: { bpm: 128, key: ['F4', 'A4', 'C5', 'E5'], bass: ['F3', 'C3', 'A3', 'E3'], lead: ['C5', 'E5', 'A4', 'F4'], waveType: 'sawtooth', bassType: 'triangle' },
+  11: { bpm: 130, key: ['G4', 'B4', 'D5', 'G5'], bass: ['G3', 'D3', 'B3', 'G3'], lead: ['D5', 'G5', 'B4', 'D5'], waveType: 'square', bassType: 'sawtooth' },
+  12: { bpm: 132, key: ['A4', 'C5', 'E5', 'A4'], bass: ['A3', 'E3', 'C3', 'A3'], lead: ['E5', 'A4', 'C5', 'E5'], waveType: 'sawtooth', bassType: 'sawtooth' },
+  13: { bpm: 135, key: ['C4', 'E4', 'A4', 'C5'], bass: ['C3', 'A3', 'E3', 'C3'], lead: ['A4', 'C5', 'E5', 'G5'], waveType: 'sawtooth', bassType: 'square' },
+  14: { bpm: 138, key: ['D4', 'G4', 'B4', 'D5'], bass: ['D3', 'G3', 'B3', 'D3'], lead: ['G5', 'D5', 'B4', 'G4'], waveType: 'square', bassType: 'sawtooth' },
+  15: { bpm: 140, key: ['E4', 'G4', 'C5', 'E5'], bass: ['E3', 'C3', 'G3', 'E3'], lead: ['C5', 'E5', 'G5', 'C5'], waveType: 'sawtooth', bassType: 'sawtooth' },
 };
 
 function getArenaMusic(arena: number): ArenaMusic {
-  if (arena >= 7) return ARENA_MUSIC[7];
-  return ARENA_MUSIC[Math.max(1, Math.min(7, arena))] || ARENA_MUSIC[1];
+  const clamped = Math.max(1, Math.min(15, arena));
+  return ARENA_MUSIC[clamped] || ARENA_MUSIC[1];
 }
 
 function playNote(ctx: AudioContext, freq: number, start: number, dur: number, type: OscillatorType, vol: number) {
