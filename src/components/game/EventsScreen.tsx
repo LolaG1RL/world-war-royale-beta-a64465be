@@ -42,27 +42,6 @@ const EventsScreen = () => {
       <div className="flex-1 overflow-y-auto">
         {tab === 'events' && (
           <div className="p-3 space-y-2">
-            {/* War Pass banner */}
-            <div className="bg-gradient-to-r from-[hsl(340,50%,22%)] to-[hsl(280,40%,18%)] rounded-xl p-4 border border-[hsl(340,50%,35%)]">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">🎖️</span>
-                <div>
-                  <div className="text-sm font-display font-bold text-foreground">WAR PASS</div>
-                  <div className="text-[9px] text-foreground/70">Season 1 • Tier 0/35</div>
-                </div>
-              </div>
-              <div className="mt-2 h-2 bg-[hsl(0,0%,0%,0.4)] rounded-full">
-                <div className="h-full bg-primary rounded-full" style={{ width: '0%' }} />
-              </div>
-              <div className="flex gap-1 mt-2">
-                {Array.from({ length: 10 }).map((_, i) => (
-                  <div key={i} className="flex-1 h-6 rounded text-center text-[8px] flex items-center justify-center bg-muted/20 text-muted-foreground">
-                    {i + 1}
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* Special events */}
             {specialEvents.map((event, i) => (
               <button key={i} className="w-full bg-card border border-border rounded-xl p-3 flex items-center gap-3 hover:border-primary/30 transition-colors">

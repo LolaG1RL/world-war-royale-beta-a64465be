@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { useAuth } from '@/context/AuthContext';
-import { getArenaForTrophies } from '@/data/cards';
+import { getArenaForTrophies, trophyRoadRewards } from '@/data/cards';
 import CardComponent from './CardComponent';
 import { motion } from 'framer-motion';
 import { Swords, Trophy, Users, ShoppingBag, Crown, Map, Star, Gift, Zap, Mail } from 'lucide-react';
@@ -13,6 +13,39 @@ const MainMenu = () => {
   const { signOut, user } = useAuth();
   const arena = getArenaForTrophies(profile.trophies);
   const [unreadMail, setUnreadMail] = useState(0);
+  const [unclaimedTrophy, setUnclaimedTrophy] = useState(0);
+  const [unclaimedWarPass, setUnclaimedWarPass] = useState(0);
+
+  // Check unclaimed trophy road rewards
+  useEffect(() => {
+    const saved = localStorage.getItem('trophy_road_claimed');
+    const claimed = new Set<number>(saved ? JSON.parse(saved) : []);
+    const count = trophyRoadRewards.filter(r => r.trophies <= profile.trophies && !claimed.has(r.trophies)).length;
+    setUnclaimedTrophy(count);
+  }, [profile.trophies]);
+
+  // Check unclaimed war pass rewards
+  useEffect(() => {
+    const saved = localStorage.getItem('war_pass_data');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        const crowns = data.crowns || 0;
+        const claimedFree = new Set(data.claimedFree || []);
+        const claimedPaid = new Set(data.claimedPaid || []);
+        const hasPaid = data.hasPaid || false;
+        // Count unclaimed tiers where crowns are sufficient
+        const WAR_PASS_TIERS = [2,4,7,10,14,18,22,27,32,37,42,48,54,60,67,74,82,90,98,110];
+        let count = 0;
+        WAR_PASS_TIERS.forEach((needed, i) => {
+          const tier = i + 1;
+          if (crowns >= needed && !claimedFree.has(tier)) count++;
+          if (crowns >= needed && hasPaid && !claimedPaid.has(tier)) count++;
+        });
+        setUnclaimedWarPass(count);
+      } catch {}
+    }
+  }, []);
 
   // Check unread mail count
   useEffect(() => {
@@ -28,7 +61,6 @@ const MainMenu = () => {
       }
     };
     checkMail();
-    // Also subscribe to realtime for new mail
     const channel = supabase
       .channel('mailbox-notifications')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mailbox_messages' }, () => {
@@ -97,12 +129,17 @@ const MainMenu = () => {
       <div className="relative z-10 flex-1 flex flex-col">
         {/* Arena / Events buttons row */}
         <div className="flex gap-1.5 px-3 py-2">
-          <button onClick={() => { setActiveTab('trophy-road'); setScreen('trophy-road'); }} className="flex-1 bg-[hsl(220,15%,16%)] border border-border rounded-lg py-2 px-2 flex items-center gap-2 hover:bg-[hsl(220,15%,20%)] transition-colors">
+          <button onClick={() => { setActiveTab('trophy-road'); setScreen('trophy-road'); }} className="flex-1 bg-[hsl(220,15%,16%)] border border-border rounded-lg py-2 px-2 flex items-center gap-2 hover:bg-[hsl(220,15%,20%)] transition-colors relative">
             <Map className="w-4 h-4 text-primary" />
             <div className="text-left">
               <div className="text-[9px] font-bold text-foreground">Trophy Road</div>
               <div className="text-[7px] text-muted-foreground">Arena {arena.id}</div>
             </div>
+            {unclaimedTrophy > 0 && (
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full flex items-center justify-center">
+                <span className="text-[7px] font-black text-accent-foreground">{unclaimedTrophy > 9 ? '9+' : unclaimedTrophy}</span>
+              </div>
+            )}
           </button>
           <button onClick={() => setScreen('events')} className="flex-1 bg-[hsl(220,15%,16%)] border border-border rounded-lg py-2 px-2 flex items-center gap-2 hover:bg-[hsl(220,15%,20%)] transition-colors">
             <Star className="w-4 h-4 text-legendary" />
@@ -125,12 +162,17 @@ const MainMenu = () => {
               </div>
             )}
           </button>
-          <button onClick={() => setScreen('war-pass')} className="flex-1 bg-gradient-to-r from-[hsl(280,30%,16%)] to-[hsl(320,30%,16%)] border border-[hsl(280,20%,25%)] rounded-lg py-2 px-2 flex items-center gap-2 hover:from-[hsl(280,30%,20%)] hover:to-[hsl(320,30%,20%)] transition-colors">
+          <button onClick={() => setScreen('war-pass')} className="flex-1 bg-gradient-to-r from-[hsl(280,30%,16%)] to-[hsl(320,30%,16%)] border border-[hsl(280,20%,25%)] rounded-lg py-2 px-2 flex items-center gap-2 hover:from-[hsl(280,30%,20%)] hover:to-[hsl(320,30%,20%)] transition-colors relative">
             <Crown className="w-4 h-4 text-[hsl(280,60%,65%)]" />
             <div className="text-left">
               <div className="text-[9px] font-bold text-foreground">War Pass</div>
               <div className="text-[7px] text-muted-foreground">Earn Crowns</div>
             </div>
+            {unclaimedWarPass > 0 && (
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full flex items-center justify-center">
+                <span className="text-[7px] font-black text-accent-foreground">{unclaimedWarPass > 9 ? '9+' : unclaimedWarPass}</span>
+              </div>
+            )}
           </button>
         </div>
 
