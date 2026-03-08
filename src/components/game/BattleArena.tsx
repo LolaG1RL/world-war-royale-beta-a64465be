@@ -99,8 +99,10 @@ const BattleArena = () => {
           setElixir(10);
           break;
         case 'insta-win': {
-          const pC = (enemyTowerHP.left <= 0 ? 1 : 0) + (enemyTowerHP.right <= 0 ? 1 : 0) + (enemyTowerHP.king <= 0 ? 1 : 0) + 3;
-          const eC = (playerTowerHP.left <= 0 ? 1 : 0) + (playerTowerHP.right <= 0 ? 1 : 0) + (playerTowerHP.king <= 0 ? 1 : 0);
+          const eth = getEnemyTowerHP();
+          const pth = getPlayerTowerHP();
+          const pC = (eth.left <= 0 ? 1 : 0) + (eth.right <= 0 ? 1 : 0) + (eth.king <= 0 ? 1 : 0) + 3;
+          const eC = (pth.left <= 0 ? 1 : 0) + (pth.right <= 0 ? 1 : 0) + (pth.king <= 0 ? 1 : 0);
           const net = pC - eC;
           const s1 = JSON.parse(localStorage.getItem('war_pass_data') || '{"crowns":0}');
           s1.crowns = Math.max(0, (s1.crowns || 0) + net);
@@ -112,8 +114,10 @@ const BattleArena = () => {
           break;
         }
         case 'insta-lose': {
-          const pC2 = (enemyTowerHP.left <= 0 ? 1 : 0) + (enemyTowerHP.right <= 0 ? 1 : 0) + (enemyTowerHP.king <= 0 ? 1 : 0);
-          const eC2 = (playerTowerHP.left <= 0 ? 1 : 0) + (playerTowerHP.right <= 0 ? 1 : 0) + (playerTowerHP.king <= 0 ? 1 : 0) + 3;
+          const eth2 = getEnemyTowerHP();
+          const pth2 = getPlayerTowerHP();
+          const pC2 = (eth2.left <= 0 ? 1 : 0) + (eth2.right <= 0 ? 1 : 0) + (eth2.king <= 0 ? 1 : 0);
+          const eC2 = (pth2.left <= 0 ? 1 : 0) + (pth2.right <= 0 ? 1 : 0) + (pth2.king <= 0 ? 1 : 0) + 3;
           const net2 = pC2 - eC2;
           const s2 = JSON.parse(localStorage.getItem('war_pass_data') || '{"crowns":0}');
           s2.crowns = Math.max(0, (s2.crowns || 0) + net2);
@@ -135,7 +139,7 @@ const BattleArena = () => {
     };
     window.addEventListener('deaf-mod', handler);
     return () => window.removeEventListener('deaf-mod', handler);
-  }, [deck, setBattleResult, setProfile, setScreen, enemyTowerHP, playerTowerHP]);
+  }, [deck, setBattleResult, setProfile, setScreen, getEnemyTowerHP, getPlayerTowerHP, spawnUnit, isRiverRace]);
 
   useEffect(() => {
     const shuffled = [...deck].sort(() => Math.random() - 0.5);
