@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getCardEntry, addCards, removeCards, canRequest, setRequestCooldown, getRequestTimeLeft, DONATION_LIMITS, getDonationsToday, recordDonation } from '@/data/cardInventory';
+import { allEmotes, getEquippedEmotes } from '@/data/emotes';
 
 const BANNER_COLORS = [
   '#b91c1c', '#dc2626', '#ef4444',
@@ -679,6 +680,11 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
   const [requestCardId, setRequestCardId] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [clanId, setClanId] = useState<string | null>(null);
+  const [showEmotePicker, setShowEmotePicker] = useState(false);
+
+  // Get equipped emotes data
+  const equippedEmoteIds = getEquippedEmotes();
+  const equippedEmotesData = allEmotes.filter(e => equippedEmoteIds.includes(e.id));
 
   // Cards the user owns (count > 0) - for trading offers
   const ownedCards = allCards.filter(c => {
@@ -688,6 +694,18 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
 
   // Requestable cards (any card with donation limits)
   const requestableCards = allCards.filter(c => DONATION_LIMITS[c.rarity] > 0);
+
+  const sendEmote = async (emote: typeof allEmotes[0]) => {
+    if (!clanId || !user) return;
+    await supabase.from('clan_messages').insert({
+      clan_id: clanId,
+      user_id: user.id,
+      username: profile.name,
+      message_type: 'emote',
+      content: emote.svg,
+    });
+    setShowEmotePicker(false);
+  };
 
 
   // Get clan ID from DB
@@ -753,9 +771,12 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
 
   const sendTradeRequest = async () => {
     if (!tradeOffer || !tradeWant || !clanId || !user) return;
+    if (tradeOffer === tradeWant) { toast.error("Can't trade a card for itself!"); return; }
     const offered = allCards.find(c => c.id === tradeOffer);
     const wanted = allCards.find(c => c.id === tradeWant);
     if (!offered || !wanted) return;
+    const offerEntry = getCardEntry(tradeOffer);
+    if (offerEntry.count <= 1) { toast.error("You need at least 2 of this card to trade!"); return; }
     setSending(true);
     await supabase.from('clan_messages').insert({
       clan_id: clanId,
@@ -771,6 +792,26 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
     setTradeWant('');
     setSending(false);
     toast.success('Trade request posted!');
+  };
+  
+  const acceptTrade = (msg: ClanMsg) => {
+    if (!msg.trade_card_offered || !msg.trade_card_wanted) return;
+    if (msg.user_id === user?.id) { toast.error("Can't accept your own trade!"); return; }
+    const offeredCard = allCards.find(c => c.id === msg.trade_card_offered);
+    const wantedCard = allCards.find(c => c.id === msg.trade_card_wanted);
+    if (!offeredCard || !wantedCard) return;
+    
+    // The acceptor needs to have the "wanted" card (what the poster wants)
+    const myWantedEntry = getCardEntry(msg.trade_card_wanted);
+    if (myWantedEntry.count <= 1) { toast.error(`You need at least 2 ${wantedCard.name} to trade!`); return; }
+    
+    // Execute trade: acceptor gives wanted card, receives offered card
+    removeCards(msg.trade_card_wanted, 1);
+    addCards(msg.trade_card_offered, 1);
+    
+    // Grant XP for trading
+    setProfile((p: any) => ({ ...p, xp: p.xp + 10 }));
+    toast.success(`Trade complete! Got ${offeredCard.emoji} ${offeredCard.name}, gave ${wantedCard.emoji} ${wantedCard.name}`);
   };
 
   const sendCardRequest = async () => {
@@ -910,11 +951,14 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                       <select value={tradeWant} onChange={e => setTradeWant(e.target.value)}
                         className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-[9px] text-foreground">
                         <option value="">Select card...</option>
-                        {allCards.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
+                        {allCards.filter(c => c.id !== tradeOffer).map(c => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
                       </select>
                     </div>
                   </div>
-                  <button onClick={sendTradeRequest} disabled={!tradeOffer || !tradeWant || sending}
+                  {tradeOffer === tradeWant && tradeOffer && (
+                    <div className="text-[9px] text-destructive">⚠️ Can't trade a card for itself!</div>
+                  )}
+                  <button onClick={sendTradeRequest} disabled={!tradeOffer || !tradeWant || tradeOffer === tradeWant || sending}
                     className="w-full py-1.5 bg-primary text-primary-foreground rounded-lg text-[10px] font-bold disabled:opacity-50">
                     Post Trade Request
                   </button>
@@ -971,10 +1015,13 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
               const isMe = msg.user_id === user?.id;
               const isTrade = msg.message_type === 'trade_request';
               const isRequest = msg.message_type === 'card_request';
+              const isEmote = msg.message_type === 'emote';
               return (
                 <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] rounded-xl px-3 py-1.5 ${
-                    isRequest
+                    isEmote
+                      ? 'bg-transparent border-none px-0'
+                      : isRequest
                       ? 'bg-[hsl(120,20%,15%)] border border-[hsl(120,25%,25%)]'
                       : isTrade
                       ? 'bg-[hsl(280,30%,18%)] border border-[hsl(280,30%,30%)]'
@@ -982,10 +1029,25 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                       ? 'bg-primary/20 border border-primary/30'
                       : 'bg-[hsl(220,15%,16%)] border border-border'
                   }`}>
-                    {!isMe && (
+                    {!isMe && !isEmote && (
                       <div className="text-[8px] font-bold text-primary mb-0.5">{msg.username}</div>
                     )}
-                    <div className="text-[10px] text-foreground">{msg.content}</div>
+                    {isEmote ? (
+                      <div className="flex flex-col items-center">
+                        {!isMe && <div className="text-[8px] font-bold text-primary mb-0.5">{msg.username}</div>}
+                        <div className="w-12 h-12" dangerouslySetInnerHTML={{ __html: msg.content }} />
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-foreground">{msg.content}</div>
+                    )}
+                    {isTrade && !isMe && msg.trade_card_offered && msg.trade_card_wanted && (
+                      <button
+                        onClick={() => acceptTrade(msg)}
+                        className="mt-1 px-3 py-1 bg-primary/20 text-primary rounded-lg text-[9px] font-bold flex items-center gap-1 hover:bg-primary/30 transition-colors"
+                      >
+                        <Repeat className="w-3 h-3" /> Accept Trade
+                      </button>
+                    )}
                     {isRequest && !isMe && msg.trade_card_wanted && (
                       <button
                         onClick={() => donateCard(msg)}
@@ -994,7 +1056,7 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                         <Gift className="w-3 h-3" /> Donate
                       </button>
                     )}
-                    <div className="text-[7px] text-muted-foreground text-right mt-0.5">{formatTime(msg.created_at)}</div>
+                    {!isEmote && <div className="text-[7px] text-muted-foreground text-right mt-0.5">{formatTime(msg.created_at)}</div>}
                   </div>
                 </div>
               );
@@ -1002,8 +1064,32 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
             <div ref={chatEndRef} />
           </div>
 
+          {/* Emote picker */}
+          <AnimatePresence>
+            {showEmotePicker && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                className="bg-[hsl(220,20%,11%)] border-t border-border overflow-hidden">
+                <div className="p-2 grid grid-cols-8 gap-1.5 max-h-24 overflow-y-auto">
+                  {equippedEmotesData.map(emote => (
+                    <button key={emote.id} onClick={() => sendEmote(emote)}
+                      className="w-8 h-8 rounded-lg bg-secondary border border-border hover:border-primary/50 transition-colors p-0.5">
+                      <div dangerouslySetInnerHTML={{ __html: emote.svg }} />
+                    </button>
+                  ))}
+                  {equippedEmotesData.length === 0 && (
+                    <div className="col-span-8 text-[9px] text-muted-foreground text-center py-2">No emotes equipped! Go to Cards → Emotes to equip some.</div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Chat input */}
           <div className="px-3 py-2 bg-[hsl(220,20%,10%)] border-t border-border flex gap-2">
+            <button onClick={() => setShowEmotePicker(!showEmotePicker)}
+              className="w-9 h-9 rounded-lg bg-secondary border border-border flex items-center justify-center text-sm hover:border-primary/50 transition-colors">
+              😀
+            </button>
             <input
               value={msgInput}
               onChange={e => setMsgInput(e.target.value)}
