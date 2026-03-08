@@ -186,15 +186,16 @@ const WarPassScreen = () => {
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background relative">
       {/* Reward reveal popup */}
       <AnimatePresence>
-        {revealItem && (
+        {revealItems && revealItems.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
-            onClick={() => setRevealItem(null)}
+            onClick={() => { if (revealIndex >= revealItems.length - 1) { setRevealItems(null); } else { setRevealIndex(i => i + 1); } }}
           >
             <motion.div
+              key={revealIndex}
               initial={{ scale: 0.5, rotateY: 180 }}
               animate={{ scale: 1, rotateY: 0 }}
               exit={{ scale: 0.5, opacity: 0 }}
@@ -208,34 +209,40 @@ const WarPassScreen = () => {
                 transition={{ duration: 1 }}
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-primary/20 rounded-full blur-xl pointer-events-none"
               />
+              {revealItems.length > 1 && (
+                <div className="text-[9px] text-muted-foreground mb-1">{revealIndex + 1} / {revealItems.length}</div>
+              )}
               <h2 className="font-display font-bold text-lg text-primary mb-3">YOU GOT!</h2>
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
                 className={`inline-block border-2 rounded-xl p-4 ${
-                  revealItem.rarity === 'legendary' ? 'border-primary/50 shadow-[0_0_15px_hsl(38,90%,50%,0.3)]' :
-                  revealItem.rarity === 'epic' ? 'border-purple-400/40' :
-                  revealItem.rarity === 'rare' ? 'border-blue-400/40' :
+                  revealItems[revealIndex].rarity === 'legendary' ? 'border-primary/50 shadow-[0_0_15px_hsl(38,90%,50%,0.3)]' :
+                  revealItems[revealIndex].rarity === 'epic' ? 'border-purple-400/40' :
+                  revealItems[revealIndex].rarity === 'rare' ? 'border-blue-400/40' :
                   'border-border'
                 } bg-background`}
               >
-                <span className="text-4xl">{revealItem.emoji}</span>
+                <span className="text-4xl">{revealItems[revealIndex].emoji}</span>
                 <div className={`text-sm font-bold mt-2 ${
-                  revealItem.rarity === 'legendary' ? 'text-primary' :
-                  revealItem.rarity === 'epic' ? 'text-purple-400' :
-                  revealItem.rarity === 'rare' ? 'text-blue-400' :
+                  revealItems[revealIndex].rarity === 'legendary' ? 'text-primary' :
+                  revealItems[revealIndex].rarity === 'epic' ? 'text-purple-400' :
+                  revealItems[revealIndex].rarity === 'rare' ? 'text-blue-400' :
                   'text-foreground'
-                }`}>{revealItem.label}</div>
+                }`}>{revealItems[revealIndex].label}</div>
               </motion.div>
               <motion.button
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                onClick={() => setRevealItem(null)}
+                onClick={() => {
+                  if (revealIndex >= revealItems.length - 1) { setRevealItems(null); }
+                  else { setRevealIndex(i => i + 1); }
+                }}
                 className="w-full mt-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold uppercase"
               >
-                Collect
+                {revealIndex >= revealItems.length - 1 ? 'Collect' : 'Next'}
               </motion.button>
             </motion.div>
           </motion.div>
