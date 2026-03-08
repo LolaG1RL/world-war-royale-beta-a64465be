@@ -1,6 +1,6 @@
 import { useGame } from '@/context/GameContext';
 import { shopItems, allCards } from '@/data/cards';
-import { ShoppingBag, Swords, Users, Crown, Zap, X, Loader2, Check } from 'lucide-react';
+import { ShoppingBag, Swords, Users, Crown, Zap, X, Loader2, Check, Gift } from 'lucide-react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
