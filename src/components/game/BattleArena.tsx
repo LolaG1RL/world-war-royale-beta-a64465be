@@ -70,16 +70,25 @@ const BattleArena = () => {
   const enemyElixir = useRef(5);
   const gameTime = useRef(0);
 
-  const playerTowerHP = {
-    king: towers.find(t => t.id === 'p-king')?.hp ?? 0,
-    left: towers.find(t => t.id === 'p-left')?.hp ?? 0,
-    right: towers.find(t => t.id === 'p-right')?.hp ?? 0,
-  };
-  const enemyTowerHP = {
-    king: towers.find(t => t.id === 'e-king')?.hp ?? 0,
-    left: towers.find(t => t.id === 'e-left')?.hp ?? 0,
-    right: towers.find(t => t.id === 'e-right')?.hp ?? 0,
-  };
+  const towersRef = useRef(towers);
+  towersRef.current = towers;
+  const deployedUnitsRef = useRef(deployedUnits);
+  deployedUnitsRef.current = deployedUnits;
+
+  const getPlayerTowerHP = useCallback(() => ({
+    king: towersRef.current.find(t => t.id === 'p-king')?.hp ?? 0,
+    left: towersRef.current.find(t => t.id === 'p-left')?.hp ?? 0,
+    right: towersRef.current.find(t => t.id === 'p-right')?.hp ?? 0,
+  }), []);
+  const getEnemyTowerHP = useCallback(() => ({
+    king: towersRef.current.find(t => t.id === 'e-king')?.hp ?? 0,
+    left: towersRef.current.find(t => t.id === 'e-left')?.hp ?? 0,
+    right: towersRef.current.find(t => t.id === 'e-right')?.hp ?? 0,
+  }), []);
+
+  // Keep derived values for rendering
+  const playerTowerHP = getPlayerTowerHP();
+  const enemyTowerHP = getEnemyTowerHP();
 
   // Deaf Mode event listeners
   useEffect(() => {
