@@ -83,7 +83,7 @@ const CardCollection = () => {
         <button onClick={() => setMainTab('emotes')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${mainTab === 'emotes' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
           😀 Emotes
         </button>
-        <button onClick={() => setMainTab('banner')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${mainTab === 'banner' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
+        <button onClick={() => setMainTab('banner')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors text-muted-foreground`}>
           🏴 Banner
         </button>
       </div>
