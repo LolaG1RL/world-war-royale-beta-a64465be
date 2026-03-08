@@ -490,7 +490,7 @@ const ShopScreen = () => {
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🎖️</span>
             <div>
-              <div className="text-xs font-display font-bold text-foreground">WAR PASS</div>
+              <div className="text-xs font-display font-bold text-foreground">WAR PASS+</div>
               <div className="text-[8px] text-muted-foreground">Unlock premium rewards all season</div>
             </div>
           </div>
@@ -505,7 +505,7 @@ const ShopScreen = () => {
             className="w-full mt-3 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold uppercase disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {purchasing === 'war-pass' ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            Buy War Pass - $4.99
+            Buy War Pass+ - $4.99
           </button>
         </div>
       </div>

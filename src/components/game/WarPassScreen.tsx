@@ -167,7 +167,7 @@ const WarPassScreen = () => {
       {!hasPaid && (
         <div className="bg-gradient-to-r from-[hsl(340,60%,18%)] to-[hsl(280,50%,18%)] border-b border-[hsl(280,30%,30%)] px-3 py-3 flex items-center justify-between">
           <div>
-            <div className="text-[11px] font-bold text-[hsl(340,70%,70%)]">🔥 Unlock Paid Track</div>
+            <div className="text-[11px] font-bold text-[hsl(340,70%,70%)]">🔥 Unlock War Pass+</div>
             <div className="text-[8px] text-muted-foreground">Get exclusive rewards all season long</div>
           </div>
           <button
@@ -183,7 +183,7 @@ const WarPassScreen = () => {
 
       {hasPaid && (
         <div className="bg-gradient-to-r from-[hsl(280,40%,18%)] to-[hsl(320,40%,18%)] border-b border-[hsl(280,30%,30%)] px-3 py-1.5 text-center">
-          <span className="text-[10px] font-bold text-[hsl(280,60%,70%)]">⭐ War Pass Active</span>
+          <span className="text-[10px] font-bold text-[hsl(280,60%,70%)]">⭐ War Pass+ Active</span>
         </div>
       )}
 
@@ -207,7 +207,7 @@ const WarPassScreen = () => {
           <div className="flex-1 text-center py-1.5 text-[9px] font-bold text-[hsl(120,40%,55%)] uppercase tracking-wider">Free</div>
           <div className="w-10" />
           <div className="flex-1 text-center py-1.5 text-[9px] font-bold text-[hsl(280,60%,65%)] uppercase tracking-wider">
-            {hasPaid ? '⭐ Paid' : '🔒 Paid'}
+            {hasPaid ? '⭐ Pass+' : '🔒 Pass+'}
           </div>
         </div>
 
