@@ -3,23 +3,16 @@ import { useGame } from '@/context/GameContext';
 import { BottomNav } from './BottomNav';
 import { trophyRoadRewards, arenas, getArenaForTrophies, allCards } from '@/data/cards';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Lock, Check, Trophy, Gift, X } from 'lucide-react';
-import { toast } from 'sonner';
-
-interface RewardItem {
-  emoji: string;
-  name: string;
-  count: number;
-  rarity: string;
-}
+import { ChevronLeft, Lock, Check, Trophy, Gift } from 'lucide-react';
+import { addCards } from '@/data/cardInventory';
+import RevealScreen, { RevealItem } from './RevealScreen';
 
 const TrophyRoadScreen = () => {
   const { setScreen, profile, setProfile } = useGame();
   const currentArena = getArenaForTrophies(profile.trophies);
   const [claimedRewards, setClaimedRewards] = useState<Set<number>>(new Set());
-  const [showRewardPopup, setShowRewardPopup] = useState(false);
-  const [rewardItems, setRewardItems] = useState<RewardItem[]>([]);
-  const [rewardTitle, setRewardTitle] = useState('');
+  const [revealItems, setRevealItems] = useState<RevealItem[] | null>(null);
+  const [revealTitle, setRevealTitle] = useState('');
 
   useEffect(() => {
     const saved = localStorage.getItem('trophy_road_claimed');
@@ -33,8 +26,8 @@ const TrophyRoadScreen = () => {
     localStorage.setItem('trophy_road_claimed', JSON.stringify([...next]));
   };
 
-  const generateChestRewards = (chestType: string): RewardItem[] => {
-    const items: RewardItem[] = [];
+  const generateChestRewards = (chestType: string): RevealItem[] => {
+    const items: RevealItem[] = [];
     let numCards = 3;
     let goldAmount = 100;
 
@@ -56,8 +49,8 @@ const TrophyRoadScreen = () => {
     return items;
   };
 
-  const generateCardRewards = (amount: number): RewardItem[] => {
-    const items: RewardItem[] = [];
+  const generateCardRewards = (amount: number): RevealItem[] => {
+    const items: RevealItem[] = [];
     for (let i = 0; i < amount; i++) {
       const card = allCards[Math.floor(Math.random() * allCards.length)];
       const existing = items.find(r => r.name === card.name);
@@ -71,8 +64,7 @@ const TrophyRoadScreen = () => {
     const reward = trophyRoadRewards.find(r => r.trophies === trophies);
     if (!reward || claimedRewards.has(trophies)) return;
 
-    let items: RewardItem[] = [];
-    setRewardTitle(reward.name);
+    let items: RevealItem[] = [];
 
     if (reward.type === 'gold') {
       setProfile(p => ({ ...p, gold: p.gold + reward.amount }));
@@ -82,30 +74,25 @@ const TrophyRoadScreen = () => {
       items = [{ emoji: '💎', name: 'Gems', count: reward.amount, rarity: 'epic' }];
     } else if (reward.type === 'chest') {
       items = generateChestRewards(reward.name);
-      // Grant gold from chest
       const goldItem = items.find(i => i.name === 'Gold');
       if (goldItem) setProfile(p => ({ ...p, gold: p.gold + goldItem.count }));
     } else if (reward.type === 'cards') {
       items = generateCardRewards(reward.amount);
     }
 
-    setRewardItems(items);
-    setShowRewardPopup(true);
+    // Grant card inventory
+    items.forEach(item => {
+      const card = allCards.find(c => c.name === item.name);
+      if (card) addCards(card.id, item.count);
+    });
+
+    setRevealItems(items);
+    setRevealTitle(reward.name);
 
     const next = new Set(claimedRewards);
     next.add(trophies);
     saveClaimed(next);
   };
-
-  const rarityColor = (rarity: string) => {
-    switch (rarity) {
-      case 'legendary': return 'text-[hsl(38,90%,55%)]';
-      case 'epic': return 'text-[hsl(280,60%,65%)]';
-      case 'rare': return 'text-[hsl(210,70%,60%)]';
-      default: return 'text-foreground';
-    }
-  };
-
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden relative">
       {/* Header */}
@@ -188,53 +175,14 @@ const TrophyRoadScreen = () => {
         })}
       </div>
 
-      {/* Reward popup */}
       <AnimatePresence>
-        {showRewardPopup && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 bg-[hsl(0,0%,0%,0.85)] flex items-center justify-center p-6"
-            onClick={() => setShowRewardPopup(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.7, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.7, opacity: 0 }}
-              className="bg-[hsl(220,25%,12%)] border border-border rounded-2xl p-4 w-full max-w-xs"
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="text-center mb-3">
-                <div className="text-2xl mb-1">🎁</div>
-                <h3 className="font-display font-bold text-foreground text-sm">{rewardTitle}</h3>
-                <p className="text-[9px] text-muted-foreground">You received:</p>
-              </div>
-
-              <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                {rewardItems.map((item, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: i * 0.08 }}
-                    className="flex items-center gap-2 bg-[hsl(220,20%,16%)] rounded-lg px-3 py-1.5 border border-border"
-                  >
-                    <span className="text-base">{item.emoji}</span>
-                    <span className={`text-[10px] font-bold flex-1 ${rarityColor(item.rarity)}`}>{item.name}</span>
-                    <span className="text-[10px] font-bold text-primary">x{item.count}</span>
-                  </motion.div>
-                ))}
-              </div>
-
-              <button
-                onClick={() => setShowRewardPopup(false)}
-                className="w-full mt-3 py-2 rounded-lg bg-primary text-primary-foreground font-bold text-xs"
-              >
-                OK
-              </button>
-            </motion.div>
-          </motion.div>
+        {revealItems && (
+          <RevealScreen
+            items={revealItems}
+            title={`🎁 ${revealTitle}`}
+            subtitle="You received:"
+            onClose={() => setRevealItems(null)}
+          />
         )}
       </AnimatePresence>
 
