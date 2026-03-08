@@ -36,7 +36,7 @@ const BattleBannerDisplay = ({
     .map(id => allBadges.find(b => b.id === id))
     .filter(Boolean) as BannerBadge[];
 
-  const dims = size === 'lg' ? 'w-full h-20' : size === 'md' ? 'w-full h-16' : 'w-full h-14';
+  const dims = size === 'lg' ? 'w-full h-20' : size === 'md' ? 'w-full h-16' : 'w-full h-12';
   const textSize = size === 'lg' ? 'text-sm' : size === 'md' ? 'text-xs' : 'text-[10px]';
   const emojiSize = size === 'lg' ? 'text-2xl' : size === 'md' ? 'text-xl' : 'text-base';
   const badgeSize = size === 'lg' ? 'text-sm w-6 h-6' : size === 'md' ? 'text-xs w-5 h-5' : 'text-[10px] w-4 h-4';

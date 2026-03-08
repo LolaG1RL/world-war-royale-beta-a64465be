@@ -29,7 +29,7 @@ const RARITY_BORDER: Record<string, string> = {
 
 type BannerSubTab = 'backgrounds' | 'emblems' | 'badges';
 
-const BannerInline = ({ profile, clanName }: { profile: PlayerProfile; clanName?: string }) => {
+const BannerInline = ({ profile, clanName, clanBanner }: { profile: PlayerProfile; clanName?: string; clanBanner?: { bannerColor: string; bannerShape: string; iconId: string; iconColor: string } }) => {
   const [banner, setBanner] = useState<PlayerBanner>(getPlayerBanner());
   const [subTab, setSubTab] = useState<BannerSubTab>('backgrounds');
   const [ownedBgs] = useState(() => getOwnedBackgrounds());
@@ -66,7 +66,7 @@ const BannerInline = ({ profile, clanName }: { profile: PlayerProfile; clanName?
     <>
       {/* Preview */}
       <div className="px-4 py-3 bg-[hsl(220,20%,11%)] border-b border-border">
-        <BattleBannerDisplay banner={banner} name={profile.name} trophies={profile.trophies} clanName={clanName} size="lg" />
+        <BattleBannerDisplay banner={banner} name={profile.name} trophies={profile.trophies} clanName={clanName} clanBanner={clanBanner} size="lg" />
       </div>
 
       {/* Sub tabs */}
@@ -917,7 +917,7 @@ const CardCollection = () => {
         </>
       ) : (
         /* Banner tab - inline */
-        <BannerInline profile={profile} clanName={clan?.name} />
+        <BannerInline profile={profile} clanName={clan?.name} clanBanner={clan ? { bannerColor: clan.bannerColor, bannerShape: clan.bannerShape, iconId: clan.iconId, iconColor: clan.iconColor } : undefined} />
       )}
 
       <BottomNav active="cards" setScreen={setScreen} />
