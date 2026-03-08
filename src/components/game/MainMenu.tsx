@@ -40,7 +40,7 @@ const MainMenu = () => {
         const claimedPaid = new Set(data.claimedPaid || []);
         const hasPaid = data.hasPaid || false;
         // Count unclaimed tiers where crowns are sufficient
-        const WAR_PASS_TIERS = [2,4,7,10,14,18,22,27,32,37,42,48,54,60,67,74,82,90,98,110];
+        const WAR_PASS_TIERS = [2,4,7,10,14,18,22,27,32,37,42,48,54,60,67,74,82,90,98,110,120,132,144,158,172,188,205,224,245,270,295,322,350,380,412,446,482,520,560,602,646,692,740,790,842,896,952,1010,1070,1132,1196,1262,1330,1400,1472,1546,1622,1700,1780,1862];
         let count = 0;
         WAR_PASS_TIERS.forEach((needed, i) => {
           const tier = i + 1;

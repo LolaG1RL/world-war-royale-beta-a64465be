@@ -40,6 +40,8 @@ export const allEmotes: Emote[] = [
   { id: 'em-lightning', name: 'Lightning', svg: createSvg('⚡', '#4a4a0a'), rarity: 'legendary', category: 'angry' },
   { id: 'em-star', name: 'Superstar', svg: createSvg('🌟', '#5a4a00'), rarity: 'legendary', category: 'celebration' },
   { id: 'em-diamond', name: 'Diamond', svg: createSvg('💎', '#1a3a5c'), rarity: 'legendary', category: 'happy' },
+  // Season exclusive War Pass+ emotes
+  { id: 'em-wp-s1-fleur', name: 'Fleur-de-lis', svg: createSvg('⚜️', '#2a1a4a'), rarity: 'legendary', category: 'celebration' },
 ];
 
 export const starterEmoteIds = ['em-thumbsup', 'em-cry', 'em-laugh', 'em-angry'];

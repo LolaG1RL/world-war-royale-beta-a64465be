@@ -71,6 +71,8 @@ export const allBackgrounds: BannerBackground[] = [
   { id: 'bg-galaxy', name: 'Galaxy', rarity: 'legendary', css: 'radial-gradient(ellipse at 40% 50%, hsl(260,55%,22%) 0%, hsl(280,45%,15%) 25%, hsl(300,40%,12%) 50%, hsl(240,50%,10%) 75%, hsl(220,45%,6%) 100%)', cost: 250, currency: 'gems', animated: true, animationSvg: '<svg viewBox="0 0 100 100"><circle cx="20" cy="20" r="1" fill="white" opacity="0.5"><animate attributeName="opacity" values="0.2;0.8;0.2" dur="1.5s" repeatCount="indefinite"/></circle><circle cx="75" cy="35" r="0.8" fill="white" opacity="0.4"><animate attributeName="opacity" values="0.1;0.7;0.1" dur="2s" repeatCount="indefinite"/></circle></svg>' },
   { id: 'bg-volcanic', name: 'Volcanic', rarity: 'legendary', css: 'linear-gradient(180deg, hsl(0,60%,15%) 0%, hsl(10,70%,25%) 30%, hsl(20,80%,35%) 50%, hsl(30,75%,30%) 65%, hsl(5,65%,18%) 80%, hsl(0,50%,8%) 100%)', cost: 220, currency: 'gems', animated: true, animationSvg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="60" r="8" fill="hsl(20,90%,50%)" opacity="0.15"><animate attributeName="r" values="5;12;5" dur="2s" repeatCount="indefinite"/></circle></svg>' },
   { id: 'bg-olympus', name: 'Mount Olympus', rarity: 'legendary', css: 'linear-gradient(180deg, hsl(200,60%,70%) 0%, hsl(210,50%,50%) 20%, hsl(220,40%,35%) 45%, hsl(230,35%,22%) 70%, hsl(240,30%,12%) 100%)', cost: 280, currency: 'gems', animated: true, animationSvg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="20" r="10" fill="hsl(45,90%,80%)" opacity="0.2"><animate attributeName="opacity" values="0.15;0.35;0.15" dur="3s" repeatCount="indefinite"/></circle></svg>' },
+  // Season 1 War Pass+ exclusive
+  { id: 'bg-wp-s1-divine-flame', name: 'Divine Flame', rarity: 'legendary', css: 'linear-gradient(180deg, hsl(45,70%,50%) 0%, hsl(35,65%,38%) 20%, hsl(280,40%,22%) 50%, hsl(260,35%,15%) 80%, hsl(240,30%,8%) 100%)', cost: 0, currency: 'gems', animated: true, animationSvg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="30" r="15" fill="hsl(45,80%,60%)" opacity="0.15"><animate attributeName="r" values="12;20;12" dur="2s" repeatCount="indefinite"/></circle><circle cx="30" cy="60" r="8" fill="hsl(280,50%,50%)" opacity="0.1"><animate attributeName="opacity" values="0.05;0.2;0.05" dur="3s" repeatCount="indefinite"/></circle></svg>' },
 ];
 
 // ── Emblems (troop-based) ──
@@ -100,6 +102,8 @@ export const allEmblems: BannerEmblem[] = [
   { id: 'emb-kraken', name: 'Kraken', emoji: '🐙', rarity: 'legendary', cost: 200, currency: 'gems', animated: true },
   { id: 'emb-trident', name: 'Trident', emoji: '🔱', rarity: 'legendary', cost: 180, currency: 'gems', animated: true },
   { id: 'emb-thunderbolt', name: 'Thunderbolt', emoji: '⚡', rarity: 'legendary', cost: 220, currency: 'gems', animated: true },
+  // Season 1 War Pass+ exclusive
+  { id: 'emb-wp-s1-joan', name: 'Joan\'s Banner', emoji: '⚜️', rarity: 'legendary', cost: 0, currency: 'gems', animated: true },
 ];
 
 // ── Badges ──

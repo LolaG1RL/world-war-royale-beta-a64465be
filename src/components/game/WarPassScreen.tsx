@@ -7,6 +7,8 @@ import { BottomNav } from './BottomNav';
 import { toast } from 'sonner';
 import { allCards } from '@/data/cards';
 import { addCards } from '@/data/cardInventory';
+import { addOwnedBackground, addOwnedEmblem } from '@/data/banners';
+import { addOwnedEmote } from '@/data/emotes';
 
 interface RewardItem { emoji: string; name: string; count: number; rarity: string; }
 
@@ -87,6 +89,40 @@ const WAR_PASS_REWARDS: PassReward[] = [
   { tier: 28, crownsNeeded: 224, free: { type: 'gold', amount: 4000, emoji: '💰', label: '4K Gold' }, paid: { type: 'gems', amount: 100, emoji: '💎', label: '100 Gems' } },
   { tier: 29, crownsNeeded: 245, free: { type: 'chest', amount: 1, emoji: '⚡', label: 'Lightning Chest' }, paid: { type: 'cards', amount: 3, emoji: '🃏', label: '3 Legendary' } },
   { tier: 30, crownsNeeded: 270, free: { type: 'chest', amount: 1, emoji: '👑', label: 'Legendary Chest' }, paid: { type: 'emote', amount: 1, emoji: '👑', label: 'Champion Emote' } },
+  // ── Extended tiers 31–60 ──
+  { tier: 31, crownsNeeded: 295, free: { type: 'gold', amount: 3000, emoji: '💰', label: '3K Gold' }, paid: { type: 'gems', amount: 40, emoji: '💎', label: '40 Gems' } },
+  { tier: 32, crownsNeeded: 322, free: { type: 'cards', amount: 5, emoji: '🃏', label: '5 Cards' }, paid: { type: 'gold', amount: 4000, emoji: '💰', label: '4K Gold' } },
+  { tier: 33, crownsNeeded: 350, free: { type: 'gems', amount: 12, emoji: '💎', label: '12 Gems' }, paid: { type: 'chest', amount: 1, emoji: '💰', label: 'Gold Chest' } },
+  { tier: 34, crownsNeeded: 380, free: { type: 'gold', amount: 3500, emoji: '💰', label: '3.5K Gold' }, paid: { type: 'gems', amount: 50, emoji: '💎', label: '50 Gems' } },
+  { tier: 35, crownsNeeded: 412, free: { type: 'chest', amount: 1, emoji: '✨', label: 'Magic Chest' }, paid: { type: 'gold', amount: 5000, emoji: '💰', label: '5K Gold' } },
+  { tier: 36, crownsNeeded: 446, free: { type: 'cards', amount: 4, emoji: '🃏', label: '4 Rare Cards' }, paid: { type: 'gems', amount: 60, emoji: '💎', label: '60 Gems' } },
+  { tier: 37, crownsNeeded: 482, free: { type: 'gold', amount: 4000, emoji: '💰', label: '4K Gold' }, paid: { type: 'chest', amount: 1, emoji: '⚡', label: 'Lightning Chest' } },
+  { tier: 38, crownsNeeded: 520, free: { type: 'gems', amount: 15, emoji: '💎', label: '15 Gems' }, paid: { type: 'cards', amount: 3, emoji: '🃏', label: '3 Epic Cards' } },
+  { tier: 39, crownsNeeded: 560, free: { type: 'chest', amount: 1, emoji: '💰', label: 'Gold Chest' }, paid: { type: 'gold', amount: 6000, emoji: '💰', label: '6K Gold' } },
+  { tier: 40, crownsNeeded: 602, free: { type: 'chest', amount: 1, emoji: '👑', label: 'Legendary Chest' }, paid: { type: 'gems', amount: 80, emoji: '💎', label: '80 Gems' } },
+  { tier: 41, crownsNeeded: 646, free: { type: 'gold', amount: 5000, emoji: '💰', label: '5K Gold' }, paid: { type: 'chest', amount: 1, emoji: '✨', label: 'Magic Chest' } },
+  { tier: 42, crownsNeeded: 692, free: { type: 'cards', amount: 6, emoji: '🃏', label: '6 Cards' }, paid: { type: 'gold', amount: 7000, emoji: '💰', label: '7K Gold' } },
+  { tier: 43, crownsNeeded: 740, free: { type: 'gems', amount: 18, emoji: '💎', label: '18 Gems' }, paid: { type: 'gems', amount: 90, emoji: '💎', label: '90 Gems' } },
+  { tier: 44, crownsNeeded: 790, free: { type: 'gold', amount: 5500, emoji: '💰', label: '5.5K Gold' }, paid: { type: 'cards', amount: 3, emoji: '🃏', label: '3 Legendary' } },
+  { tier: 45, crownsNeeded: 842, free: { type: 'chest', amount: 1, emoji: '⚡', label: 'Lightning Chest' }, paid: { type: 'gold', amount: 8000, emoji: '💰', label: '8K Gold' } },
+  { tier: 46, crownsNeeded: 896, free: { type: 'cards', amount: 5, emoji: '🃏', label: '5 Rare Cards' }, paid: { type: 'gems', amount: 100, emoji: '💎', label: '100 Gems' } },
+  { tier: 47, crownsNeeded: 952, free: { type: 'gold', amount: 6000, emoji: '💰', label: '6K Gold' }, paid: { type: 'chest', amount: 1, emoji: '✨', label: 'Magic Chest' } },
+  { tier: 48, crownsNeeded: 1010, free: { type: 'gems', amount: 20, emoji: '💎', label: '20 Gems' }, paid: { type: 'gold', amount: 10000, emoji: '💰', label: '10K Gold' } },
+  { tier: 49, crownsNeeded: 1070, free: { type: 'chest', amount: 1, emoji: '👑', label: 'Legendary Chest' }, paid: { type: 'gems', amount: 120, emoji: '💎', label: '120 Gems' } },
+  // ★ Tier 50 Pass+ = Season Exclusive Emote
+  { tier: 50, crownsNeeded: 1132, free: { type: 'gold', amount: 8000, emoji: '💰', label: '8K Gold' }, paid: { type: 'season-emote', amount: 1, emoji: '⚜️', label: '⚜️ S1 Emote' } },
+  { tier: 51, crownsNeeded: 1196, free: { type: 'gems', amount: 25, emoji: '💎', label: '25 Gems' }, paid: { type: 'gold', amount: 12000, emoji: '💰', label: '12K Gold' } },
+  { tier: 52, crownsNeeded: 1262, free: { type: 'cards', amount: 4, emoji: '🃏', label: '4 Epic Cards' }, paid: { type: 'gems', amount: 130, emoji: '💎', label: '130 Gems' } },
+  { tier: 53, crownsNeeded: 1330, free: { type: 'gold', amount: 9000, emoji: '💰', label: '9K Gold' }, paid: { type: 'chest', amount: 1, emoji: '⚡', label: 'Lightning Chest' } },
+  { tier: 54, crownsNeeded: 1400, free: { type: 'chest', amount: 1, emoji: '✨', label: 'Magic Chest' }, paid: { type: 'gold', amount: 15000, emoji: '💰', label: '15K Gold' } },
+  // ★ Tier 55 Pass+ = 2 Season Exclusive Animated Banner Parts
+  { tier: 55, crownsNeeded: 1472, free: { type: 'gems', amount: 30, emoji: '💎', label: '30 Gems' }, paid: { type: 'season-banner', amount: 2, emoji: '🏴', label: '🏴 S1 Banner Set' } },
+  { tier: 56, crownsNeeded: 1546, free: { type: 'gold', amount: 10000, emoji: '💰', label: '10K Gold' }, paid: { type: 'gems', amount: 150, emoji: '💎', label: '150 Gems' } },
+  { tier: 57, crownsNeeded: 1622, free: { type: 'cards', amount: 3, emoji: '🃏', label: '3 Legendary' }, paid: { type: 'gold', amount: 18000, emoji: '💰', label: '18K Gold' } },
+  { tier: 58, crownsNeeded: 1700, free: { type: 'gems', amount: 35, emoji: '💎', label: '35 Gems' }, paid: { type: 'chest', amount: 1, emoji: '👑', label: 'Legendary Chest' } },
+  { tier: 59, crownsNeeded: 1780, free: { type: 'chest', amount: 1, emoji: '👑', label: 'Legendary Chest' }, paid: { type: 'gems', amount: 200, emoji: '💎', label: '200 Gems' } },
+  // ★ Tier 60 Pass+ = Season Exclusive Hero (always active)
+  { tier: 60, crownsNeeded: 1862, free: { type: 'gold', amount: 15000, emoji: '💰', label: '15K Gold' }, paid: { type: 'season-hero', amount: 1, emoji: '⚜️', label: '⚜️ Joan of Arc' } },
 ];
 
 const WarPassScreen = () => {
@@ -167,10 +203,34 @@ const WarPassScreen = () => {
 
     let items: RewardItem[] = [];
 
-    if (r.type === 'chest') {
+    if (r.type === 'season-emote') {
+      // Season exclusive emote
+      addOwnedEmote('em-wp-s1-fleur');
+      items = [{ emoji: '⚜️', name: 'S1 Fleur-de-lis Emote', count: 1, rarity: 'legendary' }];
+      toast.success('Season 1 Exclusive Emote unlocked!');
+    } else if (r.type === 'season-banner') {
+      // Season exclusive banner set (background + emblem)
+      addOwnedBackground('bg-wp-s1-divine-flame');
+      addOwnedEmblem('emb-wp-s1-joan');
+      items = [
+        { emoji: '🏴', name: 'S1 Divine Flame BG', count: 1, rarity: 'legendary' },
+        { emoji: '⚜️', name: "S1 Joan's Banner Emblem", count: 1, rarity: 'legendary' },
+      ];
+      toast.success('Season 1 Exclusive Banner Set unlocked!');
+    } else if (r.type === 'season-hero') {
+      // Season exclusive hero — unlock Joan of Arc card permanently
+      addCards('joan-of-arc', 1);
+      // Mark hero as "always active" for this season
+      const activeHeroes = JSON.parse(localStorage.getItem('active_season_heroes') || '[]');
+      if (!activeHeroes.includes('joan-of-arc')) {
+        activeHeroes.push('joan-of-arc');
+        localStorage.setItem('active_season_heroes', JSON.stringify(activeHeroes));
+      }
+      items = [{ emoji: '⚜️', name: 'Joan of Arc (Hero)', count: 1, rarity: 'hero' }];
+      toast.success('Season 1 Exclusive Hero Joan of Arc unlocked! She is always active!');
+    } else if (r.type === 'chest') {
       const contents = generateChestContents(r.label);
       setProfile(p => ({ ...p, gold: p.gold + contents.gold, gems: p.gems + contents.gems }));
-      // Add cards to inventory
       contents.items.forEach(item => {
         if (item.rarity !== 'common' || !item.name.includes('Gold')) {
           const card = allCards.find(c => c.name === item.name);
@@ -179,7 +239,6 @@ const WarPassScreen = () => {
       });
       items = contents.items;
     } else if (r.type === 'cards') {
-      // Pick specific random cards and show them
       const label = r.label.toLowerCase();
       let pool = allCards;
       if (label.includes('legendary')) pool = allCards.filter(c => c.rarity === 'legendary');
@@ -437,9 +496,18 @@ const WarPassScreen = () => {
           const freeClaimed = claimedFree.has(reward.tier);
           const paidClaimable = unlocked && hasPaid && !claimedPaid.has(reward.tier);
           const paidClaimed = claimedPaid.has(reward.tier);
+          const isExclusive = reward.paid.type.startsWith('season-');
 
           return (
-            <div key={reward.tier} className={`flex items-stretch border-b border-border ${unlocked ? 'bg-[hsl(220,15%,12%)]' : 'bg-background opacity-60'}`}>
+            <div key={reward.tier} className={`flex items-stretch border-b border-border ${
+              isExclusive ? 'bg-gradient-to-r from-[hsl(220,15%,12%)] via-[hsl(280,20%,14%)] to-[hsl(220,15%,12%)]' :
+              unlocked ? 'bg-[hsl(220,15%,12%)]' : 'bg-background opacity-60'
+            }`}>
+              {isExclusive && (
+                <div className="absolute left-0 right-0 text-center">
+                  <span className="text-[6px] font-bold text-[hsl(280,60%,65%)] uppercase tracking-widest">Season Exclusive</span>
+                </div>
+              )}
               <div className="flex-1 p-1.5">
                 <RewardCard
                   emoji={reward.free.emoji}
@@ -454,8 +522,11 @@ const WarPassScreen = () => {
 
               <div className="w-10 flex flex-col items-center justify-center relative">
                 <div className={`w-0.5 absolute top-0 bottom-0 ${unlocked ? 'bg-primary/40' : 'bg-border'}`} />
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center z-10 text-[9px] font-black border-2 ${unlocked ? 'bg-primary/20 border-primary text-primary' : 'bg-muted border-border text-muted-foreground'}`}>
-                  {reward.crownsNeeded}
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center z-10 text-[9px] font-black border-2 ${
+                  isExclusive ? 'bg-[hsl(280,30%,20%)] border-[hsl(280,50%,50%)] text-[hsl(280,60%,70%)]' :
+                  unlocked ? 'bg-primary/20 border-primary text-primary' : 'bg-muted border-border text-muted-foreground'
+                }`}>
+                  {reward.tier}
                 </div>
               </div>
 
@@ -469,6 +540,7 @@ const WarPassScreen = () => {
                   onClaim={() => claimReward(reward.tier, 'paid')}
                   variant="paid"
                   showLock={!hasPaid}
+                  isExclusive={isExclusive}
                 />
               </div>
             </div>
@@ -480,11 +552,13 @@ const WarPassScreen = () => {
   );
 };
 
-const RewardCard = ({ emoji, label, claimed, claimable, locked, onClaim, variant, showLock }: {
+const RewardCard = ({ emoji, label, claimed, claimable, locked, onClaim, variant, showLock, isExclusive }: {
   emoji: string; label: string; claimed: boolean; claimable: boolean; locked: boolean;
-  onClaim: () => void; variant: 'free' | 'paid'; showLock?: boolean;
+  onClaim: () => void; variant: 'free' | 'paid'; showLock?: boolean; isExclusive?: boolean;
 }) => {
-  const bg = variant === 'free'
+  const bg = isExclusive
+    ? 'bg-gradient-to-b from-[hsl(280,25%,18%)] to-[hsl(280,20%,12%)] border-[hsl(280,40%,35%)]'
+    : variant === 'free'
     ? 'bg-[hsl(120,15%,14%)] border-[hsl(120,20%,22%)]'
     : 'bg-[hsl(280,15%,14%)] border-[hsl(280,20%,22%)]';
 
@@ -501,8 +575,11 @@ const RewardCard = ({ emoji, label, claimed, claimable, locked, onClaim, variant
       {showLock && !claimed && (
         <Lock className="w-2.5 h-2.5 text-muted-foreground absolute top-1 right-1" />
       )}
+      {isExclusive && !claimed && (
+        <span className="absolute top-0.5 left-0.5 text-[5px] font-bold text-[hsl(280,60%,65%)] uppercase">★ S1</span>
+      )}
       <span className={`text-base ${claimed ? 'grayscale opacity-40' : ''}`}>{emoji}</span>
-      <span className={`text-[7px] font-bold leading-tight text-center ${claimed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>{label}</span>
+      <span className={`text-[7px] font-bold leading-tight text-center ${claimed ? 'text-muted-foreground line-through' : isExclusive ? 'text-[hsl(280,60%,70%)]' : 'text-foreground'}`}>{label}</span>
       {claimed && <Check className="w-3 h-3 text-[hsl(120,50%,50%)]" />}
       {claimable && !claimed && (
         <span className="text-[6px] font-bold text-primary animate-pulse">CLAIM</span>
