@@ -9,6 +9,14 @@ export interface CardInventoryEntry {
 export type CardInventory = Record<string, CardInventoryEntry>;
 
 const STORAGE_KEY = 'card_inventory';
+const OWNED_CARDS_KEY = 'owned_cards';
+const INVENTORY_UPDATED_EVENT = 'card-inventory-updated';
+
+const emitInventoryUpdated = () => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(INVENTORY_UPDATED_EVENT));
+  }
+};
 
 // Cards needed to upgrade at each level, by rarity
 const UPGRADE_CARDS: Record<string, number[]> = {
@@ -57,6 +65,81 @@ export const getCardInventory = (): CardInventory => {
 
 export const saveCardInventory = (inv: CardInventory) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(inv));
+  emitInventoryUpdated();
+};
+
+const saveOwnedCardIds = (ids: string[]) => {
+  localStorage.setItem(OWNED_CARDS_KEY, JSON.stringify(Array.from(new Set(ids))));
+  emitInventoryUpdated();
+};
+
+export const getOwnedCardIds = (): string[] => {
+  try {
+    const saved = localStorage.getItem(OWNED_CARDS_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) return Array.from(new Set(parsed.filter(Boolean)));
+    }
+  } catch {}
+
+  // Migration fallback for older versions: every inventory key counts as owned/unlocked
+  const inv = getCardInventory();
+  const fallbackOwned = Object.keys(inv);
+  if (fallbackOwned.length > 0) saveOwnedCardIds(fallbackOwned);
+  return fallbackOwned;
+};
+
+export const markCardsOwned = (cardIds: string[]) => {
+  const ids = cardIds.filter(Boolean);
+  if (ids.length === 0) return;
+
+  const ownedSet = new Set(getOwnedCardIds());
+  const inv = getCardInventory();
+  let ownedChanged = false;
+  let invChanged = false;
+
+  ids.forEach((id) => {
+    if (!ownedSet.has(id)) {
+      ownedSet.add(id);
+      ownedChanged = true;
+    }
+
+    if (!inv[id]) {
+      inv[id] = { count: 0, level: 1 };
+      invChanged = true;
+    }
+  });
+
+  if (invChanged) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(inv));
+  }
+  if (ownedChanged) {
+    localStorage.setItem(OWNED_CARDS_KEY, JSON.stringify(Array.from(ownedSet)));
+  }
+  if (invChanged || ownedChanged) emitInventoryUpdated();
+};
+
+export const isCardOwned = (cardId: string): boolean => {
+  const inv = getCardInventory();
+  if (inv[cardId]) return true;
+  return getOwnedCardIds().includes(cardId);
+};
+
+export const subscribeToCardInventory = (onChange: () => void) => {
+  if (typeof window === 'undefined') return () => {};
+
+  const handler = () => onChange();
+  const storageHandler = (e: StorageEvent) => {
+    if (e.key === STORAGE_KEY || e.key === OWNED_CARDS_KEY) onChange();
+  };
+
+  window.addEventListener(INVENTORY_UPDATED_EVENT, handler);
+  window.addEventListener('storage', storageHandler);
+
+  return () => {
+    window.removeEventListener(INVENTORY_UPDATED_EVENT, handler);
+    window.removeEventListener('storage', storageHandler);
+  };
 };
 
 export const getCardEntry = (cardId: string): CardInventoryEntry => {
@@ -70,6 +153,7 @@ export const addCards = (cardId: string, amount: number): CardInventoryEntry => 
   entry.count += amount;
   inv[cardId] = entry;
   saveCardInventory(inv);
+  markCardsOwned([cardId]);
   return entry;
 };
 
@@ -105,11 +189,12 @@ export const upgradeCard = (cardId: string, rarity: string): { goldCost: number;
   const req = getUpgradeRequirements(cardId, rarity);
   if (!req || req.maxLevel) return null;
   if (entry.count < req.cardsNeeded) return null;
-  
+
   entry.count -= req.cardsNeeded;
   entry.level += 1;
   inv[cardId] = entry;
   saveCardInventory(inv);
+  markCardsOwned([cardId]);
   return { goldCost: req.goldNeeded, newLevel: entry.level };
 };
 
