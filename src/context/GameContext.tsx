@@ -3,6 +3,7 @@ import { GameCard, ChestData, PlayerProfile, ClanData, getStarterDeck, defaultCh
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { markCardsOwned } from '@/data/cardInventory';
+import { loadInventory, debouncedSaveInventory } from '@/lib/inventorySync';
 
 interface GameState {
   screen: string;
@@ -91,6 +92,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
           user_id: user.id,
         });
       }
+      // Load inventory (banners, emotes, war pass, trophy road, etc.) from DB
+      await loadInventory(user.id);
       setLoaded(true);
     };
     load();
@@ -147,7 +150,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
   // Auto-save when profile or deck changes
   useEffect(() => {
-    if (loaded) saveProgress();
+    if (loaded) {
+      saveProgress();
+      if (user) debouncedSaveInventory(user.id);
+    }
   }, [profile, deck, loaded]);
 
   useEffect(() => {

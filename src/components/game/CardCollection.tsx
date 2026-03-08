@@ -64,7 +64,7 @@ const BannerInline = ({ profile }: { profile: PlayerProfile }) => {
     <>
       {/* Preview */}
       <div className="px-4 py-3 bg-[hsl(220,20%,11%)] border-b border-border">
-        <BattleBannerDisplay banner={banner} name={profile.name} trophies={profile.trophies} size="lg" />
+        <BattleBannerDisplay banner={banner} name={profile.name} trophies={profile.trophies} clanName={(window as any).__gameClnName} size="lg" />
       </div>
 
       {/* Sub tabs */}

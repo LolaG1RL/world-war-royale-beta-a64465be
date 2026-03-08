@@ -70,13 +70,16 @@ const BattleArena = () => {
   const [spellProjectiles, setSpellProjectiles] = useState<{id: number; x: number; y: number; emoji: string; targetX: number; targetY: number}[]>([]);
   const projectileCounter = useRef(0);
 
+  // For non-trophy battles (river race), pick a random arena for music/bg
+  const battleArena = isRiverRace ? (Math.floor(Math.random() * 7) + 1) : profile.arena;
+
   // Start arena music when intro finishes
   useEffect(() => {
     if (!showIntro) {
-      playBattleMusic(profile.arena);
+      playBattleMusic(battleArena);
     }
     return () => stopMusic();
-  }, [showIntro, profile.arena]);
+  }, [showIntro, battleArena]);
 
   // Switch to overtime music
   useEffect(() => {
