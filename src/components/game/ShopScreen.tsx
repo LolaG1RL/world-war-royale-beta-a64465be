@@ -507,7 +507,11 @@ const ShopScreen = () => {
                 <motion.button
                   key={item.id}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => handlePurchase(item.id)}
+                  onClick={() => setConfirmAction({
+                    label: item.name,
+                    cost: item.currency === 'real' ? `$${item.cost}` : `${item.currency === 'gold' ? '💰' : '💎'} ${item.cost}`,
+                    onConfirm: () => { handlePurchase(item.id); setConfirmAction(null); }
+                  })}
                   disabled={!canAfford || purchasing === item.id}
                   className={`bg-card border rounded-xl p-2 flex flex-col items-center gap-1 transition-colors ${canAfford ? 'border-border hover:border-primary/30' : 'border-border/30 opacity-50'}`}
                 >
