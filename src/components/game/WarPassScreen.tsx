@@ -35,6 +35,16 @@ const WAR_PASS_REWARDS: PassReward[] = [
   { tier: 18, crownsNeeded: 90, free: { type: 'gems', amount: 10, emoji: '💎', label: '10 Gems' }, paid: { type: 'cards', amount: 2, emoji: '🃏', label: '2 Legendary' } },
   { tier: 19, crownsNeeded: 98, free: { type: 'gold', amount: 2000, emoji: '💰', label: '2K Gold' }, paid: { type: 'gems', amount: 50, emoji: '💎', label: '50 Gems' } },
   { tier: 20, crownsNeeded: 110, free: { type: 'chest', amount: 1, emoji: '👑', label: 'Legendary Chest' }, paid: { type: 'emote', amount: 1, emoji: '🎭', label: 'Exclusive Emote' } },
+  { tier: 21, crownsNeeded: 120, free: { type: 'gold', amount: 2500, emoji: '💰', label: '2.5K Gold' }, paid: { type: 'gems', amount: 60, emoji: '💎', label: '60 Gems' } },
+  { tier: 22, crownsNeeded: 132, free: { type: 'gems', amount: 12, emoji: '💎', label: '12 Gems' }, paid: { type: 'chest', amount: 1, emoji: '⚡', label: 'Lightning Chest' } },
+  { tier: 23, crownsNeeded: 144, free: { type: 'cards', amount: 6, emoji: '🃏', label: '6 Cards' }, paid: { type: 'gold', amount: 4000, emoji: '💰', label: '4K Gold' } },
+  { tier: 24, crownsNeeded: 158, free: { type: 'chest', amount: 1, emoji: '💰', label: 'Gold Chest' }, paid: { type: 'gems', amount: 75, emoji: '💎', label: '75 Gems' } },
+  { tier: 25, crownsNeeded: 172, free: { type: 'gold', amount: 3000, emoji: '💰', label: '3K Gold' }, paid: { type: 'cards', amount: 3, emoji: '🃏', label: '3 Epic Cards' } },
+  { tier: 26, crownsNeeded: 188, free: { type: 'gems', amount: 15, emoji: '💎', label: '15 Gems' }, paid: { type: 'chest', amount: 1, emoji: '✨', label: 'Magic Chest' } },
+  { tier: 27, crownsNeeded: 205, free: { type: 'cards', amount: 4, emoji: '🃏', label: '4 Rare Cards' }, paid: { type: 'gold', amount: 5000, emoji: '💰', label: '5K Gold' } },
+  { tier: 28, crownsNeeded: 224, free: { type: 'gold', amount: 4000, emoji: '💰', label: '4K Gold' }, paid: { type: 'gems', amount: 100, emoji: '💎', label: '100 Gems' } },
+  { tier: 29, crownsNeeded: 245, free: { type: 'chest', amount: 1, emoji: '⚡', label: 'Lightning Chest' }, paid: { type: 'cards', amount: 3, emoji: '🃏', label: '3 Legendary' } },
+  { tier: 30, crownsNeeded: 270, free: { type: 'chest', amount: 1, emoji: '👑', label: 'Legendary Chest' }, paid: { type: 'emote', amount: 1, emoji: '👑', label: 'Champion Emote' } },
 ];
 
 const WarPassScreen = () => {
@@ -50,11 +60,9 @@ const WarPassScreen = () => {
     if (saved) {
       try {
         const data = JSON.parse(saved);
-        // Check seasonal reset (30 days)
         const seasonStart = data.seasonStart || Date.now();
         const daysSinceSeason = (Date.now() - seasonStart) / (1000 * 60 * 60 * 24);
         if (daysSinceSeason >= 30) {
-          // Reset season
           const resetData = { crowns: 0, hasPaid: false, claimedFree: [], claimedPaid: [], seasonStart: Date.now(), daysLeft: 30 };
           localStorage.setItem('war_pass_data', JSON.stringify(resetData));
           setCrowns(0);
@@ -67,9 +75,8 @@ const WarPassScreen = () => {
         setHasPaid(data.hasPaid || false);
         setClaimedFree(new Set(data.claimedFree || []));
         setClaimedPaid(new Set(data.claimedPaid || []));
-      } catch {}
+      } catch { }
     } else {
-      // Initialize season
       localStorage.setItem('war_pass_data', JSON.stringify({ crowns: 0, hasPaid: false, claimedFree: [], claimedPaid: [], seasonStart: Date.now() }));
     }
   }, []);
@@ -82,7 +89,7 @@ const WarPassScreen = () => {
         const seasonStart = data.seasonStart || Date.now();
         const daysPassed = (Date.now() - seasonStart) / (1000 * 60 * 60 * 24);
         return Math.max(0, Math.ceil(30 - daysPassed));
-      } catch {}
+      } catch { }
     }
     return 30;
   };
@@ -90,7 +97,7 @@ const WarPassScreen = () => {
   const save = (c: number, paid: boolean, cf: Set<number>, cp: Set<number>) => {
     const saved = localStorage.getItem('war_pass_data');
     let seasonStart = Date.now();
-    if (saved) { try { seasonStart = JSON.parse(saved).seasonStart || Date.now(); } catch {} }
+    if (saved) { try { seasonStart = JSON.parse(saved).seasonStart || Date.now(); } catch { } }
     localStorage.setItem('war_pass_data', JSON.stringify({
       crowns: c, hasPaid: paid,
       claimedFree: [...cf], claimedPaid: [...cp],
@@ -128,7 +135,6 @@ const WarPassScreen = () => {
       });
       if (error) throw error;
       if (data?.url) {
-        // Mark as paid optimistically (Stripe redirect will confirm)
         setHasPaid(true);
         save(crowns, true, claimedFree, claimedPaid);
         window.open(data.url, '_blank');
@@ -228,9 +234,7 @@ const WarPassScreen = () => {
 
               <div className="w-10 flex flex-col items-center justify-center relative">
                 <div className={`w-0.5 absolute top-0 bottom-0 ${unlocked ? 'bg-primary/40' : 'bg-border'}`} />
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center z-10 text-[9px] font-black border-2 ${
-                  unlocked ? 'bg-primary/20 border-primary text-primary' : 'bg-muted border-border text-muted-foreground'
-                }`}>
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center z-10 text-[9px] font-black border-2 ${unlocked ? 'bg-primary/20 border-primary text-primary' : 'bg-muted border-border text-muted-foreground'}`}>
                   {reward.crownsNeeded}
                 </div>
               </div>
@@ -268,11 +272,10 @@ const RewardCard = ({ emoji, label, claimed, claimable, locked, onClaim, variant
       whileTap={claimable ? { scale: 0.95 } : {}}
       onClick={claimable ? onClaim : undefined}
       disabled={!claimable}
-      className={`w-full rounded-lg border p-1.5 flex flex-col items-center gap-0.5 transition-colors relative ${
-        claimed ? 'bg-muted/30 border-border' :
-        claimable ? `${bg} ring-1 ring-primary/50 shadow-[0_0_10px_hsl(38,90%,50%,0.15)]` :
-        `${bg} opacity-60`
-      }`}
+      className={`w-full rounded-lg border p-1.5 flex flex-col items-center gap-0.5 transition-colors relative ${claimed ? 'bg-muted/30 border-border' :
+          claimable ? `${bg} ring-1 ring-primary/50 shadow-[0_0_10px_hsl(38,90%,50%,0.15)]` :
+            `${bg} opacity-60`
+        }`}
     >
       {showLock && !claimed && (
         <Lock className="w-2.5 h-2.5 text-muted-foreground absolute top-1 right-1" />

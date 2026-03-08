@@ -348,8 +348,8 @@ const RiverRaceScreen = () => {
     // Set the war deck as the active deck for BattleArena
     setDeck(warDecks[deckIdx].cards);
 
-    // Navigate to real battle
-    setScreen('battle');
+    // Navigate to real battle — boat battles use PvE arena
+    setScreen(type === 'boat' ? 'boat-battle' : 'battle');
   };
 
   const playerBoat = boats.find(b => b.isPlayer);
