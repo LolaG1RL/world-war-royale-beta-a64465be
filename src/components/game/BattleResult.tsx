@@ -25,11 +25,7 @@ const BattleResult = () => {
   }, [isWin]);
 
   const isRiverRace = !!riverBattle;
-  const [trophyChange] = useState(() => {
-    if (isRiverRace) return 0;
-    if (isWin) return 20 + Math.floor(Math.random() * 21); // +20 to +40
-    return -(10 + Math.floor(Math.random() * 21)); // -10 to -30
-  });
+  const trophyChange = isRiverRace ? 0 : parseInt(localStorage.getItem('last_trophy_change') || '0');
 
   const handleContinue = () => {
     if (isRiverRace) {

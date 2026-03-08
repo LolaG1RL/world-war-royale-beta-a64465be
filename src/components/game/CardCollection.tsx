@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { GameCard } from '@/data/cards';
 import { allEmotes, getOwnedEmotes, getEquippedEmotes, setEquippedEmotes } from '@/data/emotes';
+import { BottomNav } from './ShopScreen';
 
 const CardCollection = () => {
   const { deck, setDeck, setScreen, setActiveTab } = useGame();
@@ -50,7 +51,7 @@ const CardCollection = () => {
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,25%,12%)] border-b border-border">
-        <button onClick={() => { setActiveTab('battle'); setScreen('menu'); }} className="text-muted-foreground text-xs font-semibold">✕</button>
+        <div className="w-8" />
         <h2 className="font-display font-bold text-foreground text-sm">{mainTab === 'cards' ? 'BATTLE DECK' : 'EMOTES'}</h2>
         <span className="text-xs font-bold text-primary">{mainTab === 'cards' ? `${currentDeck.length}/8` : `${equipped.length}/8`}</span>
       </div>
@@ -256,6 +257,8 @@ const CardCollection = () => {
           </div>
         </>
       )}
+
+      <BottomNav active="cards" setScreen={setScreen} />
     </div>
   );
 };

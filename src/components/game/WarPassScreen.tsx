@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { supabase } from '@/integrations/supabase/client';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Lock, Crown, Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+
+interface RevealItem { emoji: string; label: string; rarity: string; }
 
 const STRIPE_WAR_PASS_PRICE = 'price_1T8c8eF8KfKkJquqBrjotFic';
 
@@ -54,7 +56,7 @@ const WarPassScreen = () => {
   const [claimedFree, setClaimedFree] = useState<Set<number>>(new Set());
   const [claimedPaid, setClaimedPaid] = useState<Set<number>>(new Set());
   const [purchasing, setPurchasing] = useState(false);
-
+  const [revealItem, setRevealItem] = useState<RevealItem | null>(null);
   useEffect(() => {
     const saved = localStorage.getItem('war_pass_data');
     if (saved) {
@@ -124,7 +126,10 @@ const WarPassScreen = () => {
       setClaimedPaid(next);
       save(crowns, hasPaid, claimedFree, next);
     }
-    toast.success(`Claimed: ${r.label}!`);
+
+    // Show reveal popup
+    const rarity = r.type === 'gems' ? 'rare' : r.type === 'chest' ? 'epic' : r.type === 'emote' ? 'legendary' : 'common';
+    setRevealItem({ emoji: r.emoji, label: r.label, rarity });
   };
 
   const handleBuyPass = async () => {
@@ -148,7 +153,64 @@ const WarPassScreen = () => {
   const maxCrowns = WAR_PASS_REWARDS[WAR_PASS_REWARDS.length - 1].crownsNeeded;
 
   return (
-    <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background">
+    <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background relative">
+      {/* Reward reveal popup */}
+      <AnimatePresence>
+        {revealItem && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+            onClick={() => setRevealItem(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.5, rotateY: 180 }}
+              animate={{ scale: 1, rotateY: 0 }}
+              exit={{ scale: 0.5, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 200 }}
+              onClick={e => e.stopPropagation()}
+              className="w-[70%] max-w-xs bg-card border border-border rounded-2xl p-6 relative text-center"
+            >
+              <motion.div
+                initial={{ scale: 0, opacity: 1 }}
+                animate={{ scale: 3, opacity: 0 }}
+                transition={{ duration: 1 }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-primary/20 rounded-full blur-xl pointer-events-none"
+              />
+              <h2 className="font-display font-bold text-lg text-primary mb-3">YOU GOT!</h2>
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+                className={`inline-block border-2 rounded-xl p-4 ${
+                  revealItem.rarity === 'legendary' ? 'border-primary/50 shadow-[0_0_15px_hsl(38,90%,50%,0.3)]' :
+                  revealItem.rarity === 'epic' ? 'border-purple-400/40' :
+                  revealItem.rarity === 'rare' ? 'border-blue-400/40' :
+                  'border-border'
+                } bg-background`}
+              >
+                <span className="text-4xl">{revealItem.emoji}</span>
+                <div className={`text-sm font-bold mt-2 ${
+                  revealItem.rarity === 'legendary' ? 'text-primary' :
+                  revealItem.rarity === 'epic' ? 'text-purple-400' :
+                  revealItem.rarity === 'rare' ? 'text-blue-400' :
+                  'text-foreground'
+                }`}>{revealItem.label}</div>
+              </motion.div>
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                onClick={() => setRevealItem(null)}
+                className="w-full mt-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold uppercase"
+              >
+                Collect
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Header */}
       <div className="bg-[hsl(220,25%,10%)] border-b border-border px-3 py-2.5 flex items-center gap-3">
         <button onClick={() => setScreen('menu')} className="text-muted-foreground hover:text-foreground">
