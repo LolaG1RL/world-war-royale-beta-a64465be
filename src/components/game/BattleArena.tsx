@@ -256,214 +256,314 @@ const BattleArena = () => {
     return () => clearInterval(interval);
   }, [deck, spawnUnit]);
 
+  // Bridge and river constants
+  const RIVER_TOP = 47;
+  const RIVER_BOTTOM = 53;
+  const LEFT_BRIDGE = { x: 25, y: 50 };
+  const RIGHT_BRIDGE = { x: 75, y: 50 };
+
+  const getLane = (x: number) => x < 50 ? 'left' : 'right';
+  const needsCrossRiver = (unitY: number, targetY: number, side: 'player' | 'enemy') => {
+    // Unit on player side going to enemy side or vice versa
+    if (side === 'player') return unitY > RIVER_BOTTOM && targetY < RIVER_TOP;
+    return unitY < RIVER_TOP && targetY > RIVER_BOTTOM;
+  };
+
+  const getNearestBridge = (x: number) => {
+    return Math.abs(x - LEFT_BRIDGE.x) < Math.abs(x - RIGHT_BRIDGE.x) ? LEFT_BRIDGE : RIGHT_BRIDGE;
+  };
+
+  const getMovementTarget = (unit: DeployedUnit, target: { x: number; y: number }) => {
+    // Air units fly directly
+    if (unit.card.unitType === 'air') return target;
+    
+    // Check if we need to cross the river
+    if (needsCrossRiver(unit.y, target.y, unit.side)) {
+      const bridge = getNearestBridge(unit.x);
+      // If not at bridge yet, go to bridge first
+      const distToBridge = Math.sqrt((unit.x - bridge.x) ** 2 + (unit.y - bridge.y) ** 2);
+      if (distToBridge > 3) {
+        return bridge;
+      }
+    }
+    return target;
+  };
+
+  // Helper to find the best target for a unit
+  const findTarget = (
+    unit: DeployedUnit,
+    units: DeployedUnit[],
+    livingTowers: TowerData[]
+  ): DeployedUnit | TowerData | null => {
+    const card = unit.card;
+    const enemySide = unit.side === 'player' ? 'enemy' : 'player';
+    const targetsBuildings = card.targets === 'buildings';
+    const range = getRangeValue(card.range) * 5;
+    const unitLane = getLane(unit.x);
+
+    // Check if current target is still valid
+    if (unit.targetId) {
+      const currentTarget = units.find(u => u.id === unit.targetId && u.hp > 0) ||
+        livingTowers.find(t => t.id === unit.targetId && t.hp > 0);
+      if (currentTarget) {
+        const dist = Math.sqrt((unit.x - currentTarget.x) ** 2 + (unit.y - currentTarget.y) ** 2);
+        // Keep current target if in range or if it's still the closest reasonable option
+        if (dist <= range * 2.5) return currentTarget;
+      }
+    }
+
+    let bestTarget: DeployedUnit | TowerData | null = null;
+    let bestDist = Infinity;
+
+    if (!targetsBuildings) {
+      for (const enemy of units) {
+        if (enemy.side !== enemySide || enemy.hp <= 0) continue;
+        if (!canTarget(card, enemy.card)) continue;
+        
+        const dist = Math.sqrt((unit.x - enemy.x) ** 2 + (unit.y - enemy.y) ** 2);
+        const enemyLane = getLane(enemy.x);
+        
+        // Prefer same-lane targets (give them a distance bonus)
+        const effectiveDist = enemyLane === unitLane ? dist : dist * 1.8;
+        
+        if (effectiveDist < bestDist) {
+          bestDist = effectiveDist;
+          bestTarget = enemy;
+        }
+      }
+    }
+
+    // Find closest tower (always consider towers for building-targeting units, or as fallback)
+    if (!bestTarget || targetsBuildings) {
+      for (const tower of livingTowers) {
+        if (tower.side !== enemySide) continue;
+        if (tower.type === 'king') {
+          const princesses = livingTowers.filter(t => t.side === enemySide && t.type === 'princess' && t.hp > 0);
+          if (princesses.length === 2) continue;
+        }
+        const dist = Math.sqrt((unit.x - tower.x) ** 2 + (unit.y - tower.y) ** 2);
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestTarget = tower;
+        }
+      }
+    }
+
+    return bestTarget;
+  };
+
+  // Check for king tower destruction -> end game
+  const checkKingDestroyed = useCallback(() => {
+    const currentTowers = towersRef.current;
+    const eKing = currentTowers.find(t => t.id === 'e-king');
+    const pKing = currentTowers.find(t => t.id === 'p-king');
+
+    if (eKing && eKing.hp <= 0) {
+      const eth = getEnemyTowerHP();
+      const pth = getPlayerTowerHP();
+      const pC = (eth.left <= 0 ? 1 : 0) + (eth.right <= 0 ? 1 : 0) + 3; // 3 for king
+      const eC = (pth.left <= 0 ? 1 : 0) + (pth.right <= 0 ? 1 : 0) + (pth.king <= 0 ? 1 : 0);
+      const net = pC - eC;
+      const s = JSON.parse(localStorage.getItem('war_pass_data') || '{"crowns":0}');
+      s.crowns = Math.max(0, (s.crowns || 0) + net);
+      localStorage.setItem('war_pass_data', JSON.stringify(s));
+      localStorage.setItem('last_battle_crowns', String(net));
+      setBattleResult('win');
+      if (!isRiverRace) {
+        const gain = 20 + Math.floor(Math.random() * 21);
+        localStorage.setItem('last_trophy_change', String(gain));
+        setProfile(prev => ({ ...prev, trophies: prev.trophies + gain, wins: prev.wins + 1 }));
+      }
+      setScreen('result');
+      return true;
+    }
+
+    if (pKing && pKing.hp <= 0) {
+      const eth = getEnemyTowerHP();
+      const pth = getPlayerTowerHP();
+      const pC = (eth.left <= 0 ? 1 : 0) + (eth.right <= 0 ? 1 : 0) + (eth.king <= 0 ? 1 : 0);
+      const eC = (pth.left <= 0 ? 1 : 0) + (pth.right <= 0 ? 1 : 0) + 3;
+      const net = pC - eC;
+      const s = JSON.parse(localStorage.getItem('war_pass_data') || '{"crowns":0}');
+      s.crowns = Math.max(0, (s.crowns || 0) + net);
+      localStorage.setItem('war_pass_data', JSON.stringify(s));
+      localStorage.setItem('last_battle_crowns', String(net));
+      setBattleResult('lose');
+      if (!isRiverRace) {
+        const loss = 10 + Math.floor(Math.random() * 21);
+        localStorage.setItem('last_trophy_change', String(-loss));
+        setProfile(prev => ({ ...prev, losses: prev.losses + 1, trophies: Math.max(0, prev.trophies - loss) }));
+      }
+      setScreen('result');
+      return true;
+    }
+
+    return false;
+  }, [getEnemyTowerHP, getPlayerTowerHP, isRiverRace, setBattleResult, setProfile, setScreen]);
+
   // Main combat simulation loop
   useEffect(() => {
     const interval = setInterval(() => {
       gameTime.current += 100;
       const now = gameTime.current;
 
+      if (checkKingDestroyed()) return;
+
       setDeployedUnits(prevUnits => {
-        let units = [...prevUnits];
+        let units = prevUnits.map(u => ({ ...u })); // mutable copies
         const livingTowers = towersRef.current.filter(t => t.hp > 0);
 
-        // Process each unit
-        units = units.map(unit => {
-          if (unit.hp <= 0) return unit;
+        // Phase 1: Find targets and move/flag attacks
+        const attackingUnits: { unit: DeployedUnit; target: DeployedUnit | TowerData; damage: number }[] = [];
+
+        for (let i = 0; i < units.length; i++) {
+          const unit = units[i];
+          if (unit.hp <= 0) continue;
 
           const card = unit.card;
-          const speed = getSpeedValue(card.speed) * 0.8; // Scaled for arena
-          const range = getRangeValue(card.range) * 5; // Scaled tiles to %
-          const hitSpeed = (card.hitSpeed || 1.0) * 1000; // Convert to ms
+          const speed = getSpeedValue(card.speed) * 0.8;
+          const range = getRangeValue(card.range) * 5;
+          const hitSpeed = (card.hitSpeed || 1.0) * 1000;
 
-          // Find target
-          const enemySide = unit.side === 'player' ? 'enemy' : 'player';
-          let target: DeployedUnit | TowerData | null = null;
-          let targetDist = Infinity;
+          const target = findTarget(unit, units, livingTowers);
 
-          // Check if this unit only targets buildings
-          const targetsBuildings = card.targets === 'buildings';
-
-          if (!targetsBuildings) {
-            // Find closest enemy unit we can target
-            for (const enemy of units) {
-              if (enemy.side !== enemySide || enemy.hp <= 0) continue;
-              if (!canTarget(card, enemy.card)) continue;
-              
-              const dist = Math.sqrt((unit.x - enemy.x) ** 2 + (unit.y - enemy.y) ** 2);
-              if (dist < targetDist) {
-                targetDist = dist;
-                target = enemy;
-              }
-            }
-          }
-
-          // If no unit target or targets buildings, find closest tower
-          if (!target || targetsBuildings) {
-            for (const tower of livingTowers) {
-              if (tower.side !== enemySide) continue;
-              // Can't target king until a princess tower is down
-              if (tower.type === 'king') {
-                const princesses = livingTowers.filter(t => t.side === enemySide && t.type === 'princess');
-                if (princesses.length === 2) continue;
-              }
-              const dist = Math.sqrt((unit.x - tower.x) ** 2 + (unit.y - tower.y) ** 2);
-              if (dist < targetDist) {
-                targetDist = dist;
-                target = tower;
-              }
-            }
-          }
-
-          // Move towards target or attack
           if (target) {
+            const targetDist = Math.sqrt((unit.x - target.x) ** 2 + (unit.y - target.y) ** 2);
+            unit.targetId = target.id;
+
             if (targetDist > range) {
-              // Move towards target
-              const dx = (target.x - unit.x) / targetDist;
-              const dy = (target.y - unit.y) / targetDist;
-              return {
-                ...unit,
-                x: unit.x + dx * speed,
-                y: unit.y + dy * speed,
-                isCharging: card.chargeSpeed && targetDist > range * 2,
-              };
+              // Move towards target (with bridge pathing)
+              const moveTarget = getMovementTarget(unit, target);
+              const moveDist = Math.sqrt((unit.x - moveTarget.x) ** 2 + (unit.y - moveTarget.y) ** 2);
+              if (moveDist > 0.5) {
+                const dx = (moveTarget.x - unit.x) / moveDist;
+                const dy = (moveTarget.y - unit.y) / moveDist;
+                unit.x = unit.x + dx * speed;
+                unit.y = unit.y + dy * speed;
+              }
+              unit.isCharging = !!(card.chargeSpeed && targetDist > range * 2);
             } else {
               // In range - attack if ready
               if (now - unit.lastAttackTime >= hitSpeed) {
                 const damage = card.damage * (unit.isCharging && card.chargeSpeed ? card.chargeSpeed : 1);
-                
-                // Show damage number
-                damageCounter.current++;
-                setDamageNumbers(prev => [...prev, { id: damageCounter.current, x: target!.x, y: target!.y, damage }]);
-                setTimeout(() => setDamageNumbers(prev => prev.filter(d => d.id !== damageCounter.current)), 800);
-
-                return { ...unit, lastAttackTime: now, isCharging: false };
+                attackingUnits.push({ unit, target, damage });
+                unit.lastAttackTime = now;
+                unit.isCharging = false;
               }
             }
           } else {
             // No target - move towards enemy side
             const moveDir = unit.side === 'player' ? -1 : 1;
-            return { ...unit, y: unit.y + moveDir * speed };
+            unit.targetId = null;
+            unit.y = unit.y + moveDir * speed;
           }
+        }
 
-          return unit;
-        });
-
-        // Process attacks (apply damage)
-        units.forEach(unit => {
-          if (unit.hp <= 0) return;
+        // Phase 2: Apply damage from attacks
+        for (const { unit, target, damage } of attackingUnits) {
           const card = unit.card;
-          const range = getRangeValue(card.range) * 5;
-          const hitSpeed = (card.hitSpeed || 1.0) * 1000;
-
-          if (gameTime.current - unit.lastAttackTime < hitSpeed && unit.lastAttackTime > 0) return;
-
-          const enemySide = unit.side === 'player' ? 'enemy' : 'player';
-          const targetsBuildings = card.targets === 'buildings';
           const splash = card.splashRadius ? card.splashRadius * 5 : 0;
 
-          // Damage enemy units
-          if (!targetsBuildings) {
-            units.forEach(enemy => {
-              if (enemy.side !== enemySide || enemy.hp <= 0) return;
-              if (!canTarget(card, enemy.card)) return;
-              
-              const dist = Math.sqrt((unit.x - enemy.x) ** 2 + (unit.y - enemy.y) ** 2);
-              if (dist <= range + (splash > 0 ? splash : 0)) {
-                const damage = card.damage * (unit.isCharging && card.chargeSpeed ? card.chargeSpeed : 1);
-                // First hit shield
-                if (enemy.shieldHp > 0) {
-                  enemy.shieldHp = Math.max(0, enemy.shieldHp - damage);
-                } else {
-                  enemy.hp -= damage;
+          // Check if target is a tower
+          const isTower = 'type' in target && ('king' === target.type || 'princess' === target.type);
+
+          if (isTower) {
+            setTowers(prevTowers => prevTowers.map(t => {
+              if (t.id !== target.id) return t;
+              const newHp = Math.max(0, t.hp - damage);
+              return { ...t, hp: newHp };
+            }));
+          } else {
+            // Damage the primary target unit
+            const targetUnit = target as DeployedUnit;
+            const enemyInUnits = units.find(u => u.id === targetUnit.id);
+            if (enemyInUnits) {
+              if (enemyInUnits.shieldHp > 0) {
+                enemyInUnits.shieldHp = Math.max(0, enemyInUnits.shieldHp - damage);
+              } else {
+                enemyInUnits.hp -= damage;
+              }
+            }
+
+            // Splash damage to nearby enemies
+            if (splash > 0) {
+              const enemySide = unit.side === 'player' ? 'enemy' : 'player';
+              for (const nearby of units) {
+                if (nearby.id === targetUnit.id || nearby.side !== enemySide || nearby.hp <= 0) continue;
+                const dist = Math.sqrt((target.x - nearby.x) ** 2 + (target.y - nearby.y) ** 2);
+                if (dist <= splash) {
+                  if (nearby.shieldHp > 0) {
+                    nearby.shieldHp = Math.max(0, nearby.shieldHp - damage);
+                  } else {
+                    nearby.hp -= damage;
+                  }
                 }
               }
-            });
+            }
           }
-        });
 
-        // Tower attacks
+          // Show damage number
+          damageCounter.current++;
+          const dmgId = damageCounter.current;
+          setDamageNumbers(prev => [...prev, { id: dmgId, x: target.x, y: target.y, damage }]);
+          setTimeout(() => setDamageNumbers(prev => prev.filter(d => d.id !== dmgId)), 800);
+        }
+
+        // Phase 3: Tower attacks on units
         setTowers(prevTowers => {
           return prevTowers.map(tower => {
             if (tower.hp <= 0) return tower;
-            
+
             const attackInterval = tower.type === 'king' ? 1200 : 900;
             if (now - tower.lastAttackTime < attackInterval) return tower;
 
             const enemySide = tower.side === 'player' ? 'enemy' : 'player';
-            const enemyUnits = units.filter(u => u.side === enemySide && u.hp > 0);
-            
-            // Sort by distance
-            enemyUnits.sort((a, b) => {
-              const distA = Math.sqrt((tower.x - a.x) ** 2 + (tower.y - a.y) ** 2);
-              const distB = Math.sqrt((tower.x - b.x) ** 2 + (tower.y - b.y) ** 2);
-              return distA - distB;
-            });
-
             const rangeLimit = tower.type === 'king' ? 25 : 20;
-            const target = enemyUnits.find(u => {
-              const dist = Math.sqrt((tower.x - u.x) ** 2 + (tower.y - u.y) ** 2);
-              return dist <= rangeLimit;
-            });
 
-            if (target) {
+            let closest: DeployedUnit | null = null;
+            let closestDist = Infinity;
+            for (const u of units) {
+              if (u.side !== enemySide || u.hp <= 0) continue;
+              const dist = Math.sqrt((tower.x - u.x) ** 2 + (tower.y - u.y) ** 2);
+              if (dist <= rangeLimit && dist < closestDist) {
+                closestDist = dist;
+                closest = u;
+              }
+            }
+
+            if (closest) {
               const damage = tower.type === 'king' ? 80 : 50;
-              target.hp -= damage;
-              
+              if (closest.shieldHp > 0) {
+                closest.shieldHp = Math.max(0, closest.shieldHp - damage);
+              } else {
+                closest.hp -= damage;
+              }
+
               damageCounter.current++;
-              setDamageNumbers(prev => [...prev, { id: damageCounter.current, x: target.x, y: target.y, damage }]);
-              
+              const dmgId = damageCounter.current;
+              setDamageNumbers(prev => [...prev, { id: dmgId, x: closest!.x, y: closest!.y, damage }]);
+              setTimeout(() => setDamageNumbers(prev => prev.filter(d => d.id !== dmgId)), 800);
+
               return { ...tower, lastAttackTime: now };
             }
             return tower;
           });
         });
 
-        // Apply unit damage to towers
-        units.forEach(unit => {
-          if (unit.hp <= 0) return;
-          const card = unit.card;
-          const range = getRangeValue(card.range) * 5;
-          const hitSpeed = (card.hitSpeed || 1.0) * 1000;
-
-          if (gameTime.current - unit.lastAttackTime < 100) return; // Just attacked
-
-          const enemySide = unit.side === 'player' ? 'enemy' : 'player';
-          
-          setTowers(prevTowers => {
-            return prevTowers.map(tower => {
-              if (tower.hp <= 0 || tower.side !== enemySide) return tower;
-              
-              // Check if king is attackable
-              if (tower.type === 'king') {
-                const princesses = prevTowers.filter(t => t.side === enemySide && t.type === 'princess' && t.hp > 0);
-                if (princesses.length === 2) return tower;
-              }
-
-              const dist = Math.sqrt((unit.x - tower.x) ** 2 + (unit.y - tower.y) ** 2);
-              if (dist <= range) {
-                const damage = card.damage;
-                return { ...tower, hp: Math.max(0, tower.hp - damage * 0.1) }; // Gradual damage for visualization
-              }
-              return tower;
-            });
-          });
-        });
-
-        // Handle death damage
-        units.forEach(unit => {
+        // Phase 4: Death damage
+        for (const unit of units) {
           if (unit.hp <= 0 && unit.card.deathDamage) {
             const splash = (unit.card.splashRadius || 1) * 5;
             const enemySide = unit.side === 'player' ? 'enemy' : 'player';
-            
-            units.forEach(enemy => {
-              if (enemy.side !== enemySide || enemy.hp <= 0) return;
+            for (const enemy of units) {
+              if (enemy.side !== enemySide || enemy.hp <= 0) continue;
               const dist = Math.sqrt((unit.x - enemy.x) ** 2 + (unit.y - enemy.y) ** 2);
               if (dist <= splash) {
                 enemy.hp -= unit.card.deathDamage!;
               }
-            });
+            }
           }
-        });
+        }
 
         // Remove dead units
         return units.filter(u => u.hp > 0);
@@ -471,7 +571,7 @@ const BattleArena = () => {
     }, 100);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [checkKingDestroyed]);
 
   const deployCard = useCallback((ax: number, ay: number) => {
     if (selectedCard === null) return;
