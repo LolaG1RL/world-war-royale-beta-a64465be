@@ -29,7 +29,7 @@ const ArenaPreview = ({ arenaId, arenaName, arenaEmoji }: ArenaPreviewProps) => 
   const theme = ARENA_THEMES[arenaId] || ARENA_THEMES[1];
 
   return (
-    <div className="relative w-48 rounded-xl overflow-hidden shadow-2xl border border-border/50" style={{ aspectRatio: '3/4' }}>
+    <div className="relative w-40 rounded-xl overflow-hidden shadow-2xl border border-border/50" style={{ aspectRatio: '4/5' }}>
       {/* Arena ground */}
       <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${theme.accent} 0%, ${theme.ground} 35%, ${theme.ground} 65%, ${theme.accent} 100%)` }} />
       

@@ -169,11 +169,11 @@ const MainMenu = () => {
         </div>
 
         {/* Battle Button - Center piece */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6">
+        <div className="flex-1 flex flex-col items-center justify-center px-6 min-h-0">
           <motion.div
-            animate={{ y: [0, -5, 0] }}
+            animate={{ y: [0, -4, 0] }}
             transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-            className="mb-4"
+            className="mb-3"
           >
             <ArenaPreview arenaId={arena.id} arenaName={arena.name} arenaEmoji={arena.emoji} />
           </motion.div>

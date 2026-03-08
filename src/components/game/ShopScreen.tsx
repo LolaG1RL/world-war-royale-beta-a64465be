@@ -311,6 +311,9 @@ const ShopScreen = () => {
   const dailyDeals = useMemo(() => getDailyDeals(), []);
   const dailyFreebies = useMemo(() => getDailyFreebieCards(), []);
   const emoteDeals = useMemo(() => getDailyEmoteDeals(), []);
+  // Memoize daily banner/emblem deals on mount so they don't shift when purchased
+  const dailyBgDeals = useMemo(() => getDailyBgDeals(new Set()), []);
+  const dailyEmbDeals = useMemo(() => getDailyEmbDeals(new Set()), []);
   const [purchasedEmotes, setPurchasedEmotes] = useState<Set<number>>(() => getEmoteDealsPurchased());
   const [ownedEmoteIds, setOwnedEmoteIds] = useState(() => getOwnedEmotes());
   const [confirmAction, setConfirmAction] = useState<{ label: string; cost: string; onConfirm: () => void } | null>(null);
@@ -691,9 +694,11 @@ const ShopScreen = () => {
 
             <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🖼️ Today's Backgrounds</div>
             <div className="grid grid-cols-2 gap-2 mb-4">
-              {getDailyBgDeals(ownedBgs).length === 0 ? (
-                <div className="col-span-2 text-center text-muted-foreground text-xs py-4">You own all available backgrounds!</div>
-              ) : getDailyBgDeals(ownedBgs).map(({ item: bg, discountPct }) => {
+              {dailyBgDeals.filter(({ item }) => !ownedBgs.has(item.id)).length === 0 ? (
+                <div className="col-span-2 text-center text-muted-foreground text-xs py-4">You own all today's backgrounds!</div>
+              ) : dailyBgDeals.map(({ item: bg, discountPct }) => {
+                const owned = ownedBgs.has(bg.id);
+                if (owned) return null;
                 const finalCost = Math.round(bg.cost * (1 - discountPct / 100));
                 const canAfford = bg.currency === 'gold' ? profile.gold >= finalCost : profile.gems >= finalCost;
                 return (
@@ -731,9 +736,11 @@ const ShopScreen = () => {
 
             <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🎭 Today's Emblems</div>
             <div className="grid grid-cols-4 gap-2 mb-4">
-              {getDailyEmbDeals(ownedEmbs).length === 0 ? (
-                <div className="col-span-4 text-center text-muted-foreground text-xs py-4">You own all available emblems!</div>
-              ) : getDailyEmbDeals(ownedEmbs).map(({ item: emb, discountPct }) => {
+              {dailyEmbDeals.filter(({ item }) => !ownedEmbs.has(item.id)).length === 0 ? (
+                <div className="col-span-4 text-center text-muted-foreground text-xs py-4">You own all today's emblems!</div>
+              ) : dailyEmbDeals.map(({ item: emb, discountPct }) => {
+                const owned = ownedEmbs.has(emb.id);
+                if (owned) return null;
                 const finalCost = Math.round(emb.cost * (1 - discountPct / 100));
                 const canAfford = emb.currency === 'gold' ? profile.gold >= finalCost : profile.gems >= finalCost;
                 return (
