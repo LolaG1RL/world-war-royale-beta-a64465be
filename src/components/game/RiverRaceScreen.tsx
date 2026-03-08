@@ -57,15 +57,22 @@ const SPECIAL_MODES = [
   { name: 'Rage Battle', emoji: '😤', desc: 'Everything is enraged' },
 ];
 
+// Global reset version — increment to force all clients to reset
+const RIVER_RACE_VERSION = 2;
+
 const getStoredRiverData = () => {
   const saved = localStorage.getItem('river_race_data');
   if (saved) {
     try {
       const d = JSON.parse(saved);
+      // Force reset if version mismatch
+      if ((d.version || 0) < RIVER_RACE_VERSION) {
+        localStorage.removeItem('river_race_data');
+        return null;
+      }
       const weekStart = d.weekStart || Date.now();
       const daysPassed = (Date.now() - weekStart) / (1000 * 60 * 60 * 24);
       if (daysPassed >= 7) {
-        // Auto-reset: clear old race data
         localStorage.removeItem('river_race_data');
         return null;
       }
