@@ -80,7 +80,7 @@ const CardComponent = ({ card, size = 'md', onClick, disabled = false, showElixi
         </div>
       )}
 
-      {/* Rarity shine effect for legendary/hero */}
+      {/* Rarity shine effect for legendary/champion */}
       {(card.rarity === 'legendary' || card.rarity === 'champion') && (
         <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-[hsl(0,0%,100%,0.08)] to-transparent pointer-events-none" />
       )}
