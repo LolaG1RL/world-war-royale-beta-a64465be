@@ -97,7 +97,7 @@ interface FriendRow {
 const SocialScreen = () => {
   const { setScreen, clan, profile, setClan, setProfile } = useGame();
   const { user, playerTag } = useAuth();
-  const [tab, setTab] = useState<'clan' | 'friends' | 'global'>('clan');
+  const [tab, setTab] = useState<'clan' | 'friends' | 'leaderboard'>('clan');
   const [showCreateClan, setShowCreateClan] = useState(false);
   const [clanName, setClanName] = useState('');
   const [clanDescription, setClanDescription] = useState('');
@@ -460,9 +460,9 @@ const SocialScreen = () => {
 
       {/* Tabs */}
       <div className="flex bg-[hsl(220,20%,14%)] border-b border-border">
-        {(['clan', 'friends', 'global'] as const).map(t => (
+        {(['clan', 'friends', 'leaderboard'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider ${tab === t ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
-            {t}
+            {t === 'leaderboard' ? '🏆 Leaderboard' : t}
           </button>
         ))}
       </div>
