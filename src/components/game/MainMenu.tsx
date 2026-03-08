@@ -128,7 +128,7 @@ const MainMenu = () => {
                 <span className="text-[10px] font-bold text-foreground">{profile.gems}</span>
               </div>
             </div>
-            <button onClick={() => setScreen('settings')} className="w-7 h-7 rounded-full bg-[hsl(220,15%,16%)] border border-border flex items-center justify-center hover:bg-[hsl(220,15%,22%)] transition-colors">
+            <button onClick={() => setScreen('profile')} className="w-7 h-7 rounded-full bg-[hsl(220,15%,16%)] border border-border flex items-center justify-center hover:bg-[hsl(220,15%,22%)] transition-colors">
               <Settings className="w-3.5 h-3.5 text-muted-foreground" />
             </button>
           </div>

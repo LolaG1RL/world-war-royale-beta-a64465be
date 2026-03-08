@@ -170,6 +170,13 @@ const CardComponent = ({ card, size = 'md', onClick, disabled = false, showElixi
       >
         {card.emoji}
       </motion.span>
+
+      {/* Hero label for champions */}
+      {card.rarity === 'champion' && size !== 'xs' && (
+        <span className={`font-black uppercase text-[hsl(340,70%,60%)] relative z-10 tracking-wider ${size === 'sm' ? 'text-[6px]' : size === 'md' ? 'text-[7px]' : 'text-[10px]'}`}>
+          Hero
+        </span>
+      )}
       
       {/* Card name */}
       <span className={`font-bold text-foreground text-center leading-tight px-0.5 relative z-10 ${size === 'xs' ? 'text-[5px]' : size === 'sm' ? 'text-[7px]' : size === 'md' ? 'text-[8px]' : 'text-xs'}`}>
