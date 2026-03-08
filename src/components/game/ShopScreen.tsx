@@ -552,12 +552,19 @@ const ShopScreen = () => {
                     whileTap={!bought ? { scale: 0.95 } : undefined}
                     onClick={() => {
                       if (bought || !canAfford) return;
-                      setProfile(p => ({ ...p, gems: p.gems - deal.cost }));
-                      addOwnedEmote(deal.emote.id);
-                      setOwnedEmoteIds(prev => [...prev, deal.emote.id]);
-                      saveEmoteDealPurchased(i);
-                      setPurchasedEmotes(prev => new Set([...prev, i]));
-                      showRewards([{ emoji: '😀', name: deal.emote.name, count: 1, rarity: deal.emote.rarity }]);
+                      setConfirmAction({
+                        label: deal.emote.name,
+                        cost: `💎 ${deal.cost}`,
+                        onConfirm: () => {
+                          setProfile(p => ({ ...p, gems: p.gems - deal.cost }));
+                          addOwnedEmote(deal.emote.id);
+                          setOwnedEmoteIds(prev => [...prev, deal.emote.id]);
+                          saveEmoteDealPurchased(i);
+                          setPurchasedEmotes(prev => new Set([...prev, i]));
+                          showRewards([{ emoji: '😀', name: deal.emote.name, count: 1, rarity: deal.emote.rarity }]);
+                          setConfirmAction(null);
+                        }
+                      });
                     }}
                     disabled={bought || !canAfford}
                     className={`bg-card border-2 ${bought ? 'border-muted-foreground/20 opacity-40' : deal.emote.rarity === 'legendary' ? 'border-primary' : deal.emote.rarity === 'epic' ? 'border-purple-400' : deal.emote.rarity === 'rare' ? 'border-blue-400' : 'border-muted-foreground/40'} rounded-xl p-2 flex flex-col items-center gap-1 relative`}
