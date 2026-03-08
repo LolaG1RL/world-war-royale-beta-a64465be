@@ -503,8 +503,8 @@ const ShopScreen = () => {
           <button key={tabKey} onClick={() => setTab(tabKey)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap px-2 ${tab === tabKey ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
             {tabLabels[tabKey]}
           </button>
-          );})
-        ))}
+          )}
+        )}
       </div>
 
       {/* Shop items */}
