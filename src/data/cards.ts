@@ -553,6 +553,30 @@ export const trophyRoadRewards: TrophyRoadReward[] = [
   { trophies: 6000, type: 'chest', amount: 1, name: 'Legendary Chest', emoji: '🌟', claimed: false },
 ];
 
+// Infinite level system — XP needed scales, rewards every level
+export interface LevelReward {
+  type: 'gold' | 'gems' | 'cards' | 'chest';
+  amount: number;
+  name: string;
+  emoji: string;
+}
+
+export const getXpForLevel = (level: number): number => {
+  // XP needed to go from `level` to `level + 1`
+  if (level <= 10) return 100 + (level - 1) * 50;       // 100..550
+  if (level <= 25) return 600 + (level - 10) * 100;     // 700..2100
+  if (level <= 50) return 2200 + (level - 25) * 200;    // 2400..7200
+  return 7200 + (level - 50) * 400;                      // scales forever
+};
+
+export const getLevelReward = (level: number): LevelReward => {
+  // Every 10 levels → chest, every 5 → gems, otherwise alternate gold/cards
+  if (level % 10 === 0) return { type: 'chest', amount: 1, name: level >= 50 ? 'Legendary Chest' : level >= 20 ? 'Magical Chest' : 'Giant Chest', emoji: level >= 50 ? '🌟' : '✨' };
+  if (level % 5 === 0) return { type: 'gems', amount: Math.floor(5 + level * 0.5), name: `${Math.floor(5 + level * 0.5)} Gems`, emoji: '💎' };
+  if (level % 2 === 0) return { type: 'gold', amount: 50 + level * 20, name: `${50 + level * 20} Gold`, emoji: '💰' };
+  return { type: 'cards', amount: Math.max(2, Math.floor(level / 3)), name: `${Math.max(2, Math.floor(level / 3))} Cards`, emoji: '🃏' };
+};
+
 export const getArenaForTrophies = (trophies: number) => {
   return [...arenas].reverse().find(a => trophies >= a.trophies) || arenas[0];
 };
