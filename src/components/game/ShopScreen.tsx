@@ -412,67 +412,78 @@ const ShopScreen = () => {
           </>
         )}
 
-        {/* Daily Free Cards - cards tab */}
+        {/* Cards tab: 3 daily freebies + war pass */}
         {tab === 'cards' && (
-          <motion.button
-            whileTap={!freebiesClaimed ? { scale: 0.97 } : undefined}
-            onClick={claimFreebies}
-            disabled={freebiesClaimed}
-            className={`w-full rounded-xl p-3 flex items-center gap-3 border transition-colors mb-3 ${
-              freebiesClaimed
-                ? 'bg-muted/30 border-border/30 opacity-50'
-                : 'bg-gradient-to-r from-[hsl(140,50%,20%)] to-[hsl(160,50%,18%)] border-[hsl(140,50%,35%)] hover:brightness-110'
-            }`}
-          >
-            {freebiesClaimed ? (
-              <Check className="w-5 h-5 text-muted-foreground" />
-            ) : (
-              <Gift className="w-5 h-5 text-[hsl(140,60%,60%)]" />
-            )}
-            <div className="text-left flex-1">
-              <div className="text-[10px] font-bold text-foreground uppercase tracking-wider">
-                {freebiesClaimed ? 'Freebies Claimed!' : 'Daily Free Cards'}
-              </div>
-              <div className="text-[8px] text-muted-foreground">
-                {freebiesClaimed ? 'Come back tomorrow for more' : 'Tap to claim free cards & gold'}
-              </div>
+          <>
+            <div className="mb-3 bg-gradient-to-r from-[hsl(140,50%,20%)] to-[hsl(160,50%,18%)] rounded-xl p-3 border border-[hsl(140,50%,35%)]">
+              <div className="text-[10px] text-[hsl(140,60%,60%)] font-bold uppercase tracking-wider">🎁 Daily Free Cards</div>
+              <div className="text-[8px] text-foreground/70 mt-0.5">Refreshes in {countdown}</div>
             </div>
-            {!freebiesClaimed && (
-              <span className="text-[9px] font-bold text-[hsl(140,60%,60%)] bg-[hsl(140,50%,15%)] px-2 py-1 rounded-lg uppercase">Free</span>
-            )}
-          </motion.button>
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              {dailyFreebies.map((freebie, i) => {
+                const claimed = claimedFreebies.has(i);
+                return (
+                  <motion.button
+                    key={`freebie-${i}`}
+                    whileTap={!claimed ? { scale: 0.95 } : undefined}
+                    onClick={() => claimFreebie(i)}
+                    disabled={claimed}
+                    className={`bg-card border-2 ${claimed ? 'border-muted-foreground/20 opacity-40' : RARITY_COLORS[freebie.rarity]} rounded-xl p-2 flex flex-col items-center gap-1 transition-colors relative ${!claimed ? 'hover:brightness-110' : ''}`}
+                  >
+                    {claimed && (
+                      <div className="absolute inset-0 bg-background/60 rounded-xl flex items-center justify-center z-10">
+                        <Check className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                    )}
+                    <span className="text-2xl mt-1">{freebie.emoji}</span>
+                    <span className="text-[9px] font-bold text-foreground text-center leading-tight">{freebie.name}</span>
+                    <span className="text-[7px] text-muted-foreground">x{freebie.amount}</span>
+                    <span className={`text-[7px] font-bold ${freebie.rarity === 'epic' ? 'text-purple-400' : freebie.rarity === 'rare' ? 'text-blue-400' : 'text-muted-foreground'}`}>
+                      {RARITY_LABELS[freebie.rarity]}
+                    </span>
+                    <div className="mt-auto w-full py-1 rounded-lg text-[9px] font-bold text-center bg-[hsl(140,50%,15%)] text-[hsl(140,60%,60%)]">
+                      {claimed ? 'CLAIMED' : 'FREE'}
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </>
         )}
 
-        <div className="grid grid-cols-3 gap-2">
-          {filtered.map(item => {
-            const canAfford = item.currency === 'real' ? true :
-              item.currency === 'gold' ? profile.gold >= item.cost : profile.gems >= item.cost;
-            return (
-              <motion.button
-                key={item.id}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handlePurchase(item.id)}
-                disabled={!canAfford || purchasing === item.id}
-                className={`bg-card border rounded-xl p-2 flex flex-col items-center gap-1 transition-colors ${canAfford ? 'border-border hover:border-primary/30' : 'border-border/30 opacity-50'}`}
-              >
-                {purchasing === item.id ? (
-                  <Loader2 className="w-6 h-6 animate-spin text-primary mt-1" />
-                ) : (
-                  <span className="text-2xl mt-1">{item.emoji}</span>
-                )}
-                <span className="text-[9px] font-bold text-foreground text-center leading-tight">{item.name}</span>
-                <span className="text-[7px] text-muted-foreground text-center">{item.description}</span>
-                <div className={`mt-auto w-full py-1 rounded-lg text-[9px] font-bold text-center ${
-                  item.currency === 'gold' ? 'bg-primary/20 text-primary' :
-                  item.currency === 'gems' ? 'bg-elixir/20 text-elixir' :
-                  'bg-hp-green/20 text-hp-green'
-                }`}>
-                  {item.currency === 'real' ? `$${item.cost}` : `${item.currency === 'gold' ? '💰' : '💎'} ${item.cost}`}
-                </div>
-              </motion.button>
-            );
-          })}
-        </div>
+        {/* Shop items grid - hide on cards tab */}
+        {tab !== 'cards' && (
+          <div className="grid grid-cols-3 gap-2">
+            {filtered.map(item => {
+              const canAfford = item.currency === 'real' ? true :
+                item.currency === 'gold' ? profile.gold >= item.cost : profile.gems >= item.cost;
+              return (
+                <motion.button
+                  key={item.id}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handlePurchase(item.id)}
+                  disabled={!canAfford || purchasing === item.id}
+                  className={`bg-card border rounded-xl p-2 flex flex-col items-center gap-1 transition-colors ${canAfford ? 'border-border hover:border-primary/30' : 'border-border/30 opacity-50'}`}
+                >
+                  {purchasing === item.id ? (
+                    <Loader2 className="w-6 h-6 animate-spin text-primary mt-1" />
+                  ) : (
+                    <span className="text-2xl mt-1">{item.emoji}</span>
+                  )}
+                  <span className="text-[9px] font-bold text-foreground text-center leading-tight">{item.name}</span>
+                  <span className="text-[7px] text-muted-foreground text-center">{item.description}</span>
+                  <div className={`mt-auto w-full py-1 rounded-lg text-[9px] font-bold text-center ${
+                    item.currency === 'gold' ? 'bg-primary/20 text-primary' :
+                    item.currency === 'gems' ? 'bg-elixir/20 text-elixir' :
+                    'bg-hp-green/20 text-hp-green'
+                  }`}>
+                    {item.currency === 'real' ? `$${item.cost}` : `${item.currency === 'gold' ? '💰' : '💎'} ${item.cost}`}
+                  </div>
+                </motion.button>
+              );
+            })}
+          </div>
+        )}
 
         {/* War Pass */}
         <div className="mt-4 bg-gradient-to-r from-[hsl(340,60%,25%)] to-[hsl(280,50%,22%)] rounded-xl p-4 border border-[hsl(340,60%,40%)]">
