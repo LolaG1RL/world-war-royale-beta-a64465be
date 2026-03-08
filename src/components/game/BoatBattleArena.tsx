@@ -289,9 +289,9 @@ const BoatBattleArena = () => {
                 {/* Tower header */}
                 <div className="flex items-center gap-2 mb-2">
                   <Shield className={`w-5 h-5 ${tower.destroyed ? 'text-destructive/40' : 'text-accent'}`} />
-                  <span className="text-[10px] font-bold text-foreground">Defense Tower {idx + 1}</span>
+                  <span className="text-[10px] font-bold text-foreground">{t('boat.defense_tower', language)} {idx + 1}</span>
                   {tower.destroyed ? (
-                    <span className="text-[8px] text-destructive font-bold ml-auto">💥 DESTROYED</span>
+                    <span className="text-[8px] text-destructive font-bold ml-auto">{t('battle.destroyed', language)}</span>
                   ) : (
                     <span className="text-[8px] text-accent font-bold ml-auto">{Math.max(0, Math.round(tower.hp))}/{tower.maxHp} HP</span>
                   )}
