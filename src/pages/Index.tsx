@@ -12,6 +12,7 @@ import TrophyRoadScreen from '@/components/game/TrophyRoadScreen';
 import EventsScreen from '@/components/game/EventsScreen';
 import ProfileScreen from '@/components/game/ProfileScreen';
 import ChestOpenScreen from '@/components/game/ChestOpenScreen';
+import MailboxScreen from '@/components/game/MailboxScreen';
 import DeafMode from '@/components/game/DeafMode';
 
 const GameRouter = () => {
@@ -27,6 +28,7 @@ const GameRouter = () => {
     case 'events': return <EventsScreen />;
     case 'profile': return <ProfileScreen />;
     case 'chest-open': return <ChestOpenScreen />;
+    case 'mailbox': return <MailboxScreen />;
     default: return <MainMenu />;
   }
 };

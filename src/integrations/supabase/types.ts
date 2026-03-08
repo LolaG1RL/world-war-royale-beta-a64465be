@@ -112,6 +112,51 @@ export type Database = {
         }
         Relationships: []
       }
+      mailbox_messages: {
+        Row: {
+          body: string
+          created_at: string
+          expires_at: string | null
+          icon: string
+          id: string
+          is_claimed: boolean
+          is_read: boolean
+          recipient_user_id: string | null
+          reward_gems: number
+          reward_gold: number
+          sender_type: string
+          title: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          expires_at?: string | null
+          icon?: string
+          id?: string
+          is_claimed?: boolean
+          is_read?: boolean
+          recipient_user_id?: string | null
+          reward_gems?: number
+          reward_gold?: number
+          sender_type?: string
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          expires_at?: string | null
+          icon?: string
+          id?: string
+          is_claimed?: boolean
+          is_read?: boolean
+          recipient_user_id?: string | null
+          reward_gems?: number
+          reward_gold?: number
+          sender_type?: string
+          title?: string
+        }
+        Relationships: []
+      }
       player_progress: {
         Row: {
           arena: number
