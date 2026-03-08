@@ -1,8 +1,9 @@
 import { useGame } from '@/context/GameContext';
 import { useAuth } from '@/context/AuthContext';
 import { BottomNav } from './ShopScreen';
-import { useState, useEffect, useCallback } from 'react';
-import { MessageCircle, UserPlus, Search, Shield, Swords as SwordsIcon, Plus, Trophy, ChevronLeft, ChevronRight, Loader2, X, Check, UserMinus } from 'lucide-react';
+import { allCards } from '@/data/cards';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { MessageCircle, UserPlus, Search, Shield, Swords as SwordsIcon, Plus, Trophy, ChevronLeft, ChevronRight, Loader2, X, Check, UserMinus, ArrowUp, Repeat } from 'lucide-react';
 import ClanFlag, { CLAN_ICONS, BANNER_SHAPES } from './ClanFlag';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -555,49 +556,7 @@ const SocialScreen = () => {
               )}
             </div>
           ) : (
-            <>
-              {/* Clan header with flag */}
-              <div className="bg-[hsl(220,20%,13%)] p-3 border-b border-border">
-                <div className="flex items-center gap-3">
-                  <ClanFlag bannerColor={clan.bannerColor} bannerShape={clan.bannerShape} iconId={clan.iconId} iconColor={clan.iconColor} size="md" />
-                  <div className="flex-1">
-                    <div className="text-sm font-display font-bold text-foreground">{clan.name}</div>
-                    <div className="text-[9px] text-muted-foreground">{clan.tag} • {clan.members}/{clan.maxMembers} members</div>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="text-[9px] text-primary font-bold">🏆 {clan.trophies.toLocaleString()}</span>
-                      <span className="text-[9px] text-muted-foreground">📦 {clan.donations} donations/wk</span>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-[9px] text-muted-foreground mt-2 italic">"{clan.description}"</p>
-                <div className="flex gap-2 mt-2">
-                  <button className="flex-1 py-1.5 bg-primary/20 text-primary rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
-                    <MessageCircle className="w-3 h-3" />Chat
-                  </button>
-                  <button className="flex-1 py-1.5 bg-accent/20 text-accent rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
-                    <SwordsIcon className="w-3 h-3" />Clan War
-                  </button>
-                  <button onClick={leaveClan} className="flex-1 py-1.5 bg-destructive/20 text-destructive rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
-                    <X className="w-3 h-3" />Leave
-                  </button>
-                </div>
-              </div>
-
-              {/* Members list */}
-              <div className="flex-1 overflow-y-auto">
-                <div className="flex items-center gap-3 px-3 py-2 border-b border-border/50">
-                  <div className="text-[10px] text-muted-foreground font-bold w-4">1</div>
-                  <div className="w-2 h-2 rounded-full bg-hp-green" />
-                  <div className="flex-1">
-                    <div className="text-xs font-bold text-foreground">{profile.name}</div>
-                    <div className="text-[8px] text-primary">Leader</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[10px] font-bold text-foreground flex items-center gap-1 justify-end">🏆 {profile.trophies}</div>
-                  </div>
-                </div>
-              </div>
-            </>
+            <ClanView clan={clan} profile={profile} user={user} leaveClan={leaveClan} />
           )}
         </>
       )}
@@ -691,6 +650,256 @@ const SocialScreen = () => {
 
       <BottomNav active="social" setScreen={setScreen} />
     </div>
+  );
+};
+
+// Clan View with Chat & Trading
+interface ClanMsg {
+  id: string;
+  user_id: string;
+  username: string;
+  message_type: string;
+  content: string;
+  trade_card_offered: string | null;
+  trade_card_wanted: string | null;
+  created_at: string;
+}
+
+const ClanView = ({ clan, profile, user, leaveClan }: { clan: any; profile: any; user: any; leaveClan: () => void }) => {
+  const [chatMode, setChatMode] = useState<'info' | 'chat'>('info');
+  const [messages, setMessages] = useState<ClanMsg[]>([]);
+  const [msgInput, setMsgInput] = useState('');
+  const [sending, setSending] = useState(false);
+  const [showTrade, setShowTrade] = useState(false);
+  const [tradeOffer, setTradeOffer] = useState('');
+  const [tradeWant, setTradeWant] = useState('');
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const [clanId, setClanId] = useState<string | null>(null);
+
+  // Get clan ID from DB
+  useEffect(() => {
+    if (!user) return;
+    const getClanId = async () => {
+      const { data } = await supabase
+        .from('clan_members')
+        .select('clan_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (data) setClanId(data.clan_id);
+    };
+    getClanId();
+  }, [user]);
+
+  // Load messages & subscribe to realtime
+  useEffect(() => {
+    if (!clanId) return;
+    const loadMessages = async () => {
+      const { data } = await supabase
+        .from('clan_messages')
+        .select('*')
+        .eq('clan_id', clanId)
+        .order('created_at', { ascending: true })
+        .limit(100);
+      setMessages((data as ClanMsg[]) || []);
+    };
+    loadMessages();
+
+    const channel = supabase
+      .channel(`clan-chat-${clanId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'clan_messages',
+        filter: `clan_id=eq.${clanId}`,
+      }, (payload) => {
+        setMessages(prev => [...prev, payload.new as ClanMsg]);
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [clanId]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const sendMessage = async () => {
+    if (!msgInput.trim() || !clanId || !user) return;
+    setSending(true);
+    await supabase.from('clan_messages').insert({
+      clan_id: clanId,
+      user_id: user.id,
+      username: profile.name,
+      message_type: 'chat',
+      content: msgInput.trim(),
+    });
+    setMsgInput('');
+    setSending(false);
+  };
+
+  const sendTradeRequest = async () => {
+    if (!tradeOffer || !tradeWant || !clanId || !user) return;
+    const offered = allCards.find(c => c.id === tradeOffer);
+    const wanted = allCards.find(c => c.id === tradeWant);
+    if (!offered || !wanted) return;
+    setSending(true);
+    await supabase.from('clan_messages').insert({
+      clan_id: clanId,
+      user_id: user.id,
+      username: profile.name,
+      message_type: 'trade_request',
+      content: `🔄 Trade: ${offered.emoji} ${offered.name} ↔ ${wanted.emoji} ${wanted.name}`,
+      trade_card_offered: tradeOffer,
+      trade_card_wanted: tradeWant,
+    });
+    setShowTrade(false);
+    setTradeOffer('');
+    setTradeWant('');
+    setSending(false);
+    toast.success('Trade request posted!');
+  };
+
+  const formatTime = (d: string) => {
+    const date = new Date(d);
+    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <>
+      {chatMode === 'info' ? (
+        <>
+          {/* Clan header with flag */}
+          <div className="bg-[hsl(220,20%,13%)] p-3 border-b border-border">
+            <div className="flex items-center gap-3">
+              <ClanFlag bannerColor={clan.bannerColor} bannerShape={clan.bannerShape} iconId={clan.iconId} iconColor={clan.iconColor} size="md" />
+              <div className="flex-1">
+                <div className="text-sm font-display font-bold text-foreground">{clan.name}</div>
+                <div className="text-[9px] text-muted-foreground">{clan.tag} • {clan.members}/{clan.maxMembers} members</div>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="text-[9px] text-primary font-bold">🏆 {clan.trophies?.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+            <p className="text-[9px] text-muted-foreground mt-2 italic">"{clan.description}"</p>
+            <div className="flex gap-2 mt-2">
+              <button onClick={() => setChatMode('chat')} className="flex-1 py-1.5 bg-primary/20 text-primary rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
+                <MessageCircle className="w-3 h-3" />Chat
+              </button>
+              <button className="flex-1 py-1.5 bg-accent/20 text-accent rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
+                <SwordsIcon className="w-3 h-3" />Clan War
+              </button>
+              <button onClick={leaveClan} className="flex-1 py-1.5 bg-destructive/20 text-destructive rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
+                <X className="w-3 h-3" />Leave
+              </button>
+            </div>
+          </div>
+          {/* Members list */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="flex items-center gap-3 px-3 py-2 border-b border-border/50">
+              <div className="text-[10px] text-muted-foreground font-bold w-4">1</div>
+              <div className="w-2 h-2 rounded-full bg-hp-green" />
+              <div className="flex-1">
+                <div className="text-xs font-bold text-foreground">{profile.name}</div>
+                <div className="text-[8px] text-primary">Leader</div>
+              </div>
+              <div className="text-right">
+                <div className="text-[10px] font-bold text-foreground flex items-center gap-1 justify-end">🏆 {profile.trophies}</div>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Chat header */}
+          <div className="flex items-center gap-2 px-3 py-2 bg-[hsl(220,20%,13%)] border-b border-border">
+            <button onClick={() => setChatMode('info')} className="text-muted-foreground"><ChevronLeft className="w-4 h-4" /></button>
+            <MessageCircle className="w-4 h-4 text-primary" />
+            <span className="text-xs font-bold text-foreground flex-1">{clan.name} Chat</span>
+            <button onClick={() => setShowTrade(!showTrade)} className="bg-primary/20 text-primary px-2 py-1 rounded text-[9px] font-bold flex items-center gap-1">
+              <Repeat className="w-3 h-3" />Trade
+            </button>
+          </div>
+
+          {/* Trade panel */}
+          <AnimatePresence>
+            {showTrade && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                className="bg-[hsl(220,20%,11%)] border-b border-border overflow-hidden">
+                <div className="p-3 space-y-2">
+                  <div className="text-[9px] font-bold text-primary uppercase tracking-wider">🔄 Post a Trade Request</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[8px] text-muted-foreground">You offer:</label>
+                      <select value={tradeOffer} onChange={e => setTradeOffer(e.target.value)}
+                        className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-[9px] text-foreground">
+                        <option value="">Select card...</option>
+                        {allCards.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[8px] text-muted-foreground">You want:</label>
+                      <select value={tradeWant} onChange={e => setTradeWant(e.target.value)}
+                        className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-[9px] text-foreground">
+                        <option value="">Select card...</option>
+                        {allCards.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <button onClick={sendTradeRequest} disabled={!tradeOffer || !tradeWant || sending}
+                    className="w-full py-1.5 bg-primary text-primary-foreground rounded-lg text-[10px] font-bold disabled:opacity-50">
+                    Post Trade Request
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Chat messages */}
+          <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5">
+            {messages.length === 0 && (
+              <div className="text-center text-[10px] text-muted-foreground py-8">No messages yet. Say hi! 👋</div>
+            )}
+            {messages.map(msg => {
+              const isMe = msg.user_id === user?.id;
+              const isTrade = msg.message_type === 'trade_request';
+              return (
+                <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[80%] rounded-xl px-3 py-1.5 ${
+                    isTrade
+                      ? 'bg-[hsl(280,30%,18%)] border border-[hsl(280,30%,30%)]'
+                      : isMe
+                      ? 'bg-primary/20 border border-primary/30'
+                      : 'bg-[hsl(220,15%,16%)] border border-border'
+                  }`}>
+                    {!isMe && (
+                      <div className="text-[8px] font-bold text-primary mb-0.5">{msg.username}</div>
+                    )}
+                    <div className="text-[10px] text-foreground">{msg.content}</div>
+                    <div className="text-[7px] text-muted-foreground text-right mt-0.5">{formatTime(msg.created_at)}</div>
+                  </div>
+                </div>
+              );
+            })}
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Chat input */}
+          <div className="px-3 py-2 bg-[hsl(220,20%,10%)] border-t border-border flex gap-2">
+            <input
+              value={msgInput}
+              onChange={e => setMsgInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && sendMessage()}
+              placeholder="Type a message..."
+              className="flex-1 bg-secondary border border-border rounded-lg px-3 py-2 text-[10px] text-foreground placeholder:text-muted-foreground"
+            />
+            <button onClick={sendMessage} disabled={!msgInput.trim() || sending}
+              className="bg-primary text-primary-foreground w-9 h-9 rounded-lg flex items-center justify-center disabled:opacity-50">
+              <ArrowUp className="w-4 h-4" />
+            </button>
+          </div>
+        </>
+      )}
+    </>
   );
 };
 

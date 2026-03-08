@@ -50,18 +50,51 @@ const WarPassScreen = () => {
     if (saved) {
       try {
         const data = JSON.parse(saved);
+        // Check seasonal reset (30 days)
+        const seasonStart = data.seasonStart || Date.now();
+        const daysSinceSeason = (Date.now() - seasonStart) / (1000 * 60 * 60 * 24);
+        if (daysSinceSeason >= 30) {
+          // Reset season
+          const resetData = { crowns: 0, hasPaid: false, claimedFree: [], claimedPaid: [], seasonStart: Date.now(), daysLeft: 30 };
+          localStorage.setItem('war_pass_data', JSON.stringify(resetData));
+          setCrowns(0);
+          setHasPaid(false);
+          setClaimedFree(new Set());
+          setClaimedPaid(new Set());
+          return;
+        }
         setCrowns(data.crowns || 0);
         setHasPaid(data.hasPaid || false);
         setClaimedFree(new Set(data.claimedFree || []));
         setClaimedPaid(new Set(data.claimedPaid || []));
       } catch {}
+    } else {
+      // Initialize season
+      localStorage.setItem('war_pass_data', JSON.stringify({ crowns: 0, hasPaid: false, claimedFree: [], claimedPaid: [], seasonStart: Date.now() }));
     }
   }, []);
 
+  const getDaysLeft = () => {
+    const saved = localStorage.getItem('war_pass_data');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        const seasonStart = data.seasonStart || Date.now();
+        const daysPassed = (Date.now() - seasonStart) / (1000 * 60 * 60 * 24);
+        return Math.max(0, Math.ceil(30 - daysPassed));
+      } catch {}
+    }
+    return 30;
+  };
+
   const save = (c: number, paid: boolean, cf: Set<number>, cp: Set<number>) => {
+    const saved = localStorage.getItem('war_pass_data');
+    let seasonStart = Date.now();
+    if (saved) { try { seasonStart = JSON.parse(saved).seasonStart || Date.now(); } catch {} }
     localStorage.setItem('war_pass_data', JSON.stringify({
       crowns: c, hasPaid: paid,
       claimedFree: [...cf], claimedPaid: [...cp],
+      seasonStart,
     }));
   };
 
@@ -117,6 +150,7 @@ const WarPassScreen = () => {
         </button>
         <Crown className="w-5 h-5 text-primary" />
         <h1 className="font-display font-bold text-sm text-foreground flex-1">War Pass</h1>
+        <div className="text-[8px] text-muted-foreground mr-2">⏳ {getDaysLeft()}d left</div>
         <div className="flex items-center gap-1 bg-primary/20 px-2 py-0.5 rounded-full border border-primary/30">
           <span className="text-xs">👑</span>
           <span className="text-[10px] font-bold text-primary">{crowns}</span>

@@ -46,6 +46,50 @@ export type Database = {
           },
         ]
       }
+      clan_messages: {
+        Row: {
+          clan_id: string
+          content: string
+          created_at: string
+          id: string
+          message_type: string
+          trade_card_offered: string | null
+          trade_card_wanted: string | null
+          user_id: string
+          username: string
+        }
+        Insert: {
+          clan_id: string
+          content?: string
+          created_at?: string
+          id?: string
+          message_type?: string
+          trade_card_offered?: string | null
+          trade_card_wanted?: string | null
+          user_id: string
+          username?: string
+        }
+        Update: {
+          clan_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          message_type?: string
+          trade_card_offered?: string | null
+          trade_card_wanted?: string | null
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clan_messages_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clans: {
         Row: {
           banner_color: string
