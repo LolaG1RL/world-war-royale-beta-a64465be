@@ -370,7 +370,7 @@ const DAILY_QUESTS = [
 
 // ── Main Component ──
 const EventsScreen = () => {
-  const { setScreen, profile, setProfile } = useGame();
+  const { setScreen, profile, setProfile, deck } = useGame();
   const { language } = useSettings();
   const [tab, setTab] = useState<'events' | 'challenges' | 'tournaments'>('events');
   const [rewardPopup, setRewardPopup] = useState<RewardItem[] | null>(null);
@@ -384,26 +384,38 @@ const EventsScreen = () => {
   const [questProgress, setQuestProgress] = useState(() => getDailyQuestProgress());
   const [, forceUpdate] = useState(0);
 
-  const simulateWin = useCallback((event: EventData) => {
+  // Check for completed event battle on mount (returning from battle)
+  useEffect(() => {
+    const eb = localStorage.getItem('event_battle');
+    if (eb) {
+      try {
+        const parsed = JSON.parse(eb);
+        if (parsed.completed) {
+          localStorage.removeItem('event_battle');
+          forceUpdate(n => n + 1);
+          // Refresh quest progress (wins are updated by BattleResult)
+          setQuestProgress(getDailyQuestProgress());
+        }
+      } catch {}
+    }
+  }, []);
+
+  const startEventBattle = useCallback((event: EventData) => {
     const prog = getEventProgress(event.id);
     if (prog.completed) { toast.info(t('events.already_completed', language)); return; }
     if (event.maxLosses && event.maxLosses > 0 && prog.losses >= event.maxLosses) { toast.error(t('events.too_many_losses', language)); return; }
 
-    const won = Math.random() > 0.4;
-    if (won) {
-      prog.wins += 1;
-      toast.success(`${t('battle.victory', language)} (${prog.wins} ${t('events.wins', language).toLowerCase()})`);
-    } else {
-      prog.losses += 1;
-      toast.error(`${t('battle.defeat', language)} (${prog.losses} ${t('events.losses', language).toLowerCase()})`);
-    }
+    // Store event battle context
+    localStorage.setItem('event_battle', JSON.stringify({
+      eventId: event.id,
+      maxWins: event.maxWins || 0,
+      maxLosses: event.maxLosses || 0,
+      completed: false,
+    }));
 
-    if (event.maxWins && prog.wins >= event.maxWins) prog.completed = true;
-    if (event.maxLosses && event.maxLosses > 0 && prog.losses >= event.maxLosses) prog.completed = true;
-
-    setEventProgress(event.id, prog);
-    forceUpdate(n => n + 1);
-  }, []);
+    // Navigate to actual battle
+    setScreen('battle');
+  }, [language, setScreen]);
 
   const claimMilestone = useCallback((event: EventData, milestoneIdx: number) => {
     const prog = getEventProgress(event.id);
