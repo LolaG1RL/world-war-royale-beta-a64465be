@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const BattleArena = () => {
   const { deck, setScreen, setBattleResult, setProfile } = useGame();
+  const isRiverRace = !!localStorage.getItem('river_race_battle');
   const [elixir, setElixir] = useState(5);
   const [maxElixir] = useState(10);
   const [timer, setTimer] = useState(180);
@@ -36,7 +37,7 @@ const BattleArena = () => {
           localStorage.setItem('war_pass_data', JSON.stringify(s1));
           localStorage.setItem('last_battle_crowns', String(net));
           setBattleResult('win');
-          setProfile(prev => ({ ...prev, trophies: prev.trophies + 30, wins: prev.wins + 1 }));
+          if (!isRiverRace) setProfile(prev => ({ ...prev, trophies: prev.trophies + 30, wins: prev.wins + 1 }));
           setScreen('result');
           break;
         }
@@ -49,7 +50,7 @@ const BattleArena = () => {
           localStorage.setItem('war_pass_data', JSON.stringify(s2));
           localStorage.setItem('last_battle_crowns', String(net2));
           setBattleResult('lose');
-          setProfile(prev => ({ ...prev, losses: prev.losses + 1, trophies: Math.max(0, prev.trophies - 15) }));
+          if (!isRiverRace) setProfile(prev => ({ ...prev, losses: prev.losses + 1, trophies: Math.max(0, prev.trophies - 15) }));
           setScreen('result');
           break;
         }
@@ -101,7 +102,7 @@ const BattleArena = () => {
           localStorage.setItem('last_battle_crowns', String(netCrowns));
           const result = pCrowns >= eCrowns ? 'win' : 'lose';
           setBattleResult(result);
-          setProfile(prev => ({ ...prev, trophies: result === 'win' ? prev.trophies + 30 : Math.max(0, prev.trophies - 15), wins: result === 'win' ? prev.wins + 1 : prev.wins, losses: result === 'lose' ? prev.losses + 1 : prev.losses }));
+          if (!isRiverRace) setProfile(prev => ({ ...prev, trophies: result === 'win' ? prev.trophies + 30 : Math.max(0, prev.trophies - 15), wins: result === 'win' ? prev.wins + 1 : prev.wins, losses: result === 'lose' ? prev.losses + 1 : prev.losses }));
           setScreen('result');
           return 0;
         }
