@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { useSettings } from '@/context/SettingsContext';
-import { t } from '@/lib/i18n';
+import { t, tRarity } from '@/lib/i18n';
 import { BottomNav } from './BottomNav';
 import { trophyRoadRewards, arenas, getArenaForTrophies, allCards } from '@/data/cards';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -127,7 +127,7 @@ const TrophyRoadScreen = () => {
           <span className="text-3xl">{currentArena.emoji}</span>
           <div className="flex-1">
             <div className="text-xs font-display font-bold text-foreground">{currentArena.name}</div>
-            <div className="text-[9px] text-muted-foreground">Arena {currentArena.id} • {currentArena.trophies}+ trophies</div>
+            <div className="text-[9px] text-muted-foreground">{t('trophy.arena_label', language)} {currentArena.id} • {currentArena.trophies}+ {t('trophy.trophies', language)}</div>
             {/* Progress bar to next arena */}
             <div className="mt-1.5">
               <div className="flex items-center justify-between text-[8px] mb-0.5">
@@ -144,10 +144,10 @@ const TrophyRoadScreen = () => {
               </div>
               <div className="text-[8px] text-center mt-0.5">
                 {currentArena.id === 15 ? (
-                  <span className="text-primary font-bold">🏆 LEGENDS — Max Arena!</span>
+                  <span className="text-primary font-bold">{t('trophy.legends_max', language)}</span>
                 ) : (
                   <span className="text-muted-foreground">
-                    {nextArena!.trophies - profile.trophies} trophies to <span className="text-foreground font-bold">{nextArena?.name}</span>
+                    {nextArena!.trophies - profile.trophies} {t('trophy.trophies_to', language)} <span className="text-foreground font-bold">{nextArena?.name}</span>
                   </span>
                 )}
               </div>
@@ -160,16 +160,16 @@ const TrophyRoadScreen = () => {
           <Swords className="w-3 h-3 text-primary flex-shrink-0" />
           <div className="text-[8px] text-muted-foreground">
             {currentArena.id === 15 ? (
-              <span>Matchmaking: <span className="text-foreground font-bold">All Arena 15 players</span></span>
+              <span>{t('trophy.matchmaking_label', language)}: <span className="text-foreground font-bold">{t('trophy.all_arena_players', language)}</span></span>
             ) : (
-              <span>Matchmaking: <span className="text-foreground font-bold">{Math.max(0, profile.trophies - 100)} – {profile.trophies + 100}</span> trophies</span>
+              <span>{t('trophy.matchmaking_label', language)}: <span className="text-foreground font-bold">{Math.max(0, profile.trophies - 100)} – {profile.trophies + 100}</span> {t('trophy.trophies', language)}</span>
             )}
           </div>
         </div>
 
         {/* No derank notice */}
         <div className="mt-1.5 text-[7px] text-center text-muted-foreground">
-          ⚠️ You can <span className="text-foreground font-bold">never</span> drop to a lower Arena!
+          {t('trophy.no_derank_warning', language)}
         </div>
       </div>
 
@@ -191,9 +191,9 @@ const TrophyRoadScreen = () => {
                 <span className="text-lg">{arena.emoji}</span>
                 <div className="flex-1">
                   <div className="text-[10px] font-display font-bold text-foreground">{arena.name}</div>
-                  <div className="text-[8px] text-muted-foreground">{arena.trophies} trophies • {cardsForArena.length} cards</div>
+                  <div className="text-[8px] text-muted-foreground">{arena.trophies} {t('trophy.trophies', language)} • {cardsForArena.length} {t('trophy.cards', language)}</div>
                 </div>
-                {isCurrentArena && <span className="text-[8px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-bold">CURRENT</span>}
+                {isCurrentArena && <span className="text-[8px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-bold">{t('trophy.current', language)}</span>}
                 {isFuture && <Lock className="w-3 h-3 text-muted-foreground" />}
                 <span className="text-[10px] text-muted-foreground">{isExpanded ? '▲' : '▼'}</span>
               </button>
@@ -209,7 +209,7 @@ const TrophyRoadScreen = () => {
                   >
                     <div className="px-3 pb-2">
                       <div className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
-                        🃏 Cards unlocked in {arena.name}
+                        {t('trophy.cards_unlocked_in', language)} {arena.name}
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {cardsForArena.map(card => {
@@ -269,7 +269,7 @@ const TrophyRoadScreen = () => {
                           <span>{reward.name}</span>
                           <span className="text-[7px] opacity-70">@{reward.trophies}</span>
                           {claimable && !claimed && (
-                            <span className="text-[6px] font-bold text-primary animate-pulse ml-0.5">CLAIM</span>
+                            <span className="text-[6px] font-bold text-primary animate-pulse ml-0.5">{t('trophy.claim', language).toUpperCase()}</span>
                           )}
                         </motion.button>
                       );
@@ -287,7 +287,7 @@ const TrophyRoadScreen = () => {
           <RevealScreen
             items={revealItems}
             title={`🎁 ${revealTitle}`}
-            subtitle="You received:"
+            subtitle={t('trophy.you_received', language)}
             onClose={() => setRevealItems(null)}
           />
         )}
