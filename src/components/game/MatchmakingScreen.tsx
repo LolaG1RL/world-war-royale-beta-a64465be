@@ -133,7 +133,9 @@ const MatchmakingScreen = () => {
               <div className="mt-3 bg-card border border-border rounded-lg px-4 py-2 inline-block">
                 <span className="text-[10px] text-muted-foreground">{t('trophy.matchmaking', language)}: </span>
                 <span className="text-[10px] font-bold text-primary">
-                  🏆 {Math.max(0, profile.trophies - 100)} - {profile.trophies + 100}
+                  🏆 {profile.arena >= 15
+                    ? t('matchmaking.arena15_any', language)
+                    : `${Math.max(0, profile.trophies - 100)} - ${profile.trophies + 100}`}
                 </span>
               </div>
               {/* AI fallback hint */}
