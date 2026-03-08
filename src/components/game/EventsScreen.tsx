@@ -594,7 +594,7 @@ const EventsScreen = () => {
                     ) : done ? (
                       <button onClick={() => claimQuest(i)} className="px-2 py-0.5 bg-primary text-primary-foreground rounded text-[8px] font-bold animate-pulse">{t('events.claim_btn', language)}</button>
                     ) : (
-                      <button onClick={() => addQuestProgress(i)} className="px-2 py-0.5 bg-muted text-muted-foreground rounded text-[8px] font-bold">+1</button>
+                      <span className="text-[8px] text-muted-foreground">🔒</span>
                     )}
                     <span className="text-[9px] font-bold text-primary">{q.rewardLabel}</span>
                   </div>
