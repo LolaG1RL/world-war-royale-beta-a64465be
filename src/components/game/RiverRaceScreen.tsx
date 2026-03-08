@@ -702,7 +702,7 @@ const RiverRaceScreen = () => {
                     card.rarity === 'legendary' ? 'text-[hsl(38,90%,55%)]' :
                     card.rarity === 'epic' ? 'text-[hsl(280,60%,65%)]' :
                     card.rarity === 'rare' ? 'text-[hsl(210,70%,60%)]' :
-                    card.rarity === 'hero' ? 'text-[hsl(340,70%,60%)]' :
+                    card.rarity === 'champion' ? 'text-[hsl(340,70%,60%)]' :
                     'text-muted-foreground'
                   }`}>{card.rarity}</span>
                   <span className="text-[7px] text-primary font-bold">{card.elixir}⚡</span>

@@ -226,8 +226,8 @@ const WarPassScreen = () => {
         activeHeroes.push('joan-of-arc');
         localStorage.setItem('active_season_heroes', JSON.stringify(activeHeroes));
       }
-      items = [{ emoji: '⚜️', name: 'Joan of Arc (Hero)', count: 1, rarity: 'hero' }];
-      toast.success('Season 1 Exclusive Hero Joan of Arc unlocked! She is always active!');
+      items = [{ emoji: '⚜️', name: 'Joan of Arc (Champion)', count: 1, rarity: 'legendary' }];
+      toast.success('Season 1 Exclusive Champion Joan of Arc unlocked! She is always active!');
     } else if (r.type === 'chest') {
       const contents = generateChestContents(r.label);
       setProfile(p => ({ ...p, gold: p.gold + contents.gold, gems: p.gems + contents.gems }));
