@@ -137,31 +137,16 @@ const MainMenu = () => {
           </div>
         </div>
 
-        {/* Chest slots - Like CR */}
+        {/* Chest slots - Empty */}
         <div className="px-3 py-2 bg-[hsl(220,20%,11%,0.9)] border-t border-border">
           <div className="grid grid-cols-4 gap-1.5">
-            {chests.map((chest) => (
-              <button
-                key={chest.id}
-                onClick={() => chest.isReady && setScreen('chest-open')}
-                className={`relative bg-[hsl(220,15%,16%)] border rounded-lg py-2 flex flex-col items-center gap-0.5 transition-all ${chest.isReady ? 'border-primary animate-pulse-glow' : 'border-border'}`}
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="bg-[hsl(220,15%,16%)] border border-border rounded-lg py-3 flex flex-col items-center justify-center"
               >
-                <span className="text-xl">{chest.emoji}</span>
-                <span className="text-[7px] font-bold text-foreground">{chest.name.split(' ')[0]}</span>
-                {chest.isUnlocking && !chest.isReady && (
-                  <div className="w-full px-1 mt-0.5">
-                    <div className="h-1 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-primary rounded-full" style={{ width: `${chest.unlockProgress * 100}%` }} />
-                    </div>
-                  </div>
-                )}
-                {chest.isReady && (
-                  <span className="text-[7px] text-primary font-bold">OPEN</span>
-                )}
-                {!chest.isUnlocking && !chest.isReady && (
-                  <span className="text-[7px] text-muted-foreground">Tap</span>
-                )}
-              </button>
+                <span className="text-[7px] text-muted-foreground">Empty</span>
+              </div>
             ))}
           </div>
         </div>
