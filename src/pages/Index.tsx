@@ -14,6 +14,7 @@ import ProfileScreen from '@/components/game/ProfileScreen';
 import ChestOpenScreen from '@/components/game/ChestOpenScreen';
 import MailboxScreen from '@/components/game/MailboxScreen';
 import WarPassScreen from '@/components/game/WarPassScreen';
+import RiverRaceScreen from '@/components/game/RiverRaceScreen';
 import DeafMode from '@/components/game/DeafMode';
 
 const GameRouter = () => {
@@ -31,6 +32,7 @@ const GameRouter = () => {
     case 'chest-open': return <ChestOpenScreen />;
     case 'mailbox': return <MailboxScreen />;
     case 'war-pass': return <WarPassScreen />;
+    case 'river-race': return <RiverRaceScreen />;
     default: return <MainMenu />;
   }
 };

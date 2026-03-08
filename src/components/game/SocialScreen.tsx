@@ -785,8 +785,8 @@ const ClanView = ({ clan, profile, user, leaveClan }: { clan: any; profile: any;
               <button onClick={() => setChatMode('chat')} className="flex-1 py-1.5 bg-primary/20 text-primary rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
                 <MessageCircle className="w-3 h-3" />Chat
               </button>
-              <button className="flex-1 py-1.5 bg-accent/20 text-accent rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
-                <SwordsIcon className="w-3 h-3" />Clan War
+              <button onClick={() => { const { setScreen } = require('@/context/GameContext'); }} className="flex-1 py-1.5 bg-[hsl(200,40%,20%)] text-[hsl(200,70%,65%)] rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
+                <SwordsIcon className="w-3 h-3" />River Race
               </button>
               <button onClick={leaveClan} className="flex-1 py-1.5 bg-destructive/20 text-destructive rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
                 <X className="w-3 h-3" />Leave
