@@ -518,6 +518,7 @@ const WarPassScreen = () => {
                   variant="paid"
                   showLock={!hasPaid}
                   isExclusive={isExclusive}
+                  isHero={reward.paid.type === 'season-hero'}
                 />
               </div>
             </div>
@@ -529,9 +530,9 @@ const WarPassScreen = () => {
   );
 };
 
-const RewardCard = ({ emoji, label, claimed, claimable, locked, onClaim, variant, showLock, isExclusive }: {
+const RewardCard = ({ emoji, label, claimed, claimable, locked, onClaim, variant, showLock, isExclusive, isHero }: {
   emoji: string; label: string; claimed: boolean; claimable: boolean; locked: boolean;
-  onClaim: () => void; variant: 'free' | 'paid'; showLock?: boolean; isExclusive?: boolean;
+  onClaim: () => void; variant: 'free' | 'paid'; showLock?: boolean; isExclusive?: boolean; isHero?: boolean;
 }) => {
   const bg = isExclusive
     ? 'bg-gradient-to-b from-[hsl(280,25%,18%)] to-[hsl(280,20%,12%)] border-[hsl(280,40%,35%)]'
@@ -556,6 +557,9 @@ const RewardCard = ({ emoji, label, claimed, claimable, locked, onClaim, variant
         <span className="absolute top-0.5 left-0.5 text-[5px] font-bold text-[hsl(280,60%,65%)] uppercase">★ S1</span>
       )}
       <span className={`text-base ${claimed ? 'grayscale opacity-40' : ''}`}>{emoji}</span>
+      {isHero && !claimed && (
+        <span className="text-[6px] font-black uppercase tracking-widest text-[hsl(340,70%,60%)]">Hero</span>
+      )}
       <span className={`text-[7px] font-bold leading-tight text-center ${claimed ? 'text-muted-foreground line-through' : isExclusive ? 'text-[hsl(280,60%,70%)]' : 'text-foreground'}`}>{label}</span>
       {claimed && <Check className="w-3 h-3 text-[hsl(120,50%,50%)]" />}
       {claimable && !claimed && (
