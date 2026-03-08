@@ -24,7 +24,7 @@ const UPGRADE_CARDS: Record<string, number[]> = {
   rare:      [2, 4, 10, 20, 50, 100, 200, 400, 800, 1000],
   epic:      [2, 4, 10, 20, 50, 100, 200],
   legendary: [2, 4, 10, 20, 50],
-  hero:      [2, 4, 10],
+  champion:  [2, 4, 10],
 };
 
 // Gold cost to upgrade at each level, by rarity
@@ -33,7 +33,7 @@ const UPGRADE_GOLD: Record<string, number[]> = {
   rare:      [50, 150, 400, 1000, 2000, 4000, 8000, 20000, 50000, 100000],
   epic:      [400, 2000, 4000, 8000, 20000, 50000, 100000],
   legendary: [5000, 20000, 50000, 100000, 200000],
-  hero:      [20000, 50000, 100000],
+  champion:  [20000, 50000, 100000],
 };
 
 // Max level by rarity
@@ -42,7 +42,7 @@ export const MAX_LEVEL: Record<string, number> = {
   rare: 11,
   epic: 8,
   legendary: 6,
-  hero: 4,
+  champion: 4,
 };
 
 // Donation limits per day by rarity
@@ -51,7 +51,7 @@ export const DONATION_LIMITS: Record<string, number> = {
   rare: 4,
   epic: 1,
   legendary: 0, // can't request legendary
-  hero: 0,
+  champion: 0,
 };
 
 export const getCardInventory = (): CardInventory => {
