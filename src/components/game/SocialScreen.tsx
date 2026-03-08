@@ -1,5 +1,6 @@
 import { useGame } from '@/context/GameContext';
-import { useAuth } from '@/context/AuthContext';
+import { useSettings } from '@/context/SettingsContext';
+import { t } from '@/lib/i18n';
 import { BottomNav } from './BottomNav';
 import { allCards } from '@/data/cards';
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -97,6 +98,7 @@ interface FriendRow {
 
 const SocialScreen = () => {
   const { setScreen, clan, profile, setClan, setProfile } = useGame();
+  const { language } = useSettings();
   const { user, playerTag } = useAuth();
   const [tab, setTab] = useState<'clan' | 'friends' | 'leaderboard'>('clan');
   const [showCreateClan, setShowCreateClan] = useState(false);
@@ -455,7 +457,7 @@ const SocialScreen = () => {
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,25%,12%)] border-b border-border">
-        <h2 className="font-display font-bold text-foreground text-sm uppercase tracking-wider">Social</h2>
+        <h2 className="font-display font-bold text-foreground text-sm uppercase tracking-wider">{t('social.title', language)}</h2>
         <div className="text-[9px] text-muted-foreground">{playerTag}</div>
       </div>
 

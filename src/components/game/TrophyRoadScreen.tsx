@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
+import { useSettings } from '@/context/SettingsContext';
+import { t } from '@/lib/i18n';
 import { BottomNav } from './BottomNav';
 import { trophyRoadRewards, arenas, getArenaForTrophies, allCards } from '@/data/cards';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,6 +11,7 @@ import RevealScreen, { RevealItem } from './RevealScreen';
 
 const TrophyRoadScreen = () => {
   const { setScreen, profile, setProfile } = useGame();
+  const { language } = useSettings();
   const currentArena = getArenaForTrophies(profile.trophies);
   const [claimedRewards, setClaimedRewards] = useState<Set<number>>(new Set());
   const [revealItems, setRevealItems] = useState<RevealItem[] | null>(null);
@@ -111,7 +114,7 @@ const TrophyRoadScreen = () => {
         <button onClick={() => setScreen('menu')} className="text-muted-foreground">
           <ChevronLeft className="w-5 h-5" />
         </button>
-        <h2 className="font-display font-bold text-foreground text-sm uppercase tracking-wider">Trophy Road</h2>
+        <h2 className="font-display font-bold text-foreground text-sm uppercase tracking-wider">{t('trophy.title', language)}</h2>
         <div className="trophy-badge text-xs">
           <Trophy className="w-3 h-3" />
           {profile.trophies}

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
+import { useSettings } from '@/context/SettingsContext';
+import { t } from '@/lib/i18n';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -36,6 +38,7 @@ const SENDER_COLORS: Record<string, string> = {
 
 const MailboxScreen = () => {
   const { setScreen, setProfile } = useGame();
+  const { language } = useSettings();
   const { user } = useAuth();
   const [messages, setMessages] = useState<MailMessage[]>([]);
   const [selectedMsg, setSelectedMsg] = useState<MailMessage | null>(null);
@@ -116,7 +119,7 @@ const MailboxScreen = () => {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <Mail className="w-5 h-5 text-primary" />
-        <h1 className="font-display font-bold text-sm text-foreground flex-1">Mailbox</h1>
+        <h1 className="font-display font-bold text-sm text-foreground flex-1">{t('mail.title', language)}</h1>
         {unreadCount > 0 && (
           <span className="bg-accent text-accent-foreground text-[9px] font-bold px-2 py-0.5 rounded-full">
             {unreadCount} new

@@ -1,5 +1,6 @@
 import { useGame } from '@/context/GameContext';
-import { BottomNav } from './BottomNav';
+import { useSettings } from '@/context/SettingsContext';
+import { t } from '@/lib/i18n';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Clock, ChevronRight, Trophy, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -368,6 +369,7 @@ const DAILY_QUESTS = [
 // ── Main Component ──
 const EventsScreen = () => {
   const { setScreen, profile, setProfile } = useGame();
+  const { language } = useSettings();
   const [tab, setTab] = useState<'events' | 'challenges' | 'tournaments'>('events');
   const [rewardPopup, setRewardPopup] = useState<RewardItem[] | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
