@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getCardEntry, addCards, removeCards, canRequest, setRequestCooldown, getRequestTimeLeft, DONATION_LIMITS, getDonationsToday, recordDonation } from '@/data/cardInventory';
+import { allEmotes, getEquippedEmotes } from '@/data/emotes';
 
 const BANNER_COLORS = [
   '#b91c1c', '#dc2626', '#ef4444',
