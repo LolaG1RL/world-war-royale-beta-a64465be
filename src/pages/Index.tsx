@@ -4,6 +4,7 @@ import DeafIDLogin from '@/components/auth/DeafIDLogin';
 import UsernamePicker from '@/components/auth/UsernamePicker';
 import MainMenu from '@/components/game/MainMenu';
 import BattleArena from '@/components/game/BattleArena';
+import BoatBattleArena from '@/components/game/BoatBattleArena';
 import BattleResult from '@/components/game/BattleResult';
 import CardCollection from '@/components/game/CardCollection';
 import ShopScreen from '@/components/game/ShopScreen';
@@ -22,6 +23,7 @@ const GameRouter = () => {
 
   switch (screen) {
     case 'battle': return <BattleArena />;
+    case 'boat-battle': return <BoatBattleArena />;
     case 'result': return <BattleResult />;
     case 'deck': return <CardCollection />;
     case 'shop': return <ShopScreen />;
