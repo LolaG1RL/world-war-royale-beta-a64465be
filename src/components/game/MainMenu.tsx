@@ -129,12 +129,17 @@ const MainMenu = () => {
       <div className="relative z-10 flex-1 flex flex-col">
         {/* Arena / Events buttons row */}
         <div className="flex gap-1.5 px-3 py-2">
-          <button onClick={() => { setActiveTab('trophy-road'); setScreen('trophy-road'); }} className="flex-1 bg-[hsl(220,15%,16%)] border border-border rounded-lg py-2 px-2 flex items-center gap-2 hover:bg-[hsl(220,15%,20%)] transition-colors">
+          <button onClick={() => { setActiveTab('trophy-road'); setScreen('trophy-road'); }} className="flex-1 bg-[hsl(220,15%,16%)] border border-border rounded-lg py-2 px-2 flex items-center gap-2 hover:bg-[hsl(220,15%,20%)] transition-colors relative">
             <Map className="w-4 h-4 text-primary" />
             <div className="text-left">
               <div className="text-[9px] font-bold text-foreground">Trophy Road</div>
               <div className="text-[7px] text-muted-foreground">Arena {arena.id}</div>
             </div>
+            {unclaimedTrophy > 0 && (
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full flex items-center justify-center">
+                <span className="text-[7px] font-black text-accent-foreground">{unclaimedTrophy > 9 ? '9+' : unclaimedTrophy}</span>
+              </div>
+            )}
           </button>
           <button onClick={() => setScreen('events')} className="flex-1 bg-[hsl(220,15%,16%)] border border-border rounded-lg py-2 px-2 flex items-center gap-2 hover:bg-[hsl(220,15%,20%)] transition-colors">
             <Star className="w-4 h-4 text-legendary" />
