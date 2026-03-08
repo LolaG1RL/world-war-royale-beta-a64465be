@@ -427,7 +427,11 @@ const ShopScreen = () => {
                   <motion.button
                     key={`deal-${i}`}
                     whileTap={!bought ? { scale: 0.95 } : undefined}
-                    onClick={() => handleDailyDealPurchase(deal, i)}
+                    onClick={() => setConfirmAction({
+                      label: deal.name,
+                      cost: `${deal.currency === 'gold' ? '💰' : '💎'} ${deal.cost}`,
+                      onConfirm: () => { handleDailyDealPurchase(deal, i); setConfirmAction(null); }
+                    })}
                     disabled={bought || !canAfford}
                     className={`bg-card border-2 ${bought ? 'border-muted-foreground/20 opacity-40' : RARITY_COLORS[deal.rarity]} rounded-xl p-2 flex flex-col items-center gap-1 transition-colors relative ${!bought && canAfford ? 'hover:brightness-110' : ''}`}
                   >
