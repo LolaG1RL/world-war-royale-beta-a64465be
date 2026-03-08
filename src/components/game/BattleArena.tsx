@@ -372,7 +372,6 @@ const BattleArena = () => {
         livingTowers.find(t => t.id === unit.targetId && t.hp > 0);
       if (currentTarget) {
         const dist = Math.sqrt((unit.x - currentTarget.x) ** 2 + (unit.y - currentTarget.y) ** 2);
-        // Keep current target if in range or if it's still the closest reasonable option
         if (dist <= range * 2.5) return currentTarget;
       }
     }
@@ -380,15 +379,21 @@ const BattleArena = () => {
     let bestTarget: DeployedUnit | TowerData | null = null;
     let bestDist = Infinity;
 
-    if (!targetsBuildings) {
+    if (targetsBuildings) {
+      // Building-targeting units: target enemy buildings first, then towers
+      for (const enemy of units) {
+        if (enemy.side !== enemySide || enemy.hp <= 0) continue;
+        if (enemy.card.type !== 'building') continue;
+        const dist = Math.sqrt((unit.x - enemy.x) ** 2 + (unit.y - enemy.y) ** 2);
+        if (dist < bestDist) { bestDist = dist; bestTarget = enemy; }
+      }
+    } else {
       for (const enemy of units) {
         if (enemy.side !== enemySide || enemy.hp <= 0) continue;
         if (!canTarget(card, enemy.card)) continue;
         
         const dist = Math.sqrt((unit.x - enemy.x) ** 2 + (unit.y - enemy.y) ** 2);
         const enemyLane = getLane(enemy.x);
-        
-        // Prefer same-lane targets (give them a distance bonus)
         const effectiveDist = enemyLane === unitLane ? dist : dist * 1.8;
         
         if (effectiveDist < bestDist) {
