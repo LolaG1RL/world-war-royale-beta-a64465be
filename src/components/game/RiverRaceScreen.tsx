@@ -806,20 +806,34 @@ const RiverRaceScreen = () => {
           <div className="p-3">
             <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-2">Owned Cards (tap to add)</div>
             <div className="grid grid-cols-4 gap-1.5">
-              {allCards.filter(c => {
-                const entry = getCardEntry(c.id);
-                const currentDefCards = playerBoat.defenses[editingDefenseIdx]?.cards || [];
-                const usedInOtherTower = playerBoat.defenses.some((tower, idx) => idx !== editingDefenseIdx && tower.cards.includes(c.id));
-                return entry.count > 0 && !currentDefCards.includes(c.id) && !usedInOtherTower;
-              }).map(card => (
-                <button key={card.id} onClick={() => addCardToDefense(editingDefenseIdx, card.id)}
-                  className="bg-[hsl(220,15%,14%)] border border-border rounded-lg p-1.5 flex flex-col items-center gap-0.5 hover:border-primary/40 transition-colors">
-                  <span className="text-lg">{card.emoji}</span>
-                  <span className="text-[7px] font-bold text-foreground truncate w-full text-center">{card.name}</span>
-                  <span className="text-[6px] text-muted-foreground">x{getCardEntry(card.id).count}</span>
-                  <span className="text-[7px] text-primary font-bold">{card.elixir}⚡</span>
-                </button>
-              ))}
+              {allCards
+                .filter(c => {
+                  const entry = getCardEntry(c.id);
+                  const currentDefCards = playerBoat.defenses[editingDefenseIdx]?.cards || [];
+                  return entry.count > 0 && !currentDefCards.includes(c.id);
+                })
+                .map(card => {
+                  const usedInOtherTower = playerBoat.defenses.some((tower, idx) => idx !== editingDefenseIdx && tower.cards.includes(card.id));
+
+                  return (
+                    <button
+                      key={card.id}
+                      onClick={() => addCardToDefense(editingDefenseIdx, card.id)}
+                      disabled={usedInOtherTower}
+                      className={`bg-[hsl(220,15%,14%)] border rounded-lg p-1.5 flex flex-col items-center gap-0.5 transition-colors ${
+                        usedInOtherTower
+                          ? 'border-border/40 opacity-50 cursor-not-allowed'
+                          : 'border-border hover:border-primary/40'
+                      }`}
+                    >
+                      <span className="text-lg">{card.emoji}</span>
+                      <span className="text-[7px] font-bold text-foreground truncate w-full text-center">{card.name}</span>
+                      <span className="text-[6px] text-muted-foreground">x{getCardEntry(card.id).count}</span>
+                      <span className="text-[7px] text-primary font-bold">{card.elixir}⚡</span>
+                      {usedInOtherTower && <span className="text-[6px] text-destructive">Used in other tower</span>}
+                    </button>
+                  );
+                })}
             </div>
           </div>
         </div>
