@@ -679,6 +679,11 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
   const [requestCardId, setRequestCardId] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [clanId, setClanId] = useState<string | null>(null);
+  const [showEmotePicker, setShowEmotePicker] = useState(false);
+
+  // Get equipped emotes data
+  const equippedEmoteIds = getEquippedEmotes();
+  const equippedEmotesData = allEmotes.filter(e => equippedEmoteIds.includes(e.id));
 
   // Cards the user owns (count > 0) - for trading offers
   const ownedCards = allCards.filter(c => {
@@ -688,6 +693,18 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
 
   // Requestable cards (any card with donation limits)
   const requestableCards = allCards.filter(c => DONATION_LIMITS[c.rarity] > 0);
+
+  const sendEmote = async (emote: typeof allEmotes[0]) => {
+    if (!clanId || !user) return;
+    await supabase.from('clan_messages').insert({
+      clan_id: clanId,
+      user_id: user.id,
+      username: profile.name,
+      message_type: 'emote',
+      content: emote.svg,
+    });
+    setShowEmotePicker(false);
+  };
 
 
   // Get clan ID from DB
