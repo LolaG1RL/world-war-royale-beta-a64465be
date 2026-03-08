@@ -27,7 +27,7 @@ const RARITY_BORDER: Record<string, string> = {
 
 type BannerSubTab = 'backgrounds' | 'emblems' | 'badges';
 
-const BannerInline = ({ profile }: { profile: PlayerProfile }) => {
+const BannerInline = ({ profile, clanName }: { profile: PlayerProfile; clanName?: string }) => {
   const [banner, setBanner] = useState<PlayerBanner>(getPlayerBanner());
   const [subTab, setSubTab] = useState<BannerSubTab>('backgrounds');
   const [ownedBgs] = useState(() => getOwnedBackgrounds());
@@ -64,7 +64,7 @@ const BannerInline = ({ profile }: { profile: PlayerProfile }) => {
     <>
       {/* Preview */}
       <div className="px-4 py-3 bg-[hsl(220,20%,11%)] border-b border-border">
-        <BattleBannerDisplay banner={banner} name={profile.name} trophies={profile.trophies} clanName={(window as any).__gameClnName} size="lg" />
+        <BattleBannerDisplay banner={banner} name={profile.name} trophies={profile.trophies} clanName={clanName} size="lg" />
       </div>
 
       {/* Sub tabs */}
@@ -193,7 +193,7 @@ const isHeroUnlocked = (cardId: string): boolean => {
 };
 
 const CardCollection = () => {
-  const { deck, setDeck, setScreen, setActiveTab, profile, setProfile } = useGame();
+  const { deck, setDeck, setScreen, setActiveTab, profile, setProfile, clan } = useGame();
   const [selectedCard, setSelectedCard] = useState<GameCard | null>(null);
   const [filter, setFilter] = useState<'all' | 'troop' | 'spell' | 'building'>('all');
   const [deckSlot, setDeckSlot] = useState(0);
