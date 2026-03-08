@@ -115,8 +115,65 @@ const ShopScreen = () => {
     setProfile(newProfile);
   };
 
+  return (
+    <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,25%,12%)] border-b border-border">
+        <button onClick={() => setScreen('menu')} className="text-muted-foreground"><X className="w-4 h-4" /></button>
+        <h2 className="font-display font-bold text-foreground text-sm uppercase tracking-wider">Shop</h2>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px]">💰 {profile.gold.toLocaleString()}</span>
+          <span className="text-[10px]">💎 {profile.gems}</span>
+        </div>
+      </div>
+
+      {/* Shop tabs */}
+      <div className="flex bg-[hsl(220,20%,14%)] border-b border-border">
+        {(['featured', 'cards', 'chests', 'gems'] as const).map(t => (
+          <button key={t} onClick={() => setTab(t)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider ${tab === t ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
+            {t}
+          </button>
+        ))}
+      </div>
+
       {/* Shop items grid */}
       <div className="flex-1 overflow-y-auto p-3">
+        {/* Daily Deals section */}
+        {tab === 'featured' && (
+          <>
+            <div className="mb-3 bg-gradient-to-r from-[hsl(38,80%,25%)] to-[hsl(28,90%,20%)] rounded-xl p-3 border border-primary/30">
+              <div className="text-[10px] text-primary font-bold uppercase tracking-wider">Daily Deals</div>
+              <div className="text-[8px] text-foreground/70 mt-0.5">Refreshes in {countdown}</div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              {dailyDeals.map((deal, i) => {
+                const canAfford = deal.currency === 'gold' ? profile.gold >= deal.cost : profile.gems >= deal.cost;
+                return (
+                  <motion.button
+                    key={`deal-${i}`}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleDailyDealPurchase(deal, i)}
+                    disabled={!canAfford}
+                    className={`bg-card border-2 ${RARITY_COLORS[deal.rarity]} rounded-xl p-2 flex flex-col items-center gap-1 transition-colors ${canAfford ? 'hover:brightness-110' : 'opacity-50'}`}
+                  >
+                    <span className="text-2xl mt-1">{deal.emoji}</span>
+                    <span className="text-[9px] font-bold text-foreground text-center leading-tight">{deal.name}</span>
+                    <span className="text-[7px] text-muted-foreground">x{deal.amount}</span>
+                    <span className={`text-[7px] font-bold ${deal.rarity === 'legendary' ? 'text-primary' : deal.rarity === 'epic' ? 'text-purple-400' : deal.rarity === 'rare' ? 'text-blue-400' : 'text-muted-foreground'}`}>
+                      {RARITY_LABELS[deal.rarity]}
+                    </span>
+                    <div className={`mt-auto w-full py-1 rounded-lg text-[9px] font-bold text-center ${
+                      deal.currency === 'gold' ? 'bg-primary/20 text-primary' : 'bg-elixir/20 text-elixir'
+                    }`}>
+                      {deal.currency === 'gold' ? '💰' : '💎'} {deal.cost}
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </>
+        )}
+
         <div className="grid grid-cols-3 gap-2">
           {filtered.map(item => {
             const canAfford = item.currency === 'real' ? true :
