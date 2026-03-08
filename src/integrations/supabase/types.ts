@@ -132,6 +132,33 @@ export type Database = {
         }
         Relationships: []
       }
+      deaf_menu_grants: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          granted_by_user_id: string
+          id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          granted_by_user_id: string
+          id?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          granted_by_user_id?: string
+          id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
       friends: {
         Row: {
           created_at: string
