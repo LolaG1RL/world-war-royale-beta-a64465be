@@ -1,19 +1,24 @@
 import { ShoppingBag, Swords, Users, Crown, Zap } from 'lucide-react';
+import { useSettings } from '@/context/SettingsContext';
+import { t } from '@/lib/i18n';
 
 interface BottomNavProps {
   active: 'shop' | 'cards' | 'battle' | 'social' | 'events';
   setScreen: (screen: string) => void;
 }
 
-export const BottomNav = ({ active, setScreen }: BottomNavProps) => (
-  <div className="relative z-20 shrink-0 flex items-stretch bg-card border-t-2 border-primary/20">
-    <BNavTab icon={<ShoppingBag className="w-4 h-4" />} label="Shop" active={active === 'shop'} onClick={() => setScreen('shop')} />
-    <BNavTab icon={<Crown className="w-4 h-4" />} label="Cards" active={active === 'cards'} onClick={() => setScreen('deck')} />
-    <BNavTab icon={<Swords className="w-4 h-4" />} label="Battle" active={active === 'battle'} onClick={() => setScreen('menu')} />
-    <BNavTab icon={<Users className="w-4 h-4" />} label="Social" active={active === 'social'} onClick={() => setScreen('social')} />
-    <BNavTab icon={<Zap className="w-4 h-4" />} label="Events" active={active === 'events'} onClick={() => setScreen('events')} />
-  </div>
-);
+export const BottomNav = ({ active, setScreen }: BottomNavProps) => {
+  const { language } = useSettings();
+  return (
+    <div className="relative z-20 shrink-0 flex items-stretch bg-card border-t-2 border-primary/20">
+      <BNavTab icon={<ShoppingBag className="w-4 h-4" />} label={t('nav.shop', language)} active={active === 'shop'} onClick={() => setScreen('shop')} />
+      <BNavTab icon={<Crown className="w-4 h-4" />} label={t('nav.cards', language)} active={active === 'cards'} onClick={() => setScreen('deck')} />
+      <BNavTab icon={<Swords className="w-4 h-4" />} label={t('nav.battle', language)} active={active === 'battle'} onClick={() => setScreen('menu')} />
+      <BNavTab icon={<Users className="w-4 h-4" />} label={t('nav.social', language)} active={active === 'social'} onClick={() => setScreen('social')} />
+      <BNavTab icon={<Zap className="w-4 h-4" />} label={t('nav.events', language)} active={active === 'events'} onClick={() => setScreen('events')} />
+    </div>
+  );
+};
 
 const BNavTab = ({
   icon,
