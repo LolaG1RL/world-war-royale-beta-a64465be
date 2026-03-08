@@ -483,6 +483,20 @@ const BattleArena = () => {
         let units = prevUnits.map(u => ({ ...u })); // mutable copies
         const livingTowers = towersRef.current.filter(t => t.hp > 0);
 
+        // Phase 0: Building lifetime decay
+        for (const unit of units) {
+          if (unit.card.type === 'building' && unit.lifetimeRemaining !== undefined) {
+            unit.lifetimeRemaining -= 100;
+            if (unit.lifetimeRemaining <= 0) {
+              unit.hp = 0; // building expires
+            }
+          }
+        }
+
+        // Check for Joan of Arc passive: +20% damage bonus while alive
+        const joanAlivePlayer = units.some(u => u.card.id === 'joan-of-arc' && u.side === 'player' && u.hp > 0);
+        const joanAliveEnemy = units.some(u => u.card.id === 'joan-of-arc' && u.side === 'enemy' && u.hp > 0);
+
         // Phase 1: Find targets and move/flag attacks
         const attackingUnits: { unit: DeployedUnit; target: DeployedUnit | TowerData; damage: number }[] = [];
 
@@ -491,9 +505,13 @@ const BattleArena = () => {
           if (unit.hp <= 0) continue;
 
           const card = unit.card;
-          const speed = getSpeedValue(card.speed) * 0.8;
+          const isBuilding = card.type === 'building';
+          const speed = isBuilding ? 0 : getSpeedValue(card.speed) * 0.8;
           const range = getRangeValue(card.range) * 5;
           const hitSpeed = (card.hitSpeed || 1.0) * 1000;
+
+          // Buildings with 0 damage don't attack (e.g. Tombstone)
+          if (isBuilding && card.damage === 0) continue;
 
           const target = findTarget(unit, units, livingTowers);
 
@@ -501,8 +519,8 @@ const BattleArena = () => {
             const targetDist = Math.sqrt((unit.x - target.x) ** 2 + (unit.y - target.y) ** 2);
             unit.targetId = target.id;
 
-            if (targetDist > range) {
-              // Move towards target (with bridge pathing)
+            if (targetDist > range && !isBuilding) {
+              // Move towards target (buildings don't move)
               const moveTarget = getMovementTarget(unit, target);
               const moveDist = Math.sqrt((unit.x - moveTarget.x) ** 2 + (unit.y - moveTarget.y) ** 2);
               if (moveDist > 0.5) {
@@ -512,17 +530,21 @@ const BattleArena = () => {
                 unit.y = unit.y + dy * speed;
               }
               unit.isCharging = !!(card.chargeSpeed && targetDist > range * 2);
-            } else {
+            } else if (targetDist <= range) {
               // In range - attack if ready
               if (now - unit.lastAttackTime >= hitSpeed) {
-                const damage = card.damage * (unit.isCharging && card.chargeSpeed ? card.chargeSpeed : 1);
+                let damage = card.damage * (unit.isCharging && card.chargeSpeed ? card.chargeSpeed : 1);
+                // Joan's passive: +20% damage
+                if ((unit.side === 'player' && joanAlivePlayer) || (unit.side === 'enemy' && joanAliveEnemy)) {
+                  damage = Math.floor(damage * 1.2);
+                }
                 attackingUnits.push({ unit, target, damage });
                 unit.lastAttackTime = now;
                 unit.isCharging = false;
               }
             }
-          } else {
-            // No target - move towards enemy side
+          } else if (!isBuilding) {
+            // No target - move towards enemy side (buildings stay)
             const moveDir = unit.side === 'player' ? -1 : 1;
             unit.targetId = null;
             unit.y = unit.y + moveDir * speed;
