@@ -88,10 +88,10 @@ function getDailyDeals() {
   return shuffled.slice(0, 6);
 }
 
-function getDailyBgDeals() {
+function getDailyBgDeals(owned: Set<string>) {
   const today = new Date();
   const seed = (today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()) * 17;
-  const pool = allBackgrounds.filter(b => b.cost > 0);
+  const pool = allBackgrounds.filter(b => b.cost > 0 && !owned.has(b.id));
   const shuffled = [...pool];
   let s = seed;
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -106,10 +106,10 @@ function getDailyBgDeals() {
   });
 }
 
-function getDailyEmbDeals() {
+function getDailyEmbDeals(owned: Set<string>) {
   const today = new Date();
   const seed = (today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()) * 23;
-  const pool = allEmblems.filter(e => e.cost > 0);
+  const pool = allEmblems.filter(e => e.cost > 0 && !owned.has(e.id));
   const shuffled = [...pool];
   let s = seed;
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -124,23 +124,7 @@ function getDailyEmbDeals() {
   });
 }
 
-function getDailyBadgeDeals() {
-  const today = new Date();
-  const seed = (today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()) * 31;
-  const pool = allBadges.filter(b => b.type === 'cosmetic');
-  const shuffled = [...pool];
-  let s = seed;
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    s = (s * 1103515245 + 12345) & 0x7fffffff;
-    const j = s % (i + 1);
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled.slice(0, 4).map(item => {
-    s = (s * 1103515245 + 12345) & 0x7fffffff;
-    const discountPct = s % 100 < 30 ? (s % 3 + 1) * 10 : 0;
-    return { item, discountPct };
-  });
-}
+// Badges are NOT purchasable - only earned via achievements
 
 function getTodayKey() {
   const d = new Date();
