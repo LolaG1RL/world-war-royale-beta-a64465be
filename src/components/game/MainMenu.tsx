@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useGame } from '@/context/GameContext';
 import { useAuth } from '@/context/AuthContext';
+import { useSettings } from '@/context/SettingsContext';
 import { getArenaForTrophies, trophyRoadRewards, getXpForLevel, getLevelReward } from '@/data/cards';
 import CardComponent from './CardComponent';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Swords, Trophy, Crown, Map, Star, Mail } from 'lucide-react';
+import { Swords, Trophy, Crown, Map, Star, Mail, Settings } from 'lucide-react';
 import splashImage from '@/assets/world-war-royale-splash.png';
 import { supabase } from '@/integrations/supabase/client';
 import { BottomNav } from './BottomNav';
@@ -12,6 +13,7 @@ import BattleBannerDisplay from './BattleBannerDisplay';
 import { getPlayerBanner } from '@/data/banners';
 import ArenaPreview from './ArenaPreview';
 import RevealScreen, { RevealItem } from './RevealScreen';
+import { updateSfxSettings, playCoinCollect } from '@/lib/sfx';
 
 const MainMenu = () => {
   const { profile, deck, chests, setScreen, setActiveTab, setProfile } = useGame();
