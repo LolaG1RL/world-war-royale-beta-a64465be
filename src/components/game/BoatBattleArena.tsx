@@ -26,6 +26,7 @@ interface DefenseTower {
 
 const BoatBattleArena = () => {
   const { deck, setScreen, setBattleResult, setProfile } = useGame();
+  const { language } = useSettings();
 
   // Load boat battle context
   const [context] = useState(() => {
