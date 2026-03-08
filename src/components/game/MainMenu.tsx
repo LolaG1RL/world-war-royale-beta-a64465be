@@ -18,7 +18,7 @@ import { updateSfxSettings, playCoinCollect } from '@/lib/sfx';
 import { t, tArena } from '@/lib/i18n';
 
 const MainMenu = () => {
-  const { profile, deck, chests, setScreen, setActiveTab, setProfile } = useGame();
+  const { profile, deck, chests, setScreen, setActiveTab, setProfile, clan } = useGame();
   const { signOut, user } = useAuth();
 
   // Play lobby music
@@ -114,9 +114,9 @@ const MainMenu = () => {
         {/* Player banner + Resources row */}
         <div className="flex items-center gap-2 px-3 py-1.5">
           <button onClick={() => setScreen('profile')} className="flex-1 min-w-0 hover:opacity-80 transition-opacity">
-            <BattleBannerDisplay banner={playerBanner} name={profile.name} trophies={profile.trophies} size="sm" />
+            <BattleBannerDisplay banner={playerBanner} name={profile.name} trophies={profile.trophies} clanName={clan?.name} size="sm" />
           </button>
-          {/* Resources + Settings */}
+          {/* Resources */}
           <div className="flex items-center gap-1 flex-shrink-0">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-1 bg-[hsl(220,15%,16%)] pl-1.5 pr-2.5 py-1 rounded-full border border-border">
@@ -128,9 +128,6 @@ const MainMenu = () => {
                 <span className="text-[10px] font-bold text-foreground">{profile.gems}</span>
               </div>
             </div>
-            <button onClick={() => setScreen('profile')} className="w-7 h-7 rounded-full bg-[hsl(220,15%,16%)] border border-border flex items-center justify-center hover:bg-[hsl(220,15%,22%)] transition-colors">
-              <Settings className="w-3.5 h-3.5 text-muted-foreground" />
-            </button>
           </div>
         </div>
       </div>
