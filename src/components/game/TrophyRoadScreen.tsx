@@ -3,23 +3,16 @@ import { useGame } from '@/context/GameContext';
 import { BottomNav } from './BottomNav';
 import { trophyRoadRewards, arenas, getArenaForTrophies, allCards } from '@/data/cards';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Lock, Check, Trophy, Gift, X } from 'lucide-react';
-import { toast } from 'sonner';
-
-interface RewardItem {
-  emoji: string;
-  name: string;
-  count: number;
-  rarity: string;
-}
+import { ChevronLeft, Lock, Check, Trophy, Gift } from 'lucide-react';
+import { addCards } from '@/data/cardInventory';
+import RevealScreen, { RevealItem } from './RevealScreen';
 
 const TrophyRoadScreen = () => {
   const { setScreen, profile, setProfile } = useGame();
   const currentArena = getArenaForTrophies(profile.trophies);
   const [claimedRewards, setClaimedRewards] = useState<Set<number>>(new Set());
-  const [showRewardPopup, setShowRewardPopup] = useState(false);
-  const [rewardItems, setRewardItems] = useState<RewardItem[]>([]);
-  const [rewardTitle, setRewardTitle] = useState('');
+  const [revealItems, setRevealItems] = useState<RevealItem[] | null>(null);
+  const [revealTitle, setRevealTitle] = useState('');
 
   useEffect(() => {
     const saved = localStorage.getItem('trophy_road_claimed');
