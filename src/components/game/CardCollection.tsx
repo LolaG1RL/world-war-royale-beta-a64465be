@@ -28,83 +28,9 @@ const CardCollection = () => {
   const currentDeck = decks[deckSlot];
   const avgElixir = currentDeck.length > 0 ? (currentDeck.reduce((a, c) => a + c.elixir, 0) / currentDeck.length).toFixed(1) : '0.0';
 
-  const claimFreebies = () => {
-    if (freebiesClaimed) return;
-    const rewards = generateDailyFreebies();
-    const goldReward = rewards.find(r => r.name === 'Gold');
-    if (goldReward) {
-      setProfile((prev: typeof profile) => ({ ...prev, gold: prev.gold + goldReward.count }));
-    }
-    setFreebiesClaimed();
-    setFreebiesClaimedState(true);
-    setShowFreebieRewards(rewards);
-  };
 
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
-      {/* Freebie reward popup */}
-      <AnimatePresence>
-        {showFreebieRewards && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
-            onClick={() => setShowFreebieRewards(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.7, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.7, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 200 }}
-              onClick={e => e.stopPropagation()}
-              className="w-[90%] max-w-sm bg-card border border-border rounded-2xl p-5"
-            >
-              <motion.div
-                initial={{ scale: 0, opacity: 1 }}
-                animate={{ scale: 3, opacity: 0 }}
-                transition={{ duration: 1 }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary/20 rounded-full blur-xl pointer-events-none"
-              />
-              <h2 className="font-display font-bold text-lg text-primary text-center mb-4">🎁 DAILY FREEBIES!</h2>
-              <div className="grid grid-cols-2 gap-2">
-                {showFreebieRewards.map((r, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ scale: 0, rotateY: 180 }}
-                    animate={{ scale: 1, rotateY: 0 }}
-                    transition={{ delay: i * 0.15, type: 'spring', stiffness: 200 }}
-                    className={`bg-background border rounded-xl p-3 text-center ${
-                      r.rarity === 'legendary' ? 'border-primary/50 shadow-[0_0_10px_hsl(38,90%,50%,0.3)]' :
-                      r.rarity === 'epic' ? 'border-purple-400/40' :
-                      r.rarity === 'rare' ? 'border-blue-400/40' :
-                      'border-border'
-                    }`}
-                  >
-                    <span className="text-2xl">{r.emoji}</span>
-                    <div className="text-[8px] font-bold text-foreground mt-1">{r.name}</div>
-                    <div className={`text-[10px] font-bold mt-0.5 ${
-                      r.rarity === 'legendary' ? 'text-primary' :
-                      r.rarity === 'epic' ? 'text-purple-400' :
-                      r.rarity === 'rare' ? 'text-blue-400' :
-                      'text-foreground'
-                    }`}>x{r.count}</div>
-                  </motion.div>
-                ))}
-              </div>
-              <motion.button
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: showFreebieRewards.length * 0.15 + 0.3 }}
-                onClick={() => setShowFreebieRewards(null)}
-                className="w-full mt-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold uppercase"
-              >
-                Collect
-              </motion.button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,25%,12%)] border-b border-border">
         <button onClick={() => { setActiveTab('battle'); setScreen('menu'); }} className="text-muted-foreground text-xs font-semibold">✕</button>
@@ -159,36 +85,6 @@ const CardCollection = () => {
         ))}
       </div>
 
-      {/* Daily Freebies */}
-      <div className="px-2 pt-2 bg-[hsl(220,20%,10%)]">
-        <motion.button
-          whileTap={!freebiesClaimed ? { scale: 0.97 } : undefined}
-          onClick={claimFreebies}
-          disabled={freebiesClaimed}
-          className={`w-full rounded-xl p-3 flex items-center gap-3 border transition-colors ${
-            freebiesClaimed
-              ? 'bg-muted/30 border-border/30 opacity-50'
-              : 'bg-gradient-to-r from-[hsl(140,50%,20%)] to-[hsl(160,50%,18%)] border-[hsl(140,50%,35%)] hover:brightness-110'
-          }`}
-        >
-          {freebiesClaimed ? (
-            <Check className="w-5 h-5 text-muted-foreground" />
-          ) : (
-            <Gift className="w-5 h-5 text-[hsl(140,60%,60%)]" />
-          )}
-          <div className="text-left flex-1">
-            <div className="text-[10px] font-bold text-foreground uppercase tracking-wider">
-              {freebiesClaimed ? 'Freebies Claimed!' : 'Daily Free Cards'}
-            </div>
-            <div className="text-[8px] text-muted-foreground">
-              {freebiesClaimed ? 'Come back tomorrow for more' : 'Tap to claim free cards & gold'}
-            </div>
-          </div>
-          {!freebiesClaimed && (
-            <span className="text-[9px] font-bold text-[hsl(140,60%,60%)] bg-[hsl(140,50%,15%)] px-2 py-1 rounded-lg uppercase">Free</span>
-          )}
-        </motion.button>
-      </div>
 
       {/* Card grid */}
       <div className="flex-1 overflow-y-auto p-2 bg-[hsl(220,20%,10%)]">
