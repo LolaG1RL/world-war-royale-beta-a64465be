@@ -114,6 +114,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   }, [loaded]);
 
   // Save progress to DB (debounced)
+  const saveProgress = useCallback(() => {
     if (!user || !loaded) return;
     if (saveTimeout.current) clearTimeout(saveTimeout.current);
     saveTimeout.current = setTimeout(async () => {
