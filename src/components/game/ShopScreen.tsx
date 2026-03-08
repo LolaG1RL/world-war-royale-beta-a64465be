@@ -604,7 +604,11 @@ const ShopScreen = () => {
             ))}
           </div>
           <button
-            onClick={handleWarPassPurchase}
+            onClick={() => setConfirmAction({
+              label: 'War Pass+',
+              cost: '$4.99',
+              onConfirm: () => { handleWarPassPurchase(); setConfirmAction(null); }
+            })}
             disabled={purchasing === 'war-pass'}
             className="w-full mt-3 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold uppercase disabled:opacity-50 flex items-center justify-center gap-2"
           >
