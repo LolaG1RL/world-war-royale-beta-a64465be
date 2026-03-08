@@ -219,66 +219,7 @@ function saveDailyQuestProgress(quests: { progress: number; claimed: boolean }[]
   localStorage.setItem('daily_quest_progress', JSON.stringify({ date: getTodayKey(), quests }));
 }
 
-// Reward reveal modal
-const RewardReveal = ({ rewards, onClose, language }: { rewards: RewardItem[]; onClose: () => void; language: import('@/lib/i18n').Language }) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
-    onClick={onClose}
-  >
-    <motion.div
-      initial={{ scale: 0.7, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.7, opacity: 0 }}
-      transition={{ type: 'spring', stiffness: 200 }}
-      onClick={e => e.stopPropagation()}
-      className="w-[90%] max-w-sm bg-card border border-border rounded-2xl p-5 relative"
-    >
-      <motion.div
-        initial={{ scale: 0, opacity: 1 }}
-        animate={{ scale: 3, opacity: 0 }}
-        transition={{ duration: 1 }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary/20 rounded-full blur-xl pointer-events-none"
-      />
-      <h2 className="font-display font-bold text-lg text-primary text-center mb-4">{t('shop.you_got', language)}</h2>
-      <div className="grid grid-cols-3 gap-2 max-h-[40vh] overflow-y-auto">
-        {rewards.map((r, i) => (
-          <motion.div
-            key={i}
-            initial={{ scale: 0, rotateY: 180 }}
-            animate={{ scale: 1, rotateY: 0 }}
-            transition={{ delay: i * 0.12, type: 'spring', stiffness: 200 }}
-            className={`bg-background border rounded-xl p-3 text-center ${
-              r.rarity === 'legendary' ? 'border-primary/50 shadow-[0_0_10px_hsl(38,90%,50%,0.3)]' :
-              r.rarity === 'epic' ? 'border-purple-400/40' :
-              r.rarity === 'rare' ? 'border-blue-400/40' : 'border-border'
-            }`}
-          >
-            <span className="text-2xl">{r.emoji}</span>
-            <div className="text-[8px] font-bold text-foreground mt-1">{r.name}</div>
-            <div className={`text-[10px] font-bold mt-0.5 ${
-              r.rarity === 'legendary' ? 'text-primary' :
-              r.rarity === 'epic' ? 'text-purple-400' :
-              r.rarity === 'rare' ? 'text-blue-400' : 'text-foreground'
-            }`}>x{r.count}</div>
-          </motion.div>
-        ))}
-      </div>
-      <motion.button
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: rewards.length * 0.12 + 0.3 }}
-        onClick={onClose}
-        className="w-full mt-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold uppercase"
-      >
-        {t('shop.collect', language)}
-      </motion.button>
-    </motion.div>
-  </motion.div>
-);
-
+// RewardReveal now uses RevealScreen from shop
 // ── Format time ──
 function fmtHours(h: number) {
   if (h >= 24) return `${Math.floor(h / 24)}d ${h % 24}h`;
