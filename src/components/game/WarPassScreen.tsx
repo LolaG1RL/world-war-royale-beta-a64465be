@@ -133,8 +133,18 @@ const WarPassScreen = () => {
     if (!reward) return;
     const r = track === 'free' ? reward.free : reward.paid;
 
-    if (r.type === 'gold') setProfile(p => ({ ...p, gold: p.gold + r.amount }));
-    else if (r.type === 'gems') setProfile(p => ({ ...p, gems: p.gems + r.amount }));
+    let items: RevealItem[] = [];
+
+    if (r.type === 'chest') {
+      const contents = generateChestContents(r.label);
+      setProfile(p => ({ ...p, gold: p.gold + contents.gold, gems: p.gems + contents.gems }));
+      items = contents.items;
+    } else {
+      if (r.type === 'gold') setProfile(p => ({ ...p, gold: p.gold + r.amount }));
+      else if (r.type === 'gems') setProfile(p => ({ ...p, gems: p.gems + r.amount }));
+      const rarity = r.type === 'gems' ? 'rare' : r.type === 'emote' ? 'legendary' : 'common';
+      items = [{ emoji: r.emoji, label: r.label, rarity }];
+    }
 
     if (track === 'free') {
       const next = new Set(claimedFree);
@@ -148,9 +158,8 @@ const WarPassScreen = () => {
       save(crowns, hasPaid, claimedFree, next);
     }
 
-    // Show reveal popup
-    const rarity = r.type === 'gems' ? 'rare' : r.type === 'chest' ? 'epic' : r.type === 'emote' ? 'legendary' : 'common';
-    setRevealItem({ emoji: r.emoji, label: r.label, rarity });
+    setRevealItems(items);
+    setRevealIndex(0);
   };
 
   const handleBuyPass = async () => {
