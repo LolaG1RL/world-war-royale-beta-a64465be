@@ -1,7 +1,7 @@
 import { useGame } from '@/context/GameContext';
 import { BottomNav } from './ShopScreen';
 import { useState } from 'react';
-import { MessageCircle, UserPlus, Search, Shield, Swords as SwordsIcon, Plus } from 'lucide-react';
+import { MessageCircle, UserPlus, Search, Shield, Swords as SwordsIcon, Plus, Trophy } from 'lucide-react';
 
 const SocialScreen = () => {
   const { setScreen, clan, profile, setClan, setProfile } = useGame();
