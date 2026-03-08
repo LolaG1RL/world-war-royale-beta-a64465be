@@ -1,8 +1,9 @@
 import { useGame } from '@/context/GameContext';
 import { useAuth } from '@/context/AuthContext';
 import { BottomNav } from './ShopScreen';
-import { useState, useEffect, useCallback } from 'react';
-import { MessageCircle, UserPlus, Search, Shield, Swords as SwordsIcon, Plus, Trophy, ChevronLeft, ChevronRight, Loader2, X, Check, UserMinus } from 'lucide-react';
+import { allCards } from '@/data/cards';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { MessageCircle, UserPlus, Search, Shield, Swords as SwordsIcon, Plus, Trophy, ChevronLeft, ChevronRight, Loader2, X, Check, UserMinus, ArrowUp, Repeat } from 'lucide-react';
 import ClanFlag, { CLAN_ICONS, BANNER_SHAPES } from './ClanFlag';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -555,49 +556,7 @@ const SocialScreen = () => {
               )}
             </div>
           ) : (
-            <>
-              {/* Clan header with flag */}
-              <div className="bg-[hsl(220,20%,13%)] p-3 border-b border-border">
-                <div className="flex items-center gap-3">
-                  <ClanFlag bannerColor={clan.bannerColor} bannerShape={clan.bannerShape} iconId={clan.iconId} iconColor={clan.iconColor} size="md" />
-                  <div className="flex-1">
-                    <div className="text-sm font-display font-bold text-foreground">{clan.name}</div>
-                    <div className="text-[9px] text-muted-foreground">{clan.tag} • {clan.members}/{clan.maxMembers} members</div>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="text-[9px] text-primary font-bold">🏆 {clan.trophies.toLocaleString()}</span>
-                      <span className="text-[9px] text-muted-foreground">📦 {clan.donations} donations/wk</span>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-[9px] text-muted-foreground mt-2 italic">"{clan.description}"</p>
-                <div className="flex gap-2 mt-2">
-                  <button className="flex-1 py-1.5 bg-primary/20 text-primary rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
-                    <MessageCircle className="w-3 h-3" />Chat
-                  </button>
-                  <button className="flex-1 py-1.5 bg-accent/20 text-accent rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
-                    <SwordsIcon className="w-3 h-3" />Clan War
-                  </button>
-                  <button onClick={leaveClan} className="flex-1 py-1.5 bg-destructive/20 text-destructive rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
-                    <X className="w-3 h-3" />Leave
-                  </button>
-                </div>
-              </div>
-
-              {/* Members list */}
-              <div className="flex-1 overflow-y-auto">
-                <div className="flex items-center gap-3 px-3 py-2 border-b border-border/50">
-                  <div className="text-[10px] text-muted-foreground font-bold w-4">1</div>
-                  <div className="w-2 h-2 rounded-full bg-hp-green" />
-                  <div className="flex-1">
-                    <div className="text-xs font-bold text-foreground">{profile.name}</div>
-                    <div className="text-[8px] text-primary">Leader</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[10px] font-bold text-foreground flex items-center gap-1 justify-end">🏆 {profile.trophies}</div>
-                  </div>
-                </div>
-              </div>
-            </>
+            <ClanView clan={clan} profile={profile} user={user} leaveClan={leaveClan} />
           )}
         </>
       )}
