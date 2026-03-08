@@ -233,6 +233,119 @@ const MainMenu = () => {
 
       </div>
 
+      {/* Level rewards modal */}
+      <AnimatePresence>
+        {showLevelModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 bg-[hsl(0,0%,0%,0.85)] flex flex-col"
+            onClick={() => setShowLevelModal(false)}
+          >
+            <motion.div
+              initial={{ y: 40, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 40, opacity: 0 }}
+              className="flex-1 flex flex-col max-w-md mx-auto w-full"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 py-3 bg-[hsl(220,25%,12%)] border-b border-border">
+                <button onClick={() => setShowLevelModal(false)} className="text-muted-foreground text-sm font-bold">✕</button>
+                <h3 className="font-display font-bold text-foreground text-sm">LEVEL REWARDS</h3>
+                <div className="text-[10px] font-bold text-primary">Lvl {profile.level}</div>
+              </div>
+
+              {/* XP bar */}
+              <div className="px-4 py-3 bg-[hsl(220,20%,11%)] border-b border-border">
+                <div className="flex items-center justify-between text-[10px] mb-1">
+                  <span className="text-muted-foreground">XP Progress</span>
+                  <span className="font-bold text-foreground">{profile.xp} / {xpForCurrentLevel}</span>
+                </div>
+                <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${xpProgress}%` }} />
+                </div>
+              </div>
+
+              {/* Reward list */}
+              <div className="flex-1 overflow-y-auto bg-[hsl(220,20%,10%)]">
+                {Array.from({ length: Math.max(profile.level + 10, 30) }, (_, i) => i + 1).map(lvl => {
+                  const reward = getLevelReward(lvl);
+                  const claimed = claimedLevels.has(lvl);
+                  const canClaim = !claimed && lvl <= profile.level;
+                  const isFuture = lvl > profile.level;
+
+                  return (
+                    <div
+                      key={lvl}
+                      className={`flex items-center gap-3 px-4 py-2.5 border-b border-border/50 ${
+                        lvl === profile.level ? 'bg-primary/5' : ''
+                      } ${isFuture ? 'opacity-40' : ''}`}
+                    >
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        claimed ? 'bg-muted/50' :
+                        canClaim ? 'bg-primary/20 border-2 border-primary/50 animate-pulse' :
+                        'bg-muted/20'
+                      }`}>
+                        <span className="text-[10px] font-black text-foreground">{lvl}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm">{reward.emoji}</span>
+                          <span className={`text-[10px] font-bold ${claimed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>{reward.name}</span>
+                        </div>
+                      </div>
+                      {claimed && <span className="text-[8px] text-muted-foreground font-bold">✅</span>}
+                      {canClaim && (
+                        <button
+                          onClick={() => {
+                            const items: RevealItem[] = [];
+                            if (reward.type === 'gold') {
+                              setProfile(p => ({ ...p, gold: p.gold + reward.amount }));
+                              items.push({ emoji: '💰', name: 'Gold', count: reward.amount, rarity: 'common' });
+                            } else if (reward.type === 'gems') {
+                              setProfile(p => ({ ...p, gems: p.gems + reward.amount }));
+                              items.push({ emoji: '💎', name: 'Gems', count: reward.amount, rarity: 'epic' });
+                            } else if (reward.type === 'cards') {
+                              items.push({ emoji: '🃏', name: 'Random Cards', count: reward.amount, rarity: 'rare' });
+                            } else if (reward.type === 'chest') {
+                              items.push({ emoji: reward.emoji, name: reward.name, count: 1, rarity: 'legendary' });
+                            }
+                            const next = new Set(claimedLevels);
+                            next.add(lvl);
+                            setClaimedLevels(next);
+                            localStorage.setItem('claimed_level_rewards', JSON.stringify([...next]));
+                            setRevealItems(items);
+                            setShowLevelModal(false);
+                          }}
+                          className="px-3 py-1 bg-primary/20 border border-primary/40 rounded-full text-[9px] font-bold text-primary animate-pulse"
+                        >
+                          CLAIM
+                        </button>
+                      )}
+                      {isFuture && <span className="text-[8px] text-muted-foreground">🔒</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Reveal screen */}
+      <AnimatePresence>
+        {revealItems && (
+          <RevealScreen
+            items={revealItems}
+            title="⬆️ Level Reward!"
+            subtitle="You received:"
+            onClose={() => setRevealItems(null)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Bottom navigation - CR style */}
       <BottomNav active="battle" setScreen={setScreen} />
     </div>
