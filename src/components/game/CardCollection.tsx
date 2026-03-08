@@ -1,14 +1,15 @@
 import { useGame } from '@/context/GameContext';
 import { allCards } from '@/data/cards';
 import CardComponent from './CardComponent';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+import { useState, useMemo } from 'react';
 import { GameCard } from '@/data/cards';
 import { allEmotes, getOwnedEmotes, getEquippedEmotes, setEquippedEmotes } from '@/data/emotes';
 import { BottomNav } from './BottomNav';
 import { getCardEntry, getUpgradeRequirements, canUpgrade, upgradeCard, addCards } from '@/data/cardInventory';
 import { toast } from 'sonner';
 import BannerCustomizer from './BannerCustomizer';
+import { getAllMatchups } from '@/data/cardMatchups';
 
 const CardCollection = () => {
   const { deck, setDeck, setScreen, setActiveTab, profile, setProfile } = useGame();
