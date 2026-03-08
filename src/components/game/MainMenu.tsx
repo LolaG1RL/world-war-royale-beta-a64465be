@@ -336,7 +336,7 @@ const MainMenu = () => {
                           }}
                           className="px-3 py-1 bg-primary/20 border border-primary/40 rounded-full text-[9px] font-bold text-primary animate-pulse"
                         >
-                          CLAIM
+                          {t('menu.claim', language)}
                         </button>
                       )}
                       {isFuture && <span className="text-[8px] text-muted-foreground">🔒</span>}
