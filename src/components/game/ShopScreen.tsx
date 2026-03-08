@@ -115,7 +115,44 @@ const ShopScreen = () => {
     setProfile(newProfile);
   };
 
-  return (
+  const handlePurchase = async (itemId: string) => {
+    const item = shopItems.find(i => i.id === itemId);
+    if (!item) return;
+    setPurchasing(itemId);
+    if (item.currency === 'real') {
+      const priceId = STRIPE_PRICES[itemId];
+      if (!priceId) { toast.error('Item not available'); setPurchasing(null); return; }
+      try {
+        const { data, error } = await supabase.functions.invoke('create-payment', { body: { priceId } });
+        if (error) throw error;
+        if (data?.url) window.open(data.url, '_blank');
+      } catch (err: any) { toast.error(err.message || 'Payment failed'); }
+      setPurchasing(null);
+      return;
+    }
+    const currency = item.currency === 'gold' ? profile.gold : profile.gems;
+    if (currency < item.cost) { toast.error(`Not enough ${item.currency}!`); setPurchasing(null); return; }
+    const newProfile = { ...profile };
+    if (item.currency === 'gold') newProfile.gold -= item.cost; else newProfile.gems -= item.cost;
+    switch (item.type) {
+      case 'chest': { const cc = item.name.includes('Legendary') ? 1 : item.name.includes('Magical') ? 12 : item.name.includes('Gold') ? 6 : 3; toast.success(`Opened ${item.name}! Got ${cc} cards`); break; }
+      case 'card': { toast.success(`Got cards for ${item.name}!`); break; }
+      case 'gold': { const g = parseInt(item.description.replace(/[^0-9]/g, '')); newProfile.gold += g; toast.success(`Got ${g.toLocaleString()} Gold!`); break; }
+    }
+    setProfile(newProfile);
+    setPurchasing(null);
+  };
+
+  const handleWarPassPurchase = async () => {
+    setPurchasing('war-pass');
+    try {
+      const { data, error } = await supabase.functions.invoke('create-payment', { body: { priceId: STRIPE_PRICES['shop-12'] } });
+      if (error) throw error;
+      if (data?.url) window.open(data.url, '_blank');
+    } catch (err: any) { toast.error(err.message || 'Payment failed'); }
+    setPurchasing(null);
+  };
+
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,25%,12%)] border-b border-border">
