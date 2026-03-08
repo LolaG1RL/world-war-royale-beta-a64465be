@@ -210,6 +210,37 @@ const CardCollection = () => {
         ))}
       </div>
 
+      {/* Daily Freebies */}
+      <div className="px-2 pt-2 bg-[hsl(220,20%,10%)]">
+        <motion.button
+          whileTap={!freebiesClaimed ? { scale: 0.97 } : undefined}
+          onClick={claimFreebies}
+          disabled={freebiesClaimed}
+          className={`w-full rounded-xl p-3 flex items-center gap-3 border transition-colors ${
+            freebiesClaimed
+              ? 'bg-muted/30 border-border/30 opacity-50'
+              : 'bg-gradient-to-r from-[hsl(140,50%,20%)] to-[hsl(160,50%,18%)] border-[hsl(140,50%,35%)] hover:brightness-110'
+          }`}
+        >
+          {freebiesClaimed ? (
+            <Check className="w-5 h-5 text-muted-foreground" />
+          ) : (
+            <Gift className="w-5 h-5 text-[hsl(140,60%,60%)]" />
+          )}
+          <div className="text-left flex-1">
+            <div className="text-[10px] font-bold text-foreground uppercase tracking-wider">
+              {freebiesClaimed ? 'Freebies Claimed!' : 'Daily Free Cards'}
+            </div>
+            <div className="text-[8px] text-muted-foreground">
+              {freebiesClaimed ? 'Come back tomorrow for more' : 'Tap to claim free cards & gold'}
+            </div>
+          </div>
+          {!freebiesClaimed && (
+            <span className="text-[9px] font-bold text-[hsl(140,60%,60%)] bg-[hsl(140,50%,15%)] px-2 py-1 rounded-lg uppercase">Free</span>
+          )}
+        </motion.button>
+      </div>
+
       {/* Card grid */}
       <div className="flex-1 overflow-y-auto p-2 bg-[hsl(220,20%,10%)]">
         <div className="grid grid-cols-4 gap-1.5">
