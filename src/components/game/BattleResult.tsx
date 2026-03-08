@@ -183,8 +183,8 @@ const BattleResult = () => {
           <div className="bg-card border border-border rounded-xl p-4 space-y-2 w-64">
             {riverBattle.battleType === 'boat' && (
               <div className="flex items-center justify-center gap-1 mb-1">
-                <Anchor className="w-4 h-4 text-accent" />
-                <span className="text-[10px] font-bold text-accent">Boat Battle</span>
+               <Anchor className="w-4 h-4 text-accent" />
+                <span className="text-[10px] font-bold text-accent">{t('battle.boat_battle_label', language)}</span>
               </div>
             )}
             <div className="flex items-center justify-between">
@@ -197,7 +197,7 @@ const BattleResult = () => {
                 <span className="text-[10px] font-bold text-primary">🏅 +{rewards.medals}</span>
               </div>
             ) : (
-              <div className="text-[8px] text-[hsl(45,80%,60%)] text-center">Training Day — no medals earned</div>
+              <div className="text-[8px] text-[hsl(45,80%,60%)] text-center">{t('battle.training_day', language)}</div>
             )}
           </div>
         ) : (
