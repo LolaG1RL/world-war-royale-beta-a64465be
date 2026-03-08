@@ -249,6 +249,34 @@ const WarPassScreen = () => {
         </div>
       )}
 
+      {/* Skip tier button */}
+      {(() => {
+        const nextTier = WAR_PASS_REWARDS.find(r => r.crownsNeeded > crowns);
+        const canSkip = nextTier && profile.gems >= 50;
+        return nextTier ? (
+          <div className="px-3 py-2 bg-[hsl(220,20%,11%)] border-b border-border flex items-center justify-between">
+            <div>
+              <div className="text-[10px] font-bold text-foreground">⏭️ Skip to Tier {nextTier.tier}</div>
+              <div className="text-[8px] text-muted-foreground">Jump to {nextTier.crownsNeeded} crowns</div>
+            </div>
+            <button
+              onClick={() => {
+                if (!canSkip) { toast.error('Not enough gems!'); return; }
+                setProfile(p => ({ ...p, gems: p.gems - 50 }));
+                const newCrowns = nextTier.crownsNeeded;
+                setCrowns(newCrowns);
+                save(newCrowns, hasPaid, claimedFree, claimedPaid);
+                toast.success(`Skipped to Tier ${nextTier.tier}!`);
+              }}
+              disabled={!canSkip}
+              className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-primary/20 border border-primary/40 text-primary disabled:opacity-40 flex items-center gap-1"
+            >
+              💎 50
+            </button>
+          </div>
+        ) : null;
+      })()}
+
       {/* Crown progress */}
       <div className="px-3 py-2 bg-[hsl(220,20%,11%)]">
         <div className="flex items-center gap-2 mb-1">
