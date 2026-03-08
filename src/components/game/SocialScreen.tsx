@@ -556,7 +556,7 @@ const SocialScreen = () => {
               )}
             </div>
           ) : (
-            <ClanView clan={clan} profile={profile} user={user} leaveClan={leaveClan} />
+            <ClanView clan={clan} profile={profile} user={user} leaveClan={leaveClan} setScreen={setScreen} />
           )}
         </>
       )}
@@ -665,7 +665,7 @@ interface ClanMsg {
   created_at: string;
 }
 
-const ClanView = ({ clan, profile, user, leaveClan }: { clan: any; profile: any; user: any; leaveClan: () => void }) => {
+const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; profile: any; user: any; leaveClan: () => void; setScreen: (s: string) => void }) => {
   const [chatMode, setChatMode] = useState<'info' | 'chat'>('info');
   const [messages, setMessages] = useState<ClanMsg[]>([]);
   const [msgInput, setMsgInput] = useState('');
