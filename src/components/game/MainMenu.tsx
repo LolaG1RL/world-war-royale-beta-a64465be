@@ -6,6 +6,7 @@ import CardComponent from './CardComponent';
 import { motion } from 'framer-motion';
 import { Swords, Trophy, Users, ShoppingBag, Crown, Map, Star, Gift, Zap, Mail } from 'lucide-react';
 import splashImage from '@/assets/world-war-royale-splash.png';
+import logoImage from '@/assets/world-war-royale-logo.png';
 import { supabase } from '@/integrations/supabase/client';
 
 const MainMenu = () => {
