@@ -6,7 +6,7 @@ import CardComponent from './CardComponent';
 import { motion } from 'framer-motion';
 import { Swords, Trophy, Crown, Map, Star, Mail } from 'lucide-react';
 import splashImage from '@/assets/world-war-royale-splash.png';
-import logoImage from '@/assets/world-war-royale-logo.png';
+import { supabase } from '@/integrations/supabase/client';
 import { supabase } from '@/integrations/supabase/client';
 import { BottomNav } from './BottomNav';
 import BattleBannerDisplay from './BattleBannerDisplay';
