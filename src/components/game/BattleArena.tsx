@@ -37,7 +37,7 @@ const BattleArena = () => {
           localStorage.setItem('war_pass_data', JSON.stringify(s1));
           localStorage.setItem('last_battle_crowns', String(net));
           setBattleResult('win');
-          if (!isRiverRace) setProfile(prev => ({ ...prev, trophies: prev.trophies + 30, wins: prev.wins + 1 }));
+          if (!isRiverRace) { const gain = 20 + Math.floor(Math.random() * 21); setProfile(prev => ({ ...prev, trophies: prev.trophies + gain, wins: prev.wins + 1 })); }
           setScreen('result');
           break;
         }
@@ -50,7 +50,7 @@ const BattleArena = () => {
           localStorage.setItem('war_pass_data', JSON.stringify(s2));
           localStorage.setItem('last_battle_crowns', String(net2));
           setBattleResult('lose');
-          if (!isRiverRace) setProfile(prev => ({ ...prev, losses: prev.losses + 1, trophies: Math.max(0, prev.trophies - 15) }));
+          if (!isRiverRace) { const loss = 10 + Math.floor(Math.random() * 21); setProfile(prev => ({ ...prev, losses: prev.losses + 1, trophies: Math.max(0, prev.trophies - loss) })); }
           setScreen('result');
           break;
         }
@@ -102,7 +102,7 @@ const BattleArena = () => {
           localStorage.setItem('last_battle_crowns', String(netCrowns));
           const result = pCrowns >= eCrowns ? 'win' : 'lose';
           setBattleResult(result);
-          if (!isRiverRace) setProfile(prev => ({ ...prev, trophies: result === 'win' ? prev.trophies + 30 : Math.max(0, prev.trophies - 15), wins: result === 'win' ? prev.wins + 1 : prev.wins, losses: result === 'lose' ? prev.losses + 1 : prev.losses }));
+          if (!isRiverRace) { const change = result === 'win' ? (20 + Math.floor(Math.random() * 21)) : -(10 + Math.floor(Math.random() * 21)); setProfile(prev => ({ ...prev, trophies: Math.max(0, prev.trophies + change), wins: result === 'win' ? prev.wins + 1 : prev.wins, losses: result === 'lose' ? prev.losses + 1 : prev.losses })); }
           setScreen('result');
           return 0;
         }
