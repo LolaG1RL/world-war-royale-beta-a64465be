@@ -33,6 +33,42 @@ const DAILY_DEAL_POOL = [
   { name: '10 Gems', emoji: '💎', type: 'gems' as const, rarity: 'common' as const, amount: 10, cost: 200, currency: 'gold' as const },
 ];
 
+// Emote daily deals
+function getDailyEmoteDeals() {
+  const today = new Date();
+  const seed = (today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()) * 13;
+  const owned = getOwnedEmotes();
+  const unowned = allEmotes.filter(e => !owned.includes(e.id));
+  const shuffled = [...unowned];
+  let s = seed;
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const j = s % (i + 1);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, 6).map(e => ({
+    emote: e,
+    cost: e.rarity === 'legendary' ? 250 : e.rarity === 'epic' ? 100 : e.rarity === 'rare' ? 50 : 25,
+    currency: 'gems' as const,
+  }));
+}
+
+function getEmoteDealsPurchased(): Set<number> {
+  try {
+    const stored = localStorage.getItem('emote_deals_purchased');
+    if (!stored) return new Set();
+    const parsed = JSON.parse(stored);
+    if (parsed.date !== getTodayKey()) return new Set();
+    return new Set(parsed.indices as number[]);
+  } catch { return new Set(); }
+}
+
+function saveEmoteDealPurchased(index: number) {
+  const current = getEmoteDealsPurchased();
+  current.add(index);
+  localStorage.setItem('emote_deals_purchased', JSON.stringify({ date: getTodayKey(), indices: Array.from(current) }));
+}
+
 function getDailyDeals() {
   const today = new Date();
   const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
