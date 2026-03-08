@@ -95,8 +95,25 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     load();
   }, [user]);
 
+  // Handle payment success from Stripe redirect
+  useEffect(() => {
+    if (!loaded) return;
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get('payment');
+    const type = params.get('type');
+    if (payment === 'success' && type) {
+      // Grant rewards based on type
+      if (type === '80-gems') {
+        setProfile(p => ({ ...p, gems: p.gems + 80 }));
+      } else if (type === '500-gems') {
+        setProfile(p => ({ ...p, gems: p.gems + 500 }));
+      }
+      // Clear URL params
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [loaded]);
+
   // Save progress to DB (debounced)
-  const saveProgress = useCallback(() => {
     if (!user || !loaded) return;
     if (saveTimeout.current) clearTimeout(saveTimeout.current);
     saveTimeout.current = setTimeout(async () => {
