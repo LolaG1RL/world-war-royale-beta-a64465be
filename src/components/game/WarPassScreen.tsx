@@ -7,6 +7,26 @@ import { toast } from 'sonner';
 
 interface RevealItem { emoji: string; label: string; rarity: string; }
 
+const generateChestContents = (chestLabel: string): { gold: number; gems: number; cards: number; items: RevealItem[] } => {
+  const isLegendary = chestLabel.toLowerCase().includes('legendary');
+  const isLightning = chestLabel.toLowerCase().includes('lightning');
+  const isMagic = chestLabel.toLowerCase().includes('magic');
+  const isGold = chestLabel.toLowerCase().includes('gold');
+
+  let gold = 0, gems = 0, cards = 0;
+  if (isLegendary) { gold = 2000 + Math.floor(Math.random() * 1000); gems = 20 + Math.floor(Math.random() * 15); cards = 1; }
+  else if (isLightning) { gold = 1200 + Math.floor(Math.random() * 600); gems = 8 + Math.floor(Math.random() * 8); cards = 6; }
+  else if (isMagic) { gold = 800 + Math.floor(Math.random() * 400); gems = 5 + Math.floor(Math.random() * 6); cards = 8; }
+  else if (isGold) { gold = 400 + Math.floor(Math.random() * 200); gems = 2 + Math.floor(Math.random() * 4); cards = 4; }
+  else { gold = 150 + Math.floor(Math.random() * 100); gems = 1 + Math.floor(Math.random() * 2); cards = 3; }
+
+  const items: RevealItem[] = [];
+  items.push({ emoji: '💰', label: `${gold} Gold`, rarity: 'common' });
+  items.push({ emoji: '💎', label: `${gems} Gems`, rarity: 'rare' });
+  items.push({ emoji: '🃏', label: `${cards} Cards`, rarity: isLegendary ? 'legendary' : isMagic || isLightning ? 'epic' : 'common' });
+  return { gold, gems, cards, items };
+};
+
 const STRIPE_WAR_PASS_PRICE = 'price_1T8c8eF8KfKkJquqBrjotFic';
 
 interface PassReward {
