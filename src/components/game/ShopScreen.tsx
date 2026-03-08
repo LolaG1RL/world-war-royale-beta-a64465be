@@ -235,6 +235,7 @@ const ShopScreen = () => {
     showRewards(rewards);
   };
 
+  const handleDailyDealPurchase = (deal: typeof DAILY_DEAL_POOL[0], index: number) => {
     if (purchasedDeals.has(index)) {
       toast.error('Already purchased today!');
       return;
