@@ -198,8 +198,9 @@ const DeafMode = () => {
       showReveal([{ emoji: '💰', name: 'Gold', count: n, rarity: 'common' }]);
     },
     setLevel: (n: number) => {
-      setProfile(p => ({ ...p, level: Math.max(1, Math.min(14, n)) }));
-      showReveal([{ emoji: '⬆️', name: `Level ${n}`, count: 1, rarity: 'rare' }]);
+      const lvl = Math.max(1, n);
+      setProfile(p => ({ ...p, level: lvl }));
+      showReveal([{ emoji: '⬆️', name: `Level ${lvl}`, count: 1, rarity: 'rare' }]);
     },
     addTrophies: (n: number) => {
       setProfile(p => ({ ...p, trophies: Math.max(0, p.trophies + n), maxTrophies: Math.max(p.maxTrophies, p.trophies + n) }));
@@ -444,9 +445,9 @@ const DeafMode = () => {
               <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Level</div>
               <div className="flex gap-1 items-center mb-2">
                 <span className="text-[10px] w-6">⬆️</span>
-                <input type="number" min={1} max={14} placeholder="1-14" value={inputLevel} onChange={e => setInputLevel(e.target.value)} className="flex-1 bg-slate-800 border border-border rounded px-2 py-1 text-[10px] text-foreground placeholder:text-muted-foreground" />
-                <button onClick={() => { const n = parseInt(inputLevel); if (!isNaN(n) && n >= 1 && n <= 14) { modActions.setLevel(n); setInputLevel(''); } }} className="px-2 py-1 bg-green-900 hover:bg-green-800 text-green-300 border border-green-700 rounded text-[9px] font-bold">Set</button>
-                <span className="text-[8px] text-muted-foreground">Current: {profile.level}</span>
+                <input type="number" min={1} placeholder="Level" value={inputLevel} onChange={e => setInputLevel(e.target.value)} className="flex-1 bg-slate-800 border border-border rounded px-2 py-1 text-[10px] text-foreground placeholder:text-muted-foreground" />
+                <button onClick={() => { const n = parseInt(inputLevel); if (!isNaN(n) && n >= 1) { modActions.setLevel(n); setInputLevel(''); } }} className="px-2 py-1 bg-green-900 hover:bg-green-800 text-green-300 border border-green-700 rounded text-[9px] font-bold">Set</button>
+                <span className="text-[8px] text-muted-foreground">Lvl: {profile.level}</span>
               </div>
 
               <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Spawn Cards</div>
