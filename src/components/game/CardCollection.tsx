@@ -753,6 +753,9 @@ const CardCollection = () => {
             </div>
           </div>
         </>
+      ) : (
+        /* Banner tab - inline */
+        <BannerInline profile={profile} />
       )}
 
       <BottomNav active="cards" setScreen={setScreen} />
