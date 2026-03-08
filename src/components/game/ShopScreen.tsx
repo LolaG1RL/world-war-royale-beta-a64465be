@@ -294,6 +294,12 @@ const RewardReveal = ({ rewards, onClose }: { rewards: RewardItem[]; onClose: ()
 const ShopScreen = () => {
   const { setScreen, profile, setProfile, setDeck, deck } = useGame();
   const [tab, setTab] = useState<'featured' | 'cards' | 'chests' | 'gems' | 'emotes' | 'banners'>('featured');
+  const isWarPassActive = (() => {
+    try {
+      const data = JSON.parse(localStorage.getItem('war_pass_data') || '{}');
+      return !!data.hasPaid;
+    } catch { return false; }
+  })();
   const [ownedBgs, setOwnedBgs] = useState(() => getOwnedBackgrounds());
   const [ownedEmbs, setOwnedEmbs] = useState(() => getOwnedEmblems());
   const [ownedBadgesSet, setOwnedBadgesSet] = useState(() => getOwnedBadges());
@@ -768,6 +774,7 @@ const ShopScreen = () => {
           </>
         )}
 
+        {!isWarPassActive && (
         <div className="mt-4 bg-gradient-to-r from-[hsl(340,60%,25%)] to-[hsl(280,50%,22%)] rounded-xl p-4 border border-[hsl(340,60%,40%)]">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🎖️</span>
@@ -794,6 +801,7 @@ const ShopScreen = () => {
             Buy War Pass+ - $4.99
           </button>
         </div>
+        )}
       </div>
 
       <BottomNav active="shop" setScreen={setScreen} />
