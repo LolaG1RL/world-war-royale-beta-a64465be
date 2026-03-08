@@ -924,8 +924,8 @@ const BattleArena = () => {
           )}
         </AnimatePresence>
 
-        {/* Champion Ability Button */}
-        {championCard?.ability && (
+        {/* Champion Ability Button — only when champion is deployed & alive */}
+        {championCard?.ability && deployedUnits.some(u => u.card.id === championCard.id && u.side === 'player' && u.hp > 0) && (
           <div className="absolute right-2 top-1/2 -translate-y-1/2 z-40">
             <motion.button
               whileTap={abilityCooldown <= 0 ? { scale: 0.9 } : {}}
