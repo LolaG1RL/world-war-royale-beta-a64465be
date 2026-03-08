@@ -11,10 +11,6 @@ import { addCards } from '@/data/cardInventory';
 import { addOwnedBackground, addOwnedEmblem } from '@/data/banners';
 import { addOwnedEmote } from '@/data/emotes';
 import { t } from '@/lib/i18n';
-import { allCards } from '@/data/cards';
-import { addCards } from '@/data/cardInventory';
-import { addOwnedBackground, addOwnedEmblem } from '@/data/banners';
-import { addOwnedEmote } from '@/data/emotes';
 
 interface RewardItem { emoji: string; name: string; count: number; rarity: string; }
 
