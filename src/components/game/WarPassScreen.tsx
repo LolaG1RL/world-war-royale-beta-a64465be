@@ -319,11 +319,18 @@ const WarPassScreen = () => {
             <button
               onClick={() => {
                 if (!canSkip) { toast.error('Not enough gems!'); return; }
-                setProfile(p => ({ ...p, gems: p.gems - 50 }));
-                const newCrowns = nextTier.crownsNeeded;
-                setCrowns(newCrowns);
-                save(newCrowns, hasPaid, claimedFree, claimedPaid);
-                toast.success(`Skipped to Tier ${nextTier.tier}!`);
+                setConfirmAction({
+                  label: `Skip to Tier ${nextTier.tier}`,
+                  cost: '💎 50',
+                  onConfirm: () => {
+                    setProfile(p => ({ ...p, gems: p.gems - 50 }));
+                    const newCrowns = nextTier.crownsNeeded;
+                    setCrowns(newCrowns);
+                    save(newCrowns, hasPaid, claimedFree, claimedPaid);
+                    toast.success(`Skipped to Tier ${nextTier.tier}!`);
+                    setConfirmAction(null);
+                  }
+                });
               }}
               disabled={!canSkip}
               className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-primary/20 border border-primary/40 text-primary disabled:opacity-40 flex items-center gap-1"
