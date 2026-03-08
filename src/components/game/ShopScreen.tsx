@@ -6,6 +6,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { allEmotes, getOwnedEmotes, addOwnedEmote } from '@/data/emotes';
+import {
+  allBackgrounds, allEmblems, allBadges,
+  getOwnedBackgrounds, getOwnedEmblems, getOwnedBadges,
+  addOwnedBackground, addOwnedEmblem, addOwnedBadge,
+  getUnlockedAchievementBadges,
+} from '@/data/banners';
 
 // Stripe price IDs for real-money items
 const STRIPE_PRICES: Record<string, string> = {
@@ -249,7 +255,10 @@ const RewardReveal = ({ rewards, onClose }: { rewards: RewardItem[]; onClose: ()
 
 const ShopScreen = () => {
   const { setScreen, profile, setProfile, setDeck, deck } = useGame();
-  const [tab, setTab] = useState<'featured' | 'cards' | 'chests' | 'gems' | 'emotes'>('featured');
+  const [tab, setTab] = useState<'featured' | 'cards' | 'chests' | 'gems' | 'emotes' | 'banners'>('featured');
+  const [ownedBgs, setOwnedBgs] = useState(() => getOwnedBackgrounds());
+  const [ownedEmbs, setOwnedEmbs] = useState(() => getOwnedEmblems());
+  const [ownedBadgesSet, setOwnedBadgesSet] = useState(() => getOwnedBadges());
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [rewardPopup, setRewardPopup] = useState<RewardItem[] | null>(null);
   const [purchasedDeals, setPurchasedDeals] = useState<Set<number>>(() => getPurchasedDeals());
@@ -442,9 +451,9 @@ const ShopScreen = () => {
 
       {/* Shop tabs */}
       <div className="flex bg-[hsl(220,20%,14%)] border-b border-border overflow-x-auto">
-        {(['featured', 'cards', 'chests', 'emotes', 'gems'] as const).map(t => (
+        {(['featured', 'cards', 'chests', 'emotes', 'banners', 'gems'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap px-2 ${tab === t ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
-            {t}
+            {t === 'banners' ? '🏴' : ''} {t}
           </button>
         ))}
       </div>
