@@ -179,6 +179,7 @@ const BattleArena = () => {
           targetId: null,
           isCharging: false,
           deployCount: i,
+          lifetimeRemaining: card.lifetime ? card.lifetime * 1000 : undefined,
         });
       }
       setDeployedUnits(u => [...u, ...newUnits]);
