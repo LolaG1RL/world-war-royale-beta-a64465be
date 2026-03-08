@@ -1,4 +1,4 @@
-export type Rarity = 'common' | 'rare' | 'epic' | 'legendary' | 'hero';
+export type Rarity = 'common' | 'rare' | 'epic' | 'legendary' | 'champion';
 export type CardType = 'troop' | 'spell' | 'building';
 export type MovementSpeed = 'very-slow' | 'slow' | 'medium' | 'fast' | 'very-fast';
 export type AttackRange = 'melee-short' | 'melee-medium' | 'melee-long' | 'ranged';
@@ -378,17 +378,17 @@ export const allCards: GameCard[] = [
     hitSpeed: 1.4, speed: 'medium', range: 5.5, targets: 'ground-air', unitType: 'ground', splashRadius: 1.0
   },
 
-  // ========== HEROES ==========
+  // ========== CHAMPIONS ==========
   { 
-    id: 'alexander-the-great', name: 'Alexander the Great', elixir: 6, rarity: 'hero', type: 'troop', 
+    id: 'alexander-the-great', name: 'Alexander the Great', elixir: 6, rarity: 'champion', type: 'troop', 
     hp: 3000, damage: 350, description: 'Conquers everything. Ability: Macedonian Charge - dashes forward dealing massive damage.', 
     era: 'Ancient Greece', emoji: '🦁', level: 1, count: 0, maxCount: 1,
     hitSpeed: 1.3, speed: 'fast', range: 'melee-long', targets: 'ground', unitType: 'ground',
     ability: { name: 'Macedonian Charge', description: 'Dash 5 tiles dealing 500 damage', cooldown: 10 }
   },
   { 
-    id: 'joan-of-arc', name: 'Joan of Arc', elixir: 5, rarity: 'hero', type: 'troop', 
-    hp: 2500, damage: 200, description: 'Divine warrior. Ability: Rally Cry - buffs all allies attack speed.', 
+    id: 'joan-of-arc', name: 'Joan of Arc', elixir: 5, rarity: 'champion', type: 'troop', 
+    hp: 2500, damage: 200, description: 'Divine warrior maiden. Ability: Rally Cry - buffs all allies attack speed by 50% for 5s. Passive: Inspired allies deal +15% damage.', 
     era: 'Medieval France', emoji: '⚜️', level: 1, count: 0, maxCount: 1,
     hitSpeed: 1.4, speed: 'medium', range: 'melee-medium', targets: 'ground', unitType: 'ground',
     ability: { name: 'Rally Cry', description: '+50% attack speed for all allies for 5s', cooldown: 12 }
