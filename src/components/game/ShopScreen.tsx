@@ -685,8 +685,8 @@ const ShopScreen = () => {
 
             <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🖼️ Today's Backgrounds</div>
             <div className="grid grid-cols-2 gap-2 mb-4">
-              {getDailyBgDeals().map(({ item: bg, discountPct }, idx) => {
-                const owned = ownedBgs.has(bg.id);
+              {getDailyBgDeals(ownedBgs).map(({ item: bg, discountPct }, idx) => {
+                const discountCost = Math.round(bg.cost * (1 - discountPct / 100));
                 const discountCost = Math.round(bg.cost * (1 - discountPct / 100));
                 return (
                   <button
@@ -725,8 +725,8 @@ const ShopScreen = () => {
 
             <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🎭 Today's Emblems</div>
             <div className="grid grid-cols-4 gap-2 mb-4">
-              {getDailyEmbDeals().map(({ item: emb, discountPct }) => {
-                const owned = ownedEmbs.has(emb.id);
+              {getDailyEmbDeals(ownedEmbs).map(({ item: emb, discountPct }) => {
+                const discountCost = Math.round(emb.cost * (1 - discountPct / 100));
                 const discountCost = Math.round(emb.cost * (1 - discountPct / 100));
                 return (
                   <button
