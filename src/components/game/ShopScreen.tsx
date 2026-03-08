@@ -216,9 +216,10 @@ const ShopScreen = () => {
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [rewardPopup, setRewardPopup] = useState<RewardItem[] | null>(null);
   const [purchasedDeals, setPurchasedDeals] = useState<Set<number>>(() => getPurchasedDeals());
-  const [freebiesClaimed, setFreebiesClaimedState] = useState(getFreebiesClaimed);
+  const [claimedFreebies, setClaimedFreebies] = useState<Set<number>>(() => getFreebiesClaimed());
   const countdown = useCountdownToMidnight();
   const dailyDeals = useMemo(() => getDailyDeals(), []);
+  const dailyFreebies = useMemo(() => getDailyFreebieCards(), []);
 
   const filtered = tab === 'featured' ? shopItems :
     tab === 'cards' ? shopItems.filter(i => i.type === 'card') :
@@ -229,16 +230,12 @@ const ShopScreen = () => {
     setRewardPopup(rewards);
   }, []);
 
-  const claimFreebies = () => {
-    if (freebiesClaimed) return;
-    const rewards = generateDailyFreebies();
-    const goldReward = rewards.find(r => r.name === 'Gold');
-    if (goldReward) {
-      setProfile((prev: typeof profile) => ({ ...prev, gold: prev.gold + goldReward.count }));
-    }
-    setFreebiesClaimedStorage();
-    setFreebiesClaimedState(true);
-    showRewards(rewards);
+  const claimFreebie = (index: number) => {
+    if (claimedFreebies.has(index)) return;
+    const freebie = dailyFreebies[index];
+    saveFreebieClaimedIndex(index);
+    setClaimedFreebies(prev => new Set([...prev, index]));
+    showRewards([{ emoji: freebie.emoji, name: freebie.name, count: freebie.amount, rarity: freebie.rarity }]);
   };
 
   const handleDailyDealPurchase = (deal: typeof DAILY_DEAL_POOL[0], index: number) => {
