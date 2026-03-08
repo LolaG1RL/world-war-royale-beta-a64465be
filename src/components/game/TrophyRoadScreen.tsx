@@ -90,6 +90,11 @@ const TrophyRoadScreen = () => {
     setRevealItems(items);
     setRevealTitle(reward.name);
 
+    const next = new Set(claimedRewards);
+    next.add(trophies);
+    saveClaimed(next);
+  };
+
   // Arena progress
   const nextArena = arenas.find(a => a.trophies > profile.trophies);
   const arenaProgress = currentArena.id === 15 ? 100 
