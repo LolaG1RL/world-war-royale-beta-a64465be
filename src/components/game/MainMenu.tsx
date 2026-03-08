@@ -219,19 +219,6 @@ const MainMenu = () => {
           </div>
         </div>
 
-        {/* Chest slots - Empty */}
-        <div className="px-3 py-2 bg-[hsl(220,20%,11%,0.9)] border-t border-border">
-          <div className="grid grid-cols-4 gap-1.5">
-            {[0, 1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="bg-[hsl(220,15%,16%)] border border-border rounded-lg py-3 flex flex-col items-center justify-center"
-              >
-                <span className="text-[7px] text-muted-foreground">Empty</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* Bottom navigation - CR style */}
