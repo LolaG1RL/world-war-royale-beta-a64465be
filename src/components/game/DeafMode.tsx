@@ -173,8 +173,15 @@ const DeafMode = () => {
       showReveal([{ emoji: '🃏', name: 'Deck Reset', count: 8, rarity: 'rare' }]);
     },
     maxCards: () => {
-      setProfile(p => ({ ...p, level: 14 }));
-      showReveal([{ emoji: '⭐', name: 'Max Level', count: 14, rarity: 'legendary' }]);
+      // Max all cards to their max level
+      const inv = JSON.parse(localStorage.getItem('card_inventory') || '{}');
+      allCards.forEach(card => {
+        const maxLvl = card.rarity === 'common' ? 13 : card.rarity === 'rare' ? 11 : card.rarity === 'epic' ? 8 : card.rarity === 'legendary' ? 6 : 4;
+        inv[card.id] = { count: 9999, level: maxLvl };
+      });
+      localStorage.setItem('card_inventory', JSON.stringify(inv));
+      window.dispatchEvent(new CustomEvent('card-inventory-updated'));
+      showReveal([{ emoji: '⭐', name: 'All Cards Maxed', count: allCards.length, rarity: 'legendary' }]);
     },
     spawnCards: () => {
       if (!spawnCardId || spawnAmount <= 0) { toast.error('Select a card and amount'); return; }
@@ -333,7 +340,7 @@ const DeafMode = () => {
               </div>
 
               {/* Card Spawning */}
-              <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">🃏 Spawn Cards</div>
+              <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Spawn Cards</div>
               <div className="space-y-1 mb-2">
                 <select value={spawnCardId} onChange={e => setSpawnCardId(e.target.value)}
                   className="w-full bg-[hsl(220,15%,14%)] border border-border rounded px-2 py-1.5 text-[9px] text-foreground">
