@@ -15,7 +15,7 @@ import { t } from '@/lib/i18n';
 type SubTab = 'backgrounds' | 'emblems' | 'badges';
 
 const BannerCustomizer = () => {
-  const { profile, setScreen } = useGame();
+  const { profile, setScreen, clan } = useGame();
   const { language } = useSettings();
   const T = (key: string) => t(key, language);
   const [banner, setBanner] = useState<PlayerBanner>(getPlayerBanner());
