@@ -1,6 +1,7 @@
 import { useGame } from '@/context/GameContext';
 import { useSettings } from '@/context/SettingsContext';
 import { t } from '@/lib/i18n';
+import { useAuth } from '@/context/AuthContext';
 import { BottomNav } from './BottomNav';
 import { allCards } from '@/data/cards';
 import { useState, useEffect, useCallback, useRef } from 'react';

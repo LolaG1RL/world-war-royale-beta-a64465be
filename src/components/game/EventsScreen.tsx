@@ -1,6 +1,7 @@
 import { useGame } from '@/context/GameContext';
 import { useSettings } from '@/context/SettingsContext';
 import { t } from '@/lib/i18n';
+import { BottomNav } from './BottomNav';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Clock, ChevronRight, Trophy, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
