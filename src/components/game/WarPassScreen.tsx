@@ -4,27 +4,45 @@ import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Lock, Crown, Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { allCards } from '@/data/cards';
 
-interface RevealItem { emoji: string; label: string; rarity: string; }
+interface RewardItem { emoji: string; name: string; count: number; rarity: string; }
 
-const generateChestContents = (chestLabel: string): { gold: number; gems: number; cards: number; items: RevealItem[] } => {
+const generateChestContents = (chestLabel: string): { gold: number; gems: number; items: RewardItem[] } => {
   const isLegendary = chestLabel.toLowerCase().includes('legendary');
   const isLightning = chestLabel.toLowerCase().includes('lightning');
   const isMagic = chestLabel.toLowerCase().includes('magic');
   const isGold = chestLabel.toLowerCase().includes('gold');
 
-  let gold = 0, gems = 0, cards = 0;
-  if (isLegendary) { gold = 2000 + Math.floor(Math.random() * 1000); gems = 20 + Math.floor(Math.random() * 15); cards = 1; }
-  else if (isLightning) { gold = 1200 + Math.floor(Math.random() * 600); gems = 8 + Math.floor(Math.random() * 8); cards = 6; }
-  else if (isMagic) { gold = 800 + Math.floor(Math.random() * 400); gems = 5 + Math.floor(Math.random() * 6); cards = 8; }
-  else if (isGold) { gold = 400 + Math.floor(Math.random() * 200); gems = 2 + Math.floor(Math.random() * 4); cards = 4; }
-  else { gold = 150 + Math.floor(Math.random() * 100); gems = 1 + Math.floor(Math.random() * 2); cards = 3; }
+  let gold = 0, gems = 0;
+  let commonCount = 0, rareCount = 0, epicCount = 0, legendaryCount = 0;
 
-  const items: RevealItem[] = [];
-  items.push({ emoji: '💰', label: `${gold} Gold`, rarity: 'common' });
-  items.push({ emoji: '💎', label: `${gems} Gems`, rarity: 'rare' });
-  items.push({ emoji: '🃏', label: `${cards} Cards`, rarity: isLegendary ? 'legendary' : isMagic || isLightning ? 'epic' : 'common' });
-  return { gold, gems, cards, items };
+  if (isLegendary) { gold = 2000 + Math.floor(Math.random() * 1000); gems = 20 + Math.floor(Math.random() * 15); rareCount = 2; epicCount = 1; legendaryCount = 1; }
+  else if (isLightning) { gold = 1200 + Math.floor(Math.random() * 600); gems = 8 + Math.floor(Math.random() * 8); commonCount = 3; rareCount = 2; epicCount = 1; }
+  else if (isMagic) { gold = 800 + Math.floor(Math.random() * 400); gems = 5 + Math.floor(Math.random() * 6); commonCount = 4; rareCount = 3; epicCount = 1; }
+  else if (isGold) { gold = 400 + Math.floor(Math.random() * 200); gems = 2 + Math.floor(Math.random() * 4); commonCount = 3; rareCount = 1; }
+  else { gold = 150 + Math.floor(Math.random() * 100); gems = 1 + Math.floor(Math.random() * 2); commonCount = 2; rareCount = 1; }
+
+  const items: RewardItem[] = [];
+  items.push({ emoji: '💰', name: `${gold} Gold`, count: gold, rarity: 'common' });
+  if (gems > 0) items.push({ emoji: '💎', name: `${gems} Gems`, count: gems, rarity: 'rare' });
+
+  const pickCards = (rarity: string, count: number) => {
+    const pool = allCards.filter(c => c.rarity === rarity);
+    for (let i = 0; i < count; i++) {
+      const card = pool[Math.floor(Math.random() * pool.length)];
+      if (card) {
+        const amt = rarity === 'common' ? 2 + Math.floor(Math.random() * 4) : rarity === 'rare' ? 1 + Math.floor(Math.random() * 2) : 1;
+        items.push({ emoji: card.emoji, name: card.name, count: amt, rarity });
+      }
+    }
+  };
+  pickCards('common', commonCount);
+  pickCards('rare', rareCount);
+  pickCards('epic', epicCount);
+  pickCards('legendary', legendaryCount);
+
+  return { gold, gems, items };
 };
 
 const STRIPE_WAR_PASS_PRICE = 'price_1T8c8eF8KfKkJquqBrjotFic';
@@ -76,8 +94,7 @@ const WarPassScreen = () => {
   const [claimedFree, setClaimedFree] = useState<Set<number>>(new Set());
   const [claimedPaid, setClaimedPaid] = useState<Set<number>>(new Set());
   const [purchasing, setPurchasing] = useState(false);
-  const [revealItems, setRevealItems] = useState<RevealItem[] | null>(null);
-  const [revealIndex, setRevealIndex] = useState(0);
+  const [revealItems, setRevealItems] = useState<RewardItem[] | null>(null);
   useEffect(() => {
     const saved = localStorage.getItem('war_pass_data');
     if (saved) {
@@ -133,7 +150,7 @@ const WarPassScreen = () => {
     if (!reward) return;
     const r = track === 'free' ? reward.free : reward.paid;
 
-    let items: RevealItem[] = [];
+    let items: RewardItem[] = [];
 
     if (r.type === 'chest') {
       const contents = generateChestContents(r.label);
@@ -142,8 +159,8 @@ const WarPassScreen = () => {
     } else {
       if (r.type === 'gold') setProfile(p => ({ ...p, gold: p.gold + r.amount }));
       else if (r.type === 'gems') setProfile(p => ({ ...p, gems: p.gems + r.amount }));
-      const rarity = r.type === 'gems' ? 'rare' : r.type === 'emote' ? 'legendary' : 'common';
-      items = [{ emoji: r.emoji, label: r.label, rarity }];
+      const rarity = r.type === 'gems' ? 'rare' : r.type === 'emote' ? 'legendary' : r.type === 'cards' ? 'common' : 'common';
+      items = [{ emoji: r.emoji, name: r.label, count: r.amount, rarity }];
     }
 
     if (track === 'free') {
@@ -159,7 +176,6 @@ const WarPassScreen = () => {
     }
 
     setRevealItems(items);
-    setRevealIndex(0);
   };
 
   const handleBuyPass = async () => {
@@ -184,7 +200,7 @@ const WarPassScreen = () => {
 
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background relative">
-      {/* Reward reveal popup */}
+      {/* Reward reveal popup - shop style grid */}
       <AnimatePresence>
         {revealItems && revealItems.length > 0 && (
           <motion.div
@@ -192,57 +208,56 @@ const WarPassScreen = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
-            onClick={() => { if (revealIndex >= revealItems.length - 1) { setRevealItems(null); } else { setRevealIndex(i => i + 1); } }}
+            onClick={() => setRevealItems(null)}
           >
             <motion.div
-              key={revealIndex}
-              initial={{ scale: 0.5, rotateY: 180 }}
-              animate={{ scale: 1, rotateY: 0 }}
-              exit={{ scale: 0.5, opacity: 0 }}
+              initial={{ scale: 0.7, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.7, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 200 }}
               onClick={e => e.stopPropagation()}
-              className="w-[70%] max-w-xs bg-card border border-border rounded-2xl p-6 relative text-center"
+              className="w-[90%] max-w-sm bg-card border border-border rounded-2xl p-5 relative"
             >
               <motion.div
                 initial={{ scale: 0, opacity: 1 }}
                 animate={{ scale: 3, opacity: 0 }}
                 transition={{ duration: 1 }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-primary/20 rounded-full blur-xl pointer-events-none"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary/20 rounded-full blur-xl pointer-events-none"
               />
-              {revealItems.length > 1 && (
-                <div className="text-[9px] text-muted-foreground mb-1">{revealIndex + 1} / {revealItems.length}</div>
-              )}
-              <h2 className="font-display font-bold text-lg text-primary mb-3">YOU GOT!</h2>
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-                className={`inline-block border-2 rounded-xl p-4 ${
-                  revealItems[revealIndex].rarity === 'legendary' ? 'border-primary/50 shadow-[0_0_15px_hsl(38,90%,50%,0.3)]' :
-                  revealItems[revealIndex].rarity === 'epic' ? 'border-purple-400/40' :
-                  revealItems[revealIndex].rarity === 'rare' ? 'border-blue-400/40' :
-                  'border-border'
-                } bg-background`}
-              >
-                <span className="text-4xl">{revealItems[revealIndex].emoji}</span>
-                <div className={`text-sm font-bold mt-2 ${
-                  revealItems[revealIndex].rarity === 'legendary' ? 'text-primary' :
-                  revealItems[revealIndex].rarity === 'epic' ? 'text-purple-400' :
-                  revealItems[revealIndex].rarity === 'rare' ? 'text-blue-400' :
-                  'text-foreground'
-                }`}>{revealItems[revealIndex].label}</div>
-              </motion.div>
+              <h2 className="font-display font-bold text-lg text-primary text-center mb-4">YOU GOT!</h2>
+              <div className="grid grid-cols-3 gap-2 max-h-[40vh] overflow-y-auto">
+                {revealItems.map((r, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ scale: 0, rotateY: 180 }}
+                    animate={{ scale: 1, rotateY: 0 }}
+                    transition={{ delay: i * 0.12, type: 'spring', stiffness: 200 }}
+                    className={`bg-background border rounded-xl p-3 text-center ${
+                      r.rarity === 'legendary' ? 'border-primary/50 shadow-[0_0_10px_hsl(38,90%,50%,0.3)]' :
+                      r.rarity === 'epic' ? 'border-purple-400/40' :
+                      r.rarity === 'rare' ? 'border-blue-400/40' :
+                      'border-border'
+                    }`}
+                  >
+                    <span className="text-2xl">{r.emoji}</span>
+                    <div className="text-[8px] font-bold text-foreground mt-1">{r.name}</div>
+                    <div className={`text-[10px] font-bold mt-0.5 ${
+                      r.rarity === 'legendary' ? 'text-primary' :
+                      r.rarity === 'epic' ? 'text-purple-400' :
+                      r.rarity === 'rare' ? 'text-blue-400' :
+                      'text-foreground'
+                    }`}>x{r.count}</div>
+                  </motion.div>
+                ))}
+              </div>
               <motion.button
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                onClick={() => {
-                  if (revealIndex >= revealItems.length - 1) { setRevealItems(null); }
-                  else { setRevealIndex(i => i + 1); }
-                }}
+                transition={{ delay: revealItems.length * 0.12 + 0.3 }}
+                onClick={() => setRevealItems(null)}
                 className="w-full mt-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold uppercase"
               >
-                {revealIndex >= revealItems.length - 1 ? 'Collect' : 'Next'}
+                Collect
               </motion.button>
             </motion.div>
           </motion.div>
