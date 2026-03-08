@@ -851,8 +851,9 @@ const SocialScreen = () => {
                     <div className={`text-[10px] font-bold w-6 text-center ${rank === 1 ? 'text-primary' : rank === 2 ? 'text-muted-foreground' : rank === 3 ? 'text-[hsl(25,70%,50%)]' : 'text-muted-foreground'}`}>
                       {rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}
                     </div>
-                    <div className="w-7 h-7 rounded-lg bg-[hsl(210,60%,40%)] border border-[hsl(210,70%,55%)] flex items-center justify-center">
-                      <span className="text-[9px] font-black text-foreground">{entry.level}</span>
+                    {/* Equipped emblem instead of level square */}
+                    <div className="w-7 h-7 rounded-lg bg-[hsl(220,20%,18%)] border border-border flex items-center justify-center">
+                      <span className="text-base">{getEmblemEmoji(isYou ? getPlayerBanner().emblemId : entry.equipped_emblem)}</span>
                     </div>
                     {/* Country flag */}
                     {entry.country && (
@@ -863,7 +864,7 @@ const SocialScreen = () => {
                         {entry.username} {isYou && <span className="text-[8px] text-primary">({t('common.you', language)})</span>}
                       </div>
                       <div className="text-[8px] text-muted-foreground">
-                        {entry.player_tag} • {entry.wins}W
+                        {entry.player_tag} • {t('menu.lvl', language)} {entry.level} • {entry.wins}W
                       </div>
                       {reward && (
                         <div className="flex gap-1 mt-0.5 flex-wrap">
@@ -881,6 +882,19 @@ const SocialScreen = () => {
           </div>
         </div>
       )}
+
+      {/* Season-end reward reveal */}
+      <AnimatePresence>
+        {seasonEndReveal && (
+          <RevealScreen
+            items={seasonEndReveal}
+            title={`🏆 ${T('social.season_end_rewards')}`}
+            subtitle={T('social.season_end_desc')}
+            onClose={() => setSeasonEndReveal(null)}
+            lang={language}
+          />
+        )}
+      </AnimatePresence>
 
       <BottomNav active="social" setScreen={setScreen} />
     </div>
