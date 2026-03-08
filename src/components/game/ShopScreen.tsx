@@ -1,6 +1,5 @@
 import { useGame } from '@/context/GameContext';
 import { useSettings } from '@/context/SettingsContext';
-import { t } from '@/lib/i18n';
 import { t, tRarity } from '@/lib/i18n';
 import { shopItems, allCards } from '@/data/cards';
 import { X, Loader2, Check, Gift } from 'lucide-react';
