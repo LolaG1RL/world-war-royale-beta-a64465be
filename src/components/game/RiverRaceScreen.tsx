@@ -381,7 +381,7 @@ const RiverRaceScreen = () => {
       <div className="bg-[hsl(220,25%,10%)] border-b border-border px-3 py-2 flex items-center gap-2">
         <button onClick={() => {
           if (mode === 'edit-deck' || mode === 'edit-defense') setMode(mode === 'edit-deck' ? 'war-decks' : 'boat-defense');
-          else if (mode === 'boat-target') setMode('battle-select');
+          else if (mode === 'boat-target') setMode('map');
           else if (mode === 'map') setScreen('social');
           else setMode('map');
         }} className="text-muted-foreground">
