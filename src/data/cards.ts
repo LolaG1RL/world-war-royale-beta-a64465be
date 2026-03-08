@@ -394,55 +394,6 @@ export const allCards: GameCard[] = [
     ability: { name: 'Rally Cry', description: '+50% attack speed for all allies for 5s', cooldown: 12 }
   },
 
-  // ========== WIN CONDITIONS (target buildings / tower-focused) ==========
-  { 
-    id: 'battering-ram', name: 'Battering Ram', elixir: 4, rarity: 'rare', type: 'troop', 
-    hp: 1100, damage: 300, description: 'Fast-moving siege weapon that charges straight at towers. Spawns 2 barbarians on death.', 
-    era: 'Medieval', emoji: '🪵', level: 1, count: 0, maxCount: 50,
-    hitSpeed: 2.0, speed: 'very-fast', range: 'melee-short', targets: 'buildings', unitType: 'ground', chargeSpeed: 2.0
-  },
-  { 
-    id: 'war-giant', name: 'War Giant', elixir: 5, rarity: 'common', type: 'troop', 
-    hp: 3500, damage: 140, description: 'Massive brute that ignores troops and marches straight to towers. Tanky but slow.', 
-    era: 'Fantasy', emoji: '🧌', level: 1, count: 0, maxCount: 400,
-    hitSpeed: 1.5, speed: 'slow', range: 'melee-short', targets: 'buildings', unitType: 'ground'
-  },
-  { 
-    id: 'hog-chariot', name: 'Hog Chariot', elixir: 4, rarity: 'rare', type: 'troop', 
-    hp: 800, damage: 240, description: 'Lightning-fast chariot rider that rushes enemy towers. The original win condition.', 
-    era: 'Gladiator', emoji: '🐗', level: 1, count: 0, maxCount: 50,
-    hitSpeed: 1.6, speed: 'very-fast', range: 'melee-short', targets: 'buildings', unitType: 'ground'
-  },
-  { 
-    id: 'wall-breakers', name: 'Wall Breakers', elixir: 2, rarity: 'epic', type: 'troop', 
-    hp: 200, damage: 0, description: 'Two explosive sappers that sprint to towers and blow themselves up. Massive death damage!', 
-    era: 'Medieval', emoji: '💥', level: 1, count: 0, maxCount: 10,
-    hitSpeed: 1.0, speed: 'very-fast', range: 'melee-short', targets: 'buildings', unitType: 'ground', deployCount: 2, deathDamage: 700
-  },
-  { 
-    id: 'royal-giant', name: 'Royal Giant', elixir: 6, rarity: 'common', type: 'troop', 
-    hp: 2800, damage: 160, description: 'A giant with a cannon. Outranges towers and blasts them from afar.', 
-    era: 'Renaissance', emoji: '🔫', level: 1, count: 0, maxCount: 400,
-    hitSpeed: 1.7, speed: 'slow', range: 5.0, targets: 'buildings', unitType: 'ground'
-  },
-  { 
-    id: 'siege-tower', name: 'Siege Tower', elixir: 6, rarity: 'epic', type: 'troop', 
-    hp: 2000, damage: 120, description: 'Rolling fortress that launches rocks at buildings. Spawns troops upon reaching a tower.', 
-    era: 'Medieval', emoji: '🏰', level: 1, count: 0, maxCount: 10,
-    hitSpeed: 2.5, speed: 'very-slow', range: 6.0, targets: 'buildings', unitType: 'ground', splashRadius: 1.0
-  },
-  { 
-    id: 'goblin-barrel', name: 'Goblin Barrel', elixir: 3, rarity: 'epic', type: 'spell', 
-    damage: 0, description: 'Flings a barrel of goblins anywhere on the map. They spawn on landing and attack the nearest tower!', 
-    era: 'Fantasy', emoji: '🛢️', level: 1, count: 0, maxCount: 10,
-    splashRadius: 1.0
-  },
-  { 
-    id: 'graveyard', name: 'Graveyard', elixir: 5, rarity: 'legendary', type: 'spell', 
-    damage: 50, description: 'Summons skeletons over time in an area. Place on a tower for devastating chip damage.', 
-    era: 'Fantasy', emoji: '⚰️', level: 1, count: 0, maxCount: 2,
-    splashRadius: 4.0
-  },
 ];
 
 export const getStarterDeck = (): GameCard[] => {
