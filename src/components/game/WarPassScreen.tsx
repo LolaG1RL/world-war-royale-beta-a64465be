@@ -119,6 +119,8 @@ const WarPassScreen = () => {
         const seasonStart = data.seasonStart || Date.now();
         const daysSinceSeason = (Date.now() - seasonStart) / (1000 * 60 * 60 * 24);
         if (daysSinceSeason >= 30) {
+          // Season ended — distribute leaderboard rewards before reset
+          distributeLeaderboardRewards();
           const resetData = { crowns: 0, hasPaid: false, claimedFree: [], claimedPaid: [], seasonStart: Date.now(), daysLeft: 30 };
           localStorage.setItem('war_pass_data', JSON.stringify(resetData));
           setCrowns(0);
