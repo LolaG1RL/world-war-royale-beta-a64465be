@@ -462,7 +462,7 @@ const EventsScreen = () => {
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
       {/* Reward popup */}
       <AnimatePresence>
-        {rewardPopup && <RewardReveal rewards={rewardPopup} onClose={() => setRewardPopup(null)} language={language} />}
+        {rewardPopup && <RevealScreen items={rewardPopup} onClose={() => setRewardPopup(null)} lang={language} />}
       </AnimatePresence>
 
       {/* Event detail modal */}
