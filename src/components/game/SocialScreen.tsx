@@ -680,11 +680,15 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [clanId, setClanId] = useState<string | null>(null);
 
-  // Cards the user owns (count > 0)
+  // Cards the user owns (count > 0) - for trading offers
   const ownedCards = allCards.filter(c => {
     const entry = getCardEntry(c.id);
-    return entry.count > 0 && DONATION_LIMITS[c.rarity] > 0;
+    return entry.count > 0;
   });
+
+  // Requestable cards (any card with donation limits)
+  const requestableCards = allCards.filter(c => DONATION_LIMITS[c.rarity] > 0);
+
 
   // Get clan ID from DB
   useEffect(() => {
@@ -778,7 +782,6 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
     const card = allCards.find(c => c.id === requestCardId);
     if (!card) return;
     const entry = getCardEntry(card.id);
-    if (entry.count <= 0) { toast.error("You don't own this card!"); return; }
     const limit = DONATION_LIMITS[card.rarity];
     if (limit <= 0) { toast.error("This card rarity can't be requested!"); return; }
 
@@ -892,11 +895,14 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                   <div className="text-[9px] font-bold text-primary uppercase tracking-wider">🔄 Post a Trade Request</div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[8px] text-muted-foreground">You offer:</label>
+                      <label className="text-[8px] text-muted-foreground">You offer (owned):</label>
                       <select value={tradeOffer} onChange={e => setTradeOffer(e.target.value)}
                         className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-[9px] text-foreground">
                         <option value="">Select card...</option>
-                        {allCards.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
+                        {ownedCards.map(c => {
+                          const entry = getCardEntry(c.id);
+                          return <option key={c.id} value={c.id}>{c.emoji} {c.name} — x{entry.count}</option>;
+                        })}
                       </select>
                     </div>
                     <div>
@@ -928,13 +934,13 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                     <div className="text-[9px] text-destructive">⏳ Cooldown: {getRequestTimeLeft()}</div>
                   )}
                   <div>
-                    <label className="text-[8px] text-muted-foreground">Card you own to request:</label>
+                    <label className="text-[8px] text-muted-foreground">Card to request:</label>
                     <select value={requestCardId} onChange={e => setRequestCardId(e.target.value)}
                       className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-[9px] text-foreground">
                       <option value="">Select card...</option>
-                      {ownedCards.map(c => {
+                      {requestableCards.map(c => {
                         const entry = getCardEntry(c.id);
-                        return <option key={c.id} value={c.id}>{c.emoji} {c.name} ({c.rarity}) — x{entry.count}</option>;
+                        return <option key={c.id} value={c.id}>{c.emoji} {c.name} ({c.rarity}){entry.count > 0 ? ` — x${entry.count}` : ''}</option>;
                       })}
                     </select>
                   </div>
