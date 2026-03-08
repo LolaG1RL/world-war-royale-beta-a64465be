@@ -10,6 +10,7 @@ import { allCards } from '@/data/cards';
 import { allEmotes, addOwnedEmote, getOwnedEmotes } from '@/data/emotes';
 import { allBackgrounds, allEmblems, addOwnedBackground, addOwnedEmblem, getOwnedBackgrounds, getOwnedEmblems } from '@/data/banners';
 import { addCards, markCardsOwned } from '@/data/cardInventory';
+import RevealScreen, { RevealItem } from './RevealScreen';
 
 // ── Seeded random ──
 function seededRng(seed: number) {
@@ -218,66 +219,7 @@ function saveDailyQuestProgress(quests: { progress: number; claimed: boolean }[]
   localStorage.setItem('daily_quest_progress', JSON.stringify({ date: getTodayKey(), quests }));
 }
 
-// Reward reveal modal
-const RewardReveal = ({ rewards, onClose, language }: { rewards: RewardItem[]; onClose: () => void; language: import('@/lib/i18n').Language }) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
-    onClick={onClose}
-  >
-    <motion.div
-      initial={{ scale: 0.7, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.7, opacity: 0 }}
-      transition={{ type: 'spring', stiffness: 200 }}
-      onClick={e => e.stopPropagation()}
-      className="w-[90%] max-w-sm bg-card border border-border rounded-2xl p-5 relative"
-    >
-      <motion.div
-        initial={{ scale: 0, opacity: 1 }}
-        animate={{ scale: 3, opacity: 0 }}
-        transition={{ duration: 1 }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary/20 rounded-full blur-xl pointer-events-none"
-      />
-      <h2 className="font-display font-bold text-lg text-primary text-center mb-4">{t('shop.you_got', language)}</h2>
-      <div className="grid grid-cols-3 gap-2 max-h-[40vh] overflow-y-auto">
-        {rewards.map((r, i) => (
-          <motion.div
-            key={i}
-            initial={{ scale: 0, rotateY: 180 }}
-            animate={{ scale: 1, rotateY: 0 }}
-            transition={{ delay: i * 0.12, type: 'spring', stiffness: 200 }}
-            className={`bg-background border rounded-xl p-3 text-center ${
-              r.rarity === 'legendary' ? 'border-primary/50 shadow-[0_0_10px_hsl(38,90%,50%,0.3)]' :
-              r.rarity === 'epic' ? 'border-purple-400/40' :
-              r.rarity === 'rare' ? 'border-blue-400/40' : 'border-border'
-            }`}
-          >
-            <span className="text-2xl">{r.emoji}</span>
-            <div className="text-[8px] font-bold text-foreground mt-1">{r.name}</div>
-            <div className={`text-[10px] font-bold mt-0.5 ${
-              r.rarity === 'legendary' ? 'text-primary' :
-              r.rarity === 'epic' ? 'text-purple-400' :
-              r.rarity === 'rare' ? 'text-blue-400' : 'text-foreground'
-            }`}>x{r.count}</div>
-          </motion.div>
-        ))}
-      </div>
-      <motion.button
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: rewards.length * 0.12 + 0.3 }}
-        onClick={onClose}
-        className="w-full mt-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold uppercase"
-      >
-        {t('shop.collect', language)}
-      </motion.button>
-    </motion.div>
-  </motion.div>
-);
-
+// RewardReveal now uses RevealScreen from shop
 // ── Format time ──
 function fmtHours(h: number) {
   if (h >= 24) return `${Math.floor(h / 24)}d ${h % 24}h`;
@@ -369,7 +311,7 @@ const DAILY_QUESTS = [
 
 // ── Main Component ──
 const EventsScreen = () => {
-  const { setScreen, profile, setProfile } = useGame();
+  const { setScreen, profile, setProfile, deck } = useGame();
   const { language } = useSettings();
   const [tab, setTab] = useState<'events' | 'challenges' | 'tournaments'>('events');
   const [rewardPopup, setRewardPopup] = useState<RewardItem[] | null>(null);
@@ -383,26 +325,38 @@ const EventsScreen = () => {
   const [questProgress, setQuestProgress] = useState(() => getDailyQuestProgress());
   const [, forceUpdate] = useState(0);
 
-  const simulateWin = useCallback((event: EventData) => {
+  // Check for completed event battle on mount (returning from battle)
+  useEffect(() => {
+    const eb = localStorage.getItem('event_battle');
+    if (eb) {
+      try {
+        const parsed = JSON.parse(eb);
+        if (parsed.completed) {
+          localStorage.removeItem('event_battle');
+          forceUpdate(n => n + 1);
+          // Refresh quest progress (wins are updated by BattleResult)
+          setQuestProgress(getDailyQuestProgress());
+        }
+      } catch {}
+    }
+  }, []);
+
+  const startEventBattle = useCallback((event: EventData) => {
     const prog = getEventProgress(event.id);
     if (prog.completed) { toast.info(t('events.already_completed', language)); return; }
     if (event.maxLosses && event.maxLosses > 0 && prog.losses >= event.maxLosses) { toast.error(t('events.too_many_losses', language)); return; }
 
-    const won = Math.random() > 0.4;
-    if (won) {
-      prog.wins += 1;
-      toast.success(`${t('battle.victory', language)} (${prog.wins} ${t('events.wins', language).toLowerCase()})`);
-    } else {
-      prog.losses += 1;
-      toast.error(`${t('battle.defeat', language)} (${prog.losses} ${t('events.losses', language).toLowerCase()})`);
-    }
+    // Store event battle context
+    localStorage.setItem('event_battle', JSON.stringify({
+      eventId: event.id,
+      maxWins: event.maxWins || 0,
+      maxLosses: event.maxLosses || 0,
+      completed: false,
+    }));
 
-    if (event.maxWins && prog.wins >= event.maxWins) prog.completed = true;
-    if (event.maxLosses && event.maxLosses > 0 && prog.losses >= event.maxLosses) prog.completed = true;
-
-    setEventProgress(event.id, prog);
-    forceUpdate(n => n + 1);
-  }, []);
+    // Navigate to actual battle
+    setScreen('battle');
+  }, [language, setScreen]);
 
   const claimMilestone = useCallback((event: EventData, milestoneIdx: number) => {
     const prog = getEventProgress(event.id);
@@ -508,7 +462,7 @@ const EventsScreen = () => {
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
       {/* Reward popup */}
       <AnimatePresence>
-        {rewardPopup && <RewardReveal rewards={rewardPopup} onClose={() => setRewardPopup(null)} language={language} />}
+        {rewardPopup && <RevealScreen items={rewardPopup} onClose={() => setRewardPopup(null)} lang={language} />}
       </AnimatePresence>
 
       {/* Event detail modal */}
@@ -585,7 +539,7 @@ const EventsScreen = () => {
               {(() => {
                 const prog = getEventProgress(selectedEvent.id);
                 return !prog.completed ? (
-                  <button onClick={() => simulateWin(selectedEvent)} className="w-full py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold uppercase">
+                  <button onClick={() => startEventBattle(selectedEvent)} className="w-full py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold uppercase">
                     {t('events.battle', language)}
                   </button>
                 ) : (
@@ -640,7 +594,7 @@ const EventsScreen = () => {
                     ) : done ? (
                       <button onClick={() => claimQuest(i)} className="px-2 py-0.5 bg-primary text-primary-foreground rounded text-[8px] font-bold animate-pulse">{t('events.claim_btn', language)}</button>
                     ) : (
-                      <button onClick={() => addQuestProgress(i)} className="px-2 py-0.5 bg-muted text-muted-foreground rounded text-[8px] font-bold">+1</button>
+                      <span className="text-[8px] text-muted-foreground">🔒</span>
                     )}
                     <span className="text-[9px] font-bold text-primary">{q.rewardLabel}</span>
                   </div>

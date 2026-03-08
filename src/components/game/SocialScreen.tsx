@@ -436,6 +436,8 @@ const SocialScreen = () => {
       // Find world rank
       const worldIdx = entries.findIndex(e => e.user_id === user?.id);
       setMyWorldRank(worldIdx >= 0 ? worldIdx + 1 : null);
+      // Persist for season-end rewards
+      if (worldIdx >= 0) localStorage.setItem('my_world_rank', String(worldIdx + 1));
 
       // Local leaderboard (same country)
       if (userCountryCode) {
@@ -443,6 +445,8 @@ const SocialScreen = () => {
         setLocalLeaderboard(local);
         const localIdx = local.findIndex(e => e.user_id === user?.id);
         setMyLocalRank(localIdx >= 0 ? localIdx + 1 : null);
+        // Persist for season-end rewards
+        if (localIdx >= 0) localStorage.setItem('my_local_rank', String(localIdx + 1));
       }
     }
     setLoadingLeaderboard(false);

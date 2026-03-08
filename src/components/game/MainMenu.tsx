@@ -44,6 +44,25 @@ const MainMenu = () => {
     catch { return new Set(); }
   });
 
+  // Check for season-end leaderboard rewards
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('season_end_rewards');
+      if (raw) {
+        const rewards = JSON.parse(raw);
+        if (rewards.gold > 0 || rewards.gems > 0) {
+          const items: RevealItem[] = [];
+          if (rewards.gold > 0) items.push({ emoji: '💰', name: `${rewards.gold.toLocaleString()} Gold`, count: rewards.gold, rarity: 'common' });
+          if (rewards.gems > 0) items.push({ emoji: '💎', name: `${rewards.gems} Gems`, count: rewards.gems, rarity: 'rare' });
+          rewards.ranks?.forEach((r: string) => items.push({ emoji: '🏆', name: r, count: 1, rarity: 'legendary' }));
+          setProfile(p => ({ ...p, gold: p.gold + rewards.gold, gems: p.gems + rewards.gems }));
+          setRevealItems(items);
+          localStorage.removeItem('season_end_rewards');
+        }
+      }
+    } catch {}
+  }, []);
+
   const xpForCurrentLevel = getXpForLevel(profile.level);
   const xpProgress = Math.min(100, (profile.xp / xpForCurrentLevel) * 100);
 
