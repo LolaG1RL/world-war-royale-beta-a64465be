@@ -4,27 +4,45 @@ import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Lock, Crown, Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { allCards } from '@/data/cards';
 
-interface RevealItem { emoji: string; label: string; rarity: string; }
+interface RewardItem { emoji: string; name: string; count: number; rarity: string; }
 
-const generateChestContents = (chestLabel: string): { gold: number; gems: number; cards: number; items: RevealItem[] } => {
+const generateChestContents = (chestLabel: string): { gold: number; gems: number; items: RewardItem[] } => {
   const isLegendary = chestLabel.toLowerCase().includes('legendary');
   const isLightning = chestLabel.toLowerCase().includes('lightning');
   const isMagic = chestLabel.toLowerCase().includes('magic');
   const isGold = chestLabel.toLowerCase().includes('gold');
 
-  let gold = 0, gems = 0, cards = 0;
-  if (isLegendary) { gold = 2000 + Math.floor(Math.random() * 1000); gems = 20 + Math.floor(Math.random() * 15); cards = 1; }
-  else if (isLightning) { gold = 1200 + Math.floor(Math.random() * 600); gems = 8 + Math.floor(Math.random() * 8); cards = 6; }
-  else if (isMagic) { gold = 800 + Math.floor(Math.random() * 400); gems = 5 + Math.floor(Math.random() * 6); cards = 8; }
-  else if (isGold) { gold = 400 + Math.floor(Math.random() * 200); gems = 2 + Math.floor(Math.random() * 4); cards = 4; }
-  else { gold = 150 + Math.floor(Math.random() * 100); gems = 1 + Math.floor(Math.random() * 2); cards = 3; }
+  let gold = 0, gems = 0;
+  let commonCount = 0, rareCount = 0, epicCount = 0, legendaryCount = 0;
 
-  const items: RevealItem[] = [];
-  items.push({ emoji: '💰', label: `${gold} Gold`, rarity: 'common' });
-  items.push({ emoji: '💎', label: `${gems} Gems`, rarity: 'rare' });
-  items.push({ emoji: '🃏', label: `${cards} Cards`, rarity: isLegendary ? 'legendary' : isMagic || isLightning ? 'epic' : 'common' });
-  return { gold, gems, cards, items };
+  if (isLegendary) { gold = 2000 + Math.floor(Math.random() * 1000); gems = 20 + Math.floor(Math.random() * 15); rareCount = 2; epicCount = 1; legendaryCount = 1; }
+  else if (isLightning) { gold = 1200 + Math.floor(Math.random() * 600); gems = 8 + Math.floor(Math.random() * 8); commonCount = 3; rareCount = 2; epicCount = 1; }
+  else if (isMagic) { gold = 800 + Math.floor(Math.random() * 400); gems = 5 + Math.floor(Math.random() * 6); commonCount = 4; rareCount = 3; epicCount = 1; }
+  else if (isGold) { gold = 400 + Math.floor(Math.random() * 200); gems = 2 + Math.floor(Math.random() * 4); commonCount = 3; rareCount = 1; }
+  else { gold = 150 + Math.floor(Math.random() * 100); gems = 1 + Math.floor(Math.random() * 2); commonCount = 2; rareCount = 1; }
+
+  const items: RewardItem[] = [];
+  items.push({ emoji: '💰', name: `${gold} Gold`, count: gold, rarity: 'common' });
+  if (gems > 0) items.push({ emoji: '💎', name: `${gems} Gems`, count: gems, rarity: 'rare' });
+
+  const pickCards = (rarity: string, count: number) => {
+    const pool = allCards.filter(c => c.rarity === rarity);
+    for (let i = 0; i < count; i++) {
+      const card = pool[Math.floor(Math.random() * pool.length)];
+      if (card) {
+        const amt = rarity === 'common' ? 2 + Math.floor(Math.random() * 4) : rarity === 'rare' ? 1 + Math.floor(Math.random() * 2) : 1;
+        items.push({ emoji: card.emoji, name: card.name, count: amt, rarity });
+      }
+    }
+  };
+  pickCards('common', commonCount);
+  pickCards('rare', rareCount);
+  pickCards('epic', epicCount);
+  pickCards('legendary', legendaryCount);
+
+  return { gold, gems, items };
 };
 
 const STRIPE_WAR_PASS_PRICE = 'price_1T8c8eF8KfKkJquqBrjotFic';
