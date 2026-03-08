@@ -313,6 +313,7 @@ const MainMenu = () => {
                       {canClaim && (
                         <button
                           onClick={() => {
+                            playCoinCollect();
                             const items: RevealItem[] = [];
                             if (reward.type === 'gold') {
                               setProfile(p => ({ ...p, gold: p.gold + reward.amount }));
