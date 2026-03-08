@@ -18,8 +18,14 @@ import { updateSfxSettings, playCoinCollect } from '@/lib/sfx';
 const MainMenu = () => {
   const { profile, deck, chests, setScreen, setActiveTab, setProfile } = useGame();
   const { signOut, user } = useAuth();
+  const { sfxEnabled, sfxVolume } = useSettings();
   const arena = getArenaForTrophies(profile.trophies);
   const playerBanner = getPlayerBanner();
+
+  // Sync SFX settings to the audio module
+  useEffect(() => {
+    updateSfxSettings(sfxEnabled, sfxVolume);
+  }, [sfxEnabled, sfxVolume]);
   const [unreadMail, setUnreadMail] = useState(0);
   const [unclaimedTrophy, setUnclaimedTrophy] = useState(0);
   const [unclaimedWarPass, setUnclaimedWarPass] = useState(0);
