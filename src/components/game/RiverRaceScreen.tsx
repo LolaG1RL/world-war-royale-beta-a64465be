@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
+import { useSettings } from '@/context/SettingsContext';
 import { useAuth } from '@/context/AuthContext';
 import { allCards, GameCard } from '@/data/cards';
 import { getCardEntry, isCardOwned, subscribeToCardInventory } from '@/data/cardInventory';
@@ -8,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Swords, Shield, Anchor, Clock, ChevronRight, Check, X, Shuffle, Ship, Plus, Target } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { t } from '@/lib/i18n';
 
 // --- TYPES ---
 interface BoatData {
@@ -85,6 +87,7 @@ const getStoredRiverData = () => {
 
 const RiverRaceScreen = () => {
   const { setScreen, profile, setProfile, clan, setDeck } = useGame();
+  const { language } = useSettings();
   const { user } = useAuth();
 
   const [mode, setMode] = useState<RiverMode>('map');
@@ -413,9 +416,9 @@ const RiverRaceScreen = () => {
           <ChevronLeft className="w-5 h-5" />
         </button>
         <Ship className="w-4 h-4 text-[hsl(200,70%,55%)]" />
-        <h1 className="font-display font-bold text-sm text-foreground flex-1">River Race</h1>
+        <h1 className="font-display font-bold text-sm text-foreground flex-1">{t('river.title', language)}</h1>
         <div className={`text-[8px] px-2 py-0.5 rounded-full font-bold ${isTrainingDay ? 'bg-[hsl(45,80%,30%)] text-[hsl(45,90%,80%)]' : 'bg-[hsl(0,60%,30%)] text-[hsl(0,80%,85%)]'}`}>
-          {isTrainingDay ? '⛵ Training' : '⚔️ Battle'} Day {dayNumber}/7
+          {isTrainingDay ? t('river.training', language) : t('river.battle_day', language)} {t('river.day', language)} {dayNumber}/7
         </div>
       </div>
 
@@ -432,7 +435,7 @@ const RiverRaceScreen = () => {
             <>
               <div className="bg-gradient-to-b from-[hsl(200,40%,18%)] to-[hsl(200,30%,12%)] p-3">
                 <div className="text-center mb-2">
-                  <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold">🏁 Finish Line: {FINISH_LINE.toLocaleString()} pts</div>
+                  <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold">🏁 {t('river.finish_line_pts', language)}: {FINISH_LINE.toLocaleString()} pts</div>
                 </div>
                 <div className="space-y-1.5">
                   {sortedBoats.map((boat, i) => {
@@ -446,7 +449,7 @@ const RiverRaceScreen = () => {
                           </span>
                           <span className="text-sm">{boat.clanEmoji}</span>
                           <span className={`text-[10px] font-bold flex-1 truncate ${boat.isPlayer ? 'text-primary' : 'text-foreground'}`}>
-                            {boat.clanName} {boat.isPlayer && '(You)'}
+                            {boat.clanName} {boat.isPlayer && t('river.you', language)}
                           </span>
                           <span className="text-[9px] text-muted-foreground">{boat.position.toLocaleString()}</span>
                           {boat.finished && <Check className="w-3 h-3 text-[hsl(120,50%,50%)]" />}
@@ -468,14 +471,14 @@ const RiverRaceScreen = () => {
 
               {/* River Tasks */}
               <div className="p-3 space-y-2">
-                <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-1">⚔️ River Tasks</div>
+                <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-1">{t('river.river_tasks', language)}</div>
 
                 <RiverTaskBtn icon={<Swords className="w-5 h-5 text-[hsl(210,70%,60%)]" />} bg="hsl(210,50%,25%)"
-                  title="1v1 Battle" desc={`Use 1 War Deck • ${isTrainingDay ? 'Gold only' : `${MEDAL_WIN_1V1} medals (win)`}`}
+                  title={t('river.1v1_battle', language)} desc={`Use 1 War Deck • ${isTrainingDay ? 'Gold only' : `${MEDAL_WIN_1V1} medals (win)`}`}
                   onClick={() => { setBattleType('1v1'); setMode('battle-select'); }} />
 
                 <RiverTaskBtn icon={<span className="text-lg">⚔️</span>} bg="hsl(280,40%,25%)"
-                  title="Duel (Best of 3)" desc={`Uses 3 War Decks • ${isTrainingDay ? 'Gold only' : `${MEDAL_WIN_DUEL} medals (win)`}`}
+                  title={t('river.duel', language)} desc={`Uses 3 War Decks • ${isTrainingDay ? 'Gold only' : `${MEDAL_WIN_DUEL} medals (win)`}`}
                   onClick={() => { setBattleType('duel'); setMode('battle-select'); }} />
 
                 <RiverTaskBtn icon={<span className="text-lg">{specialMode.emoji}</span>} bg="hsl(45,50%,20%)"
@@ -484,18 +487,18 @@ const RiverRaceScreen = () => {
 
                 {!isTrainingDay && (
                   <RiverTaskBtn icon={<Anchor className="w-5 h-5 text-accent" />} bg="hsl(0,50%,20%)"
-                    title="Boat Battle" desc={`Attack rival defenses • ${MEDAL_BOAT_WIN} medals`}
+                  title={t('river.boat_battle', language)} desc={`Attack rival defenses • ${MEDAL_BOAT_WIN} medals`}
                     onClick={() => { setBattleType('boat'); setMode('boat-target'); }} border="hsl(0,40%,25%)" />
                 )}
 
                 <div className="flex gap-2 mt-2">
                   <button onClick={() => setMode('war-decks')}
                     className="flex-1 py-2.5 bg-[hsl(220,15%,16%)] border border-border rounded-lg text-[10px] font-bold text-foreground flex items-center justify-center gap-1.5">
-                    🃏 War Decks
+                    🃏 {t('river.war_decks', language)}
                   </button>
                   <button onClick={() => setMode('boat-defense')}
                     className="flex-1 py-2.5 bg-[hsl(220,15%,16%)] border border-border rounded-lg text-[10px] font-bold text-foreground flex items-center justify-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5" /> Boat Defense
+                    <Shield className="w-3.5 h-3.5" /> {t('river.boat_defense', language)}
                   </button>
                 </div>
               </div>
@@ -509,8 +512,8 @@ const RiverRaceScreen = () => {
       {mode === 'boat-target' && (
         <div className="flex-1 overflow-y-auto p-3">
           <div className="text-center mb-3">
-            <div className="text-sm font-display font-bold text-foreground">⚓ Select Target Boat</div>
-            <div className="text-[9px] text-muted-foreground">Choose a rival clan's boat to attack their defenses</div>
+            <div className="text-sm font-display font-bold text-foreground">{t('river.select_target', language)}</div>
+            <div className="text-[9px] text-muted-foreground">{t('river.select_deck', language)}</div>
           </div>
           <div className="space-y-2">
             {boats.map((rival, boatIdx) => {
@@ -532,11 +535,11 @@ const RiverRaceScreen = () => {
                     </div>
                     <div className="text-right">
                       {allDestroyed ? (
-                        <span className="text-[8px] text-destructive font-bold">ALL SUNK</span>
+                        <span className="text-[8px] text-destructive font-bold">{t('river.all_sunk', language)}</span>
                       ) : (
                         <div className="flex items-center gap-1">
                           <Target className="w-3 h-3 text-accent" />
-                          <span className="text-[9px] text-accent font-bold">{intactDefenses} defenses</span>
+                          <span className="text-[9px] text-accent font-bold">{intactDefenses} {t('river.defenses', language)}</span>
                         </div>
                       )}
                     </div>

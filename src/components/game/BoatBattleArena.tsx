@@ -2,9 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { GameCard } from '@/data/cards';
 import { allCards } from '@/data/cards';
 import { useGame } from '@/context/GameContext';
+import { useSettings } from '@/context/SettingsContext';
 import CardComponent from './CardComponent';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield } from 'lucide-react';
+import { t } from '@/lib/i18n';
 
 /**
  * Boat Battle Arena — PvE mode
@@ -24,6 +26,7 @@ interface DefenseTower {
 
 const BoatBattleArena = () => {
   const { deck, setScreen, setBattleResult, setProfile } = useGame();
+  const { language } = useSettings();
 
   // Load boat battle context
   const [context] = useState(() => {
@@ -287,9 +290,9 @@ const BoatBattleArena = () => {
                 {/* Tower header */}
                 <div className="flex items-center gap-2 mb-2">
                   <Shield className={`w-5 h-5 ${tower.destroyed ? 'text-destructive/40' : 'text-accent'}`} />
-                  <span className="text-[10px] font-bold text-foreground">Defense Tower {idx + 1}</span>
+                  <span className="text-[10px] font-bold text-foreground">{t('boat.defense_tower', language)} {idx + 1}</span>
                   {tower.destroyed ? (
-                    <span className="text-[8px] text-destructive font-bold ml-auto">💥 DESTROYED</span>
+                    <span className="text-[8px] text-destructive font-bold ml-auto">{t('battle.destroyed', language)}</span>
                   ) : (
                     <span className="text-[8px] text-accent font-bold ml-auto">{Math.max(0, Math.round(tower.hp))}/{tower.maxHp} HP</span>
                   )}

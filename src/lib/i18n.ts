@@ -290,6 +290,75 @@ const translations: TranslationMap = {
   'rarity.epic': { en: 'Epic', es: 'Épica', fr: 'Épique', de: 'Episch', pt: 'Épica', ja: 'エピック', ko: '에픽', zh: '史诗', ar: 'ملحمي', ru: 'Эпическая' },
   'rarity.legendary': { en: 'Legendary', es: 'Legendaria', fr: 'Légendaire', de: 'Legendär', pt: 'Lendária', ja: 'レジェンダリー', ko: '전설', zh: '传奇', ar: 'أسطوري', ru: 'Легендарная' },
   'rarity.champion': { en: 'Champion', es: 'Campeón', fr: 'Champion', de: 'Champion', pt: 'Campeão', ja: 'チャンピオン', ko: '챔피언', zh: '冠军', ar: 'بطل', ru: 'Чемпион' },
+
+  // ═══ War Pass Screen ═══
+  'warpass.you_got': { en: 'YOU GOT!', es: '¡OBTUVISTE!', fr: 'OBTENU!', de: 'ERHALTEN!', pt: 'VOCÊ GANHOU!', ja: '獲得！', ko: '획득!', zh: '你获得了！', ar: 'حصلت على!', ru: 'ВЫ ПОЛУЧИЛИ!' },
+  'warpass.collect': { en: 'Collect', es: 'Recolectar', fr: 'Collecter', de: 'Einsammeln', pt: 'Coletar', ja: '受け取る', ko: '수집', zh: '收取', ar: 'جمع', ru: 'Собрать' },
+  'warpass.confirm_purchase': { en: 'Confirm Purchase', es: 'Confirmar Compra', fr: "Confirmer l'Achat", de: 'Kauf bestätigen', pt: 'Confirmar Compra', ja: '購入確認', ko: '구매 확인', zh: '确认购买', ar: 'تأكيد الشراء', ru: 'Подтвердить покупку' },
+  'warpass.cancel': { en: 'Cancel', es: 'Cancelar', fr: 'Annuler', de: 'Abbrechen', pt: 'Cancelar', ja: 'キャンセル', ko: '취소', zh: '取消', ar: 'إلغاء', ru: 'Отмена' },
+  'warpass.buy': { en: 'Buy', es: 'Comprar', fr: 'Acheter', de: 'Kaufen', pt: 'Comprar', ja: '購入', ko: '구매', zh: '购买', ar: 'شراء', ru: 'Купить' },
+  'warpass.left': { en: 'left', es: 'restantes', fr: 'restants', de: 'übrig', pt: 'restantes', ja: '残り', ko: '남음', zh: '剩余', ar: 'متبقية', ru: 'осталось' },
+  'warpass.unlock_desc': { en: 'Get exclusive rewards all season long', es: 'Recompensas exclusivas toda la temporada', fr: 'Récompenses exclusives toute la saison', de: 'Exklusive Belohnungen die ganze Saison', pt: 'Recompensas exclusivas toda a temporada', ja: 'シーズン中ずっと限定報酬をゲット', ko: '시즌 내내 독점 보상을 받으세요', zh: '整个赛季获取独家奖励', ar: 'احصل على مكافآت حصرية طوال الموسم', ru: 'Получайте эксклюзивные награды весь сезон' },
+  'warpass.active': { en: '⭐ War Pass+ Active', es: '⭐ Pase+ Activo', fr: '⭐ Passe+ Actif', de: '⭐ Pass+ Aktiv', pt: '⭐ Passe+ Ativo', ja: '⭐ パス+有効', ko: '⭐ 패스+ 활성', zh: '⭐ 通行证+已激活', ar: '⭐ تصريح+ نشط', ru: '⭐ Пропуск+ активен' },
+  'warpass.skip_to_tier': { en: 'Skip to Tier', es: 'Saltar al Nivel', fr: 'Passer au Palier', de: 'Zur Stufe springen', pt: 'Pular para o Nível', ja: 'ティアにスキップ', ko: '티어로 건너뛰기', zh: '跳到等级', ar: 'تخطي إلى المرحلة', ru: 'Перейти к уровню' },
+  'warpass.crown_progress': { en: 'Crown Progress', es: 'Progreso de Coronas', fr: 'Progression Couronnes', de: 'Kronenfortschritt', pt: 'Progresso de Coroas', ja: '王冠進捗', ko: '왕관 진행', zh: '皇冠进度', ar: 'تقدم التيجان', ru: 'Прогресс корон' },
+  'warpass.season_exclusive': { en: 'Season Exclusive', es: 'Exclusivo de Temporada', fr: 'Exclusivité de Saison', de: 'Saison-Exklusiv', pt: 'Exclusivo da Temporada', ja: 'シーズン限定', ko: '시즌 독점', zh: '赛季独家', ar: 'حصري للموسم', ru: 'Эксклюзив сезона' },
+
+  // ═══ River Race Screen ═══
+  'river.finish_line_pts': { en: 'Finish Line', es: 'Línea de Meta', fr: "Ligne d'Arrivée", de: 'Ziellinie', pt: 'Linha de Chegada', ja: 'ゴール', ko: '결승선', zh: '终点线', ar: 'خط النهاية', ru: 'Финиш' },
+  'river.you': { en: '(You)', es: '(Tú)', fr: '(Vous)', de: '(Du)', pt: '(Você)', ja: '(あなた)', ko: '(나)', zh: '(你)', ar: '(أنت)', ru: '(Вы)' },
+  'river.river_tasks': { en: '⚔️ River Tasks', es: '⚔️ Tareas del Río', fr: '⚔️ Tâches de Rivière', de: '⚔️ Flussaufgaben', pt: '⚔️ Tarefas do Rio', ja: '⚔️ リバータスク', ko: '⚔️ 리버 작업', zh: '⚔️ 河流任务', ar: '⚔️ مهام النهر', ru: '⚔️ Речные задачи' },
+  'river.1v1_battle': { en: '1v1 Battle', es: 'Batalla 1v1', fr: 'Combat 1v1', de: '1v1 Kampf', pt: 'Batalha 1v1', ja: '1v1バトル', ko: '1v1 전투', zh: '1v1战斗', ar: 'معركة 1v1', ru: '1v1 Бой' },
+  'river.duel': { en: 'Duel (Best of 3)', es: 'Duelo (Mejor de 3)', fr: 'Duel (Meilleur de 3)', de: 'Duell (Best of 3)', pt: 'Duelo (Melhor de 3)', ja: 'デュエル(3本勝負)', ko: '듀얼 (3판 2선승)', zh: '决斗(三局两胜)', ar: 'مبارزة (أفضل من 3)', ru: 'Дуэль (до 3)' },
+  'river.boat_battle': { en: 'Boat Battle', es: 'Batalla Naval', fr: 'Combat Naval', de: 'Bootkampf', pt: 'Batalha Naval', ja: 'ボートバトル', ko: '보트 전투', zh: '船战', ar: 'معركة بحرية', ru: 'Морской бой' },
+  'river.war_decks_emoji': { en: '🃏 War Decks', es: '🃏 Mazos de Guerra', fr: '🃏 Decks de Guerre', de: '🃏 Kriegsdecks', pt: '🃏 Decks de Guerra', ja: '🃏 ウォーデッキ', ko: '🃏 워 덱', zh: '🃏 战争卡组', ar: '🃏 مجموعات الحرب', ru: '🃏 Боевые колоды' },
+  'river.boat_defense': { en: 'Boat Defense', es: 'Defensa Naval', fr: 'Défense Navale', de: 'Bootverteidigung', pt: 'Defesa Naval', ja: 'ボート防衛', ko: '보트 방어', zh: '船防御', ar: 'دفاع السفينة', ru: 'Защита корабля' },
+  'river.select_target': { en: '⚓ Select Target Boat', es: '⚓ Seleccionar Barco', fr: '⚓ Sélectionner un Bateau', de: '⚓ Zielboot wählen', pt: '⚓ Selecionar Barco', ja: '⚓ 攻撃対象を選択', ko: '⚓ 대상 보트 선택', zh: '⚓ 选择目标船', ar: '⚓ اختر السفينة المستهدفة', ru: '⚓ Выберите корабль' },
+  'river.select_deck': { en: 'Select a War Deck to use', es: 'Selecciona un Mazo de Guerra', fr: 'Sélectionnez un Deck de Guerre', de: 'Wähle ein Kriegsdeck', pt: 'Selecione um Deck de Guerra', ja: 'ウォーデッキを選択', ko: '워 덱을 선택하세요', zh: '选择一个战争卡组', ar: 'اختر مجموعة حرب', ru: 'Выберите боевую колоду' },
+  'river.cooldown': { en: 'Cooldown', es: 'Recarga', fr: 'Recharge', de: 'Abklingzeit', pt: 'Recarga', ja: 'クールダウン', ko: '쿨다운', zh: '冷却', ar: 'فترة انتظار', ru: 'Перезарядка' },
+  'river.incomplete': { en: 'Incomplete', es: 'Incompleto', fr: 'Incomplet', de: 'Unvollständig', pt: 'Incompleto', ja: '未完成', ko: '미완성', zh: '未完成', ar: 'غير مكتمل', ru: 'Не готова' },
+  'river.all_sunk': { en: 'ALL SUNK', es: 'TODO HUNDIDO', fr: 'TOUT COULÉ', de: 'ALLES VERSENKT', pt: 'TUDO AFUNDADO', ja: '全壊', ko: '모두 침몰', zh: '全部击沉', ar: 'غرقت جميعها', ru: 'ВСЁ ПОТОПЛЕНО' },
+  'river.defenses': { en: 'defenses', es: 'defensas', fr: 'défenses', de: 'Verteidigungen', pt: 'defesas', ja: '防衛', ko: '방어', zh: '防御', ar: 'دفاعات', ru: 'защит' },
+  'river.day': { en: 'Day', es: 'Día', fr: 'Jour', de: 'Tag', pt: 'Dia', ja: '日目', ko: '일차', zh: '天', ar: 'يوم', ru: 'День' },
+  'river.deck': { en: 'Deck', es: 'Mazo', fr: 'Deck', de: 'Deck', pt: 'Deck', ja: 'デッキ', ko: '덱', zh: '卡组', ar: 'مجموعة', ru: 'Колода' },
+  'river.auto': { en: 'Auto', es: 'Auto', fr: 'Auto', de: 'Auto', pt: 'Auto', ja: 'オート', ko: '자동', zh: '自动', ar: 'تلقائي', ru: 'Авто' },
+  'river.edit': { en: 'Edit', es: 'Editar', fr: 'Modifier', de: 'Bearbeiten', pt: 'Editar', ja: '編集', ko: '편집', zh: '编辑', ar: 'تعديل', ru: 'Изменить' },
+  'river.available_cards': { en: 'Available Cards (tap to add)', es: 'Cartas Disponibles (toca para añadir)', fr: 'Cartes Disponibles (touchez pour ajouter)', de: 'Verfügbare Karten (tippen zum Hinzufügen)', pt: 'Cartas Disponíveis (toque para adicionar)', ja: '使用可能なカード(タップで追加)', ko: '사용 가능한 카드 (탭하여 추가)', zh: '可用卡牌（点击添加）', ar: 'بطاقات متاحة (انقر للإضافة)', ru: 'Доступные карты (нажмите)' },
+
+  // ═══ Boat Battle ═══
+  'boat.defense_tower': { en: 'Defense Tower', es: 'Torre de Defensa', fr: 'Tour de Défense', de: 'Verteidigungsturm', pt: 'Torre de Defesa', ja: '防御タワー', ko: '방어 타워', zh: '防御塔', ar: 'برج الدفاع', ru: 'Башня обороны' },
+  'boat.no_defense_cards': { en: 'No defense cards', es: 'Sin cartas de defensa', fr: 'Pas de cartes de défense', de: 'Keine Verteidigungskarten', pt: 'Sem cartas de defesa', ja: '防御カードなし', ko: '방어 카드 없음', zh: '没有防御卡', ar: 'لا بطاقات دفاع', ru: 'Нет защитных карт' },
+  'boat.victory': { en: 'VICTORY! All defenses destroyed!', es: '¡VICTORIA! ¡Todas las defensas destruidas!', fr: 'VICTOIRE! Toutes les défenses détruites!', de: 'SIEG! Alle Verteidigungen zerstört!', pt: 'VITÓRIA! Todas as defesas destruídas!', ja: '勝利！全防衛破壊！', ko: '승리! 모든 방어 파괴!', zh: '胜利！所有防御被摧毁！', ar: 'انتصار! كل الدفاعات دمرت!', ru: 'ПОБЕДА! Все защиты разрушены!' },
+  'boat.time_up': { en: "Time's up!", es: '¡Tiempo agotado!', fr: 'Temps écoulé!', de: 'Zeit abgelaufen!', pt: 'Tempo esgotado!', ja: '時間切れ！', ko: '시간 종료!', zh: '时间到！', ar: 'انتهى الوقت!', ru: 'Время вышло!' },
+  'boat.next': { en: 'Next', es: 'Siguiente', fr: 'Suivant', de: 'Nächste', pt: 'Próximo', ja: '次', ko: '다음', zh: '下一个', ar: 'التالي', ru: 'Далее' },
+
+  // ═══ Banner Customizer ═══
+  'banner.title': { en: 'BATTLE BANNER', es: 'ESTANDARTE', fr: 'BANNIÈRE', de: 'KAMPFBANNER', pt: 'BANDEIRA', ja: 'バトルバナー', ko: '배틀 배너', zh: '战斗旗帜', ar: 'لافتة المعركة', ru: 'БОЕВОЙ БАННЕР' },
+  'banner.bg': { en: '🖼️ BG', es: '🖼️ Fondo', fr: '🖼️ Fond', de: '🖼️ HG', pt: '🖼️ Fundo', ja: '🖼️ 背景', ko: '🖼️ 배경', zh: '🖼️ 背景', ar: '🖼️ خلفية', ru: '🖼️ Фон' },
+  'banner.emblem': { en: '🎭 Emblem', es: '🎭 Emblema', fr: '🎭 Emblème', de: '🎭 Emblem', pt: '🎭 Emblema', ja: '🎭 エンブレム', ko: '🎭 엠블럼', zh: '🎭 徽章', ar: '🎭 شعار', ru: '🎭 Эмблема' },
+  'banner.badges_tab': { en: '🏅 Badges', es: '🏅 Insignias', fr: '🏅 Badges', de: '🏅 Abzeichen', pt: '🏅 Emblemas', ja: '🏅 バッジ', ko: '🏅 배지', zh: '🏅 徽章', ar: '🏅 شارات', ru: '🏅 Значки' },
+  'banner.no_bg': { en: 'No backgrounds owned yet.', es: 'Sin fondos aún.', fr: 'Aucun fond possédé.', de: 'Noch keine Hintergründe.', pt: 'Sem fundos ainda.', ja: 'まだ背景がありません。', ko: '배경이 아직 없습니다.', zh: '还没有背景。', ar: 'لا خلفيات بعد.', ru: 'Нет фонов.' },
+  'banner.buy_shop': { en: 'Buy some in the Shop → Banners tab!', es: '¡Compra en la Tienda → Estandartes!', fr: 'Achetez dans la Boutique → Bannières!', de: 'Kaufe welche im Shop → Banner!', pt: 'Compre na Loja → Bandeiras!', ja: 'ショップ → バナーで購入！', ko: '상점 → 배너 탭에서 구매하세요!', zh: '在商店 → 旗帜标签页购买！', ar: 'اشتر من المتجر → لافتات!', ru: 'Купите в Магазине → Баннеры!' },
+  'banner.no_emblems': { en: 'No emblems owned yet.', es: 'Sin emblemas aún.', fr: 'Aucun emblème possédé.', de: 'Noch keine Embleme.', pt: 'Sem emblemas ainda.', ja: 'まだエンブレムがありません。', ko: '엠블럼이 아직 없습니다.', zh: '还没有徽章。', ar: 'لا شعارات بعد.', ru: 'Нет эмблем.' },
+  'banner.no_badges': { en: 'No badges earned yet.', es: 'Sin insignias aún.', fr: 'Aucun badge obtenu.', de: 'Noch keine Abzeichen.', pt: 'Sem insígnias ainda.', ja: 'まだバッジがありません。', ko: '배지가 아직 없습니다.', zh: '还没有徽章。', ar: 'لا شارات بعد.', ru: 'Нет значков.' },
+  'banner.win_battles': { en: 'Win battles to unlock achievement badges!', es: '¡Gana batallas para desbloquear insignias!', fr: 'Gagnez des combats pour débloquer des badges!', de: 'Gewinne Kämpfe für Abzeichen!', pt: 'Vença batalhas para desbloquear insígnias!', ja: 'バトルに勝ってバッジを獲得！', ko: '전투에서 승리하여 배지를 해제하세요!', zh: '赢得战斗解锁成就徽章！', ar: 'فز بالمعارك لفتح الشارات!', ru: 'Побеждайте для значков!' },
+  'banner.equipped': { en: 'Equipped', es: 'Equipado', fr: 'Équipé', de: 'Ausgerüstet', pt: 'Equipado', ja: '装備中', ko: '장착됨', zh: '已装备', ar: 'مجهز', ru: 'Надето' },
+  'banner.achievement_badges': { en: 'Achievement Badges', es: 'Insignias de Logros', fr: "Badges d'Accomplissement", de: 'Erfolgsabzeichen', pt: 'Insígnias de Conquista', ja: '実績バッジ', ko: '업적 배지', zh: '成就徽章', ar: 'شارات الإنجاز', ru: 'Значки достижений' },
+  'banner.cosmetic_badges': { en: 'Cosmetic Badges', es: 'Insignias Cosméticas', fr: 'Badges Cosmétiques', de: 'Kosmetische Abzeichen', pt: 'Insígnias Cosméticas', ja: 'コスメバッジ', ko: '코스메틱 배지', zh: '装饰徽章', ar: 'شارات تزيينية', ru: 'Косметические значки' },
+
+  // ═══ Card Collection extras ═══
+  'cards.card_info': { en: 'Card Info', es: 'Info de Carta', fr: 'Info Carte', de: 'Karteninfo', pt: 'Info da Carta', ja: 'カード情報', ko: '카드 정보', zh: '卡牌信息', ar: 'معلومات البطاقة', ru: 'Инфо карты' },
+  'cards.card_level_progress': { en: 'Card Level Progress', es: 'Progreso de Nivel', fr: 'Progression de Niveau', de: 'Kartenfortschritt', pt: 'Progresso de Nível', ja: 'カードレベル進捗', ko: '카드 레벨 진행', zh: '卡牌等级进度', ar: 'تقدم مستوى البطاقة', ru: 'Прогресс уровня' },
+  'cards.win_condition': { en: 'WIN CONDITION', es: 'CONDICIÓN DE VICTORIA', fr: 'CONDITION DE VICTOIRE', de: 'SIEGBEDINGUNG', pt: 'CONDIÇÃO DE VITÓRIA', ja: '勝利条件', ko: '승리 조건', zh: '胜利条件', ar: 'شرط الفوز', ru: 'УСЛОВИЕ ПОБЕДЫ' },
+  'cards.overview': { en: 'Overview', es: 'General', fr: "Vue d'ensemble", de: 'Übersicht', pt: 'Visão Geral', ja: '概要', ko: '개요', zh: '概览', ar: 'نظرة عامة', ru: 'Обзор' },
+  'cards.stats': { en: 'Stats', es: 'Estadísticas', fr: 'Statistiques', de: 'Statistiken', pt: 'Estatísticas', ja: 'ステータス', ko: '스탯', zh: '数据', ar: 'إحصائيات', ru: 'Характеристики' },
+  'cards.matchups': { en: 'Matchups', es: 'Enfrentamientos', fr: 'Confrontations', de: 'Matchups', pt: 'Confrontos', ja: 'マッチアップ', ko: '매치업', zh: '对战', ar: 'المواجهات', ru: 'Сопоставления' },
+  'cards.hero': { en: '⭐ Hero', es: '⭐ Héroe', fr: '⭐ Héros', de: '⭐ Held', pt: '⭐ Herói', ja: '⭐ ヒーロー', ko: '⭐ 히어로', zh: '⭐ 英雄', ar: '⭐ بطل', ru: '⭐ Герой' },
+
+  // ═══ Battle Arena extras ═══
+  'battle.ready': { en: 'Ready', es: 'Listo', fr: 'Prêt', de: 'Bereit', pt: 'Pronto', ja: '準備完了', ko: '준비', zh: '就绪', ar: 'جاهز', ru: 'Готово' },
+  'battle.passive': { en: 'Passive', es: 'Pasivo', fr: 'Passif', de: 'Passiv', pt: 'Passivo', ja: 'パッシブ', ko: '패시브', zh: '被动', ar: 'سلبي', ru: 'Пассивное' },
+  'battle.game_ends': { en: 'GAME ENDS', es: 'FIN DEL JUEGO', fr: 'FIN DU JEU', de: 'SPIEL ENDET', pt: 'FIM DE JOGO', ja: 'ゲーム終了', ko: '게임 종료', zh: '游戏结束', ar: 'انتهت اللعبة', ru: 'ИГРА ОКОНЧЕНА' },
 };
 
 // Get a translation by key
