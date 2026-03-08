@@ -257,6 +257,7 @@ const ShopScreen = () => {
   const countdown = useCountdownToMidnight();
   const dailyDeals = useMemo(() => getDailyDeals(), []);
   const dailyFreebies = useMemo(() => getDailyFreebieCards(), []);
+  const emoteDeals = useMemo(() => getDailyEmoteDeals(), []);
   const [purchasedEmotes, setPurchasedEmotes] = useState<Set<number>>(() => getEmoteDealsPurchased());
   const [ownedEmoteIds, setOwnedEmoteIds] = useState(() => getOwnedEmotes());
 
