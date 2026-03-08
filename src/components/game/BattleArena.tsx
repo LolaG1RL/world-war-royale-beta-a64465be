@@ -500,10 +500,10 @@ const BattleArena = () => {
           }
         }
 
-        // Check for Joan of Arc passive: +20% damage bonus while alive AND hero version unlocked
-        const heroUnlocked = JSON.parse(localStorage.getItem('active_season_heroes') || '[]');
-        const joanHeroUnlocked = heroUnlocked.includes('joan-of-arc');
-        const joanAlivePlayer = joanHeroUnlocked && units.some(u => u.card.id === 'joan-of-arc' && u.side === 'player' && u.hp > 0);
+        // Check for Joan of Arc passive: +20% damage bonus while alive AND hero version in a hero slot
+        const heroSlots: string[] = (() => { try { return JSON.parse(localStorage.getItem('hero_slots') || '[]'); } catch { return []; } })();
+        const joanInHeroSlot = heroSlots.includes('joan-of-arc');
+        const joanAlivePlayer = joanInHeroSlot && units.some(u => u.card.id === 'joan-of-arc' && u.side === 'player' && u.hp > 0);
         const joanAliveEnemy = units.some(u => u.card.id === 'joan-of-arc' && u.side === 'enemy' && u.hp > 0);
 
         // Phase 1: Find targets and move/flag attacks
@@ -911,8 +911,8 @@ const BattleArena = () => {
               {championCard.ability.name}
             </div>
             {championCard.passive && (() => {
-              const heroUnlocked = JSON.parse(localStorage.getItem('active_season_heroes') || '[]');
-              return heroUnlocked.includes(championCard.id);
+              const heroSlots: string[] = (() => { try { return JSON.parse(localStorage.getItem('hero_slots') || '[]'); } catch { return []; } })();
+              return heroSlots.includes(championCard.id);
             })() && (
               <div className="mt-1 px-1 py-0.5 rounded bg-amber-500/20 border border-amber-500/30">
                 <div className="text-[5px] font-bold text-amber-400 uppercase text-center">Passive</div>
