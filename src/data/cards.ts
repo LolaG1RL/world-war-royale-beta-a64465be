@@ -263,14 +263,14 @@ export const allCards: GameCard[] = [
     hitSpeed: 1.4, speed: 'slow', range: 4.0, targets: 'ground-air', unitType: 'ground'
   },
   { 
-    id: 'balloon', name: 'War Balloon', elixir: 5, rarity: 'rare', type: 'troop', 
-    hp: 1400, damage: 200, description: 'Slow-flying balloon that drops bombs on buildings. Death damage.', 
-    era: 'Steampunk', emoji: '🎈', level: 1, count: 0, maxCount: 20,
+    id: 'balloon', name: 'Da Vinci Airship', elixir: 5, rarity: 'rare', type: 'troop', 
+    hp: 1400, damage: 200, description: 'Leonardo\'s flying machine drops bombs on buildings. Death damage.', 
+    era: 'Renaissance', emoji: '🎈', level: 1, count: 0, maxCount: 20,
     hitSpeed: 3.0, speed: 'medium', range: 'melee-short', targets: 'buildings', unitType: 'air', deathDamage: 250, splashRadius: 1.5
   },
   { 
-    id: 'valkyrie', name: 'Valkyrie', elixir: 4, rarity: 'rare', type: 'troop', 
-    hp: 900, damage: 110, description: 'Norse warrior maiden with 360° axe spin attack.', 
+    id: 'valkyrie', name: 'Shield Maiden', elixir: 4, rarity: 'rare', type: 'troop', 
+    hp: 900, damage: 110, description: 'Norse shield maiden with 360° axe spin attack.', 
     era: 'Viking Age', emoji: '💃', level: 1, count: 0, maxCount: 20,
     hitSpeed: 1.5, speed: 'medium', range: 'melee-medium', targets: 'ground', unitType: 'ground', splashRadius: 1.2
   },
@@ -295,9 +295,9 @@ export const allCards: GameCard[] = [
     hitSpeed: 1.6, speed: 'medium', range: 5.5, targets: 'ground-air', unitType: 'ground', splashRadius: 1.0
   },
   { 
-    id: 'fireball', name: 'Fireball', elixir: 4, rarity: 'epic', type: 'spell', 
-    damage: 350, description: 'A devastating ball of fire. Damages everything in its radius.', 
-    era: 'Fantasy', emoji: '🔥', level: 1, count: 0, maxCount: 10,
+    id: 'fireball', name: 'Greek Fire', elixir: 4, rarity: 'epic', type: 'spell', 
+    damage: 350, description: 'Ancient incendiary weapon. Damages everything in its radius.', 
+    era: 'Byzantine', emoji: '🔥', level: 1, count: 0, maxCount: 10,
     splashRadius: 2.5
   },
   { 
@@ -324,15 +324,15 @@ export const allCards: GameCard[] = [
     era: 'Mythology', emoji: '⚡', level: 1, count: 0, maxCount: 10
   },
   { 
-    id: 'golem', name: 'Stone Golem', elixir: 8, rarity: 'epic', type: 'troop', 
-    hp: 4500, damage: 100, description: 'Massive stone construct. Splits into two Golemites on death.', 
-    era: 'Fantasy', emoji: '🗿', level: 1, count: 0, maxCount: 4,
+    id: 'golem', name: 'Easter Island Titan', elixir: 8, rarity: 'epic', type: 'troop', 
+    hp: 4500, damage: 100, description: 'A living Moai statue. Splits into two fragments on death.', 
+    era: 'Polynesia', emoji: '🗿', level: 1, count: 0, maxCount: 4,
     hitSpeed: 2.5, speed: 'slow', range: 'melee-short', targets: 'buildings', unitType: 'ground', deathDamage: 200
   },
   { 
-    id: 'pekka', name: 'P.E.K.K.A', elixir: 7, rarity: 'epic', type: 'troop', 
-    hp: 3500, damage: 600, description: 'Armored automaton with massive sword. Devastating single-target.', 
-    era: 'Steampunk', emoji: '🤖', level: 1, count: 0, maxCount: 4,
+    id: 'pekka', name: 'Iron Colossus', elixir: 7, rarity: 'epic', type: 'troop', 
+    hp: 3500, damage: 600, description: 'Steampunk automaton forged in Victorian workshops. Devastating single-target.', 
+    era: 'Industrial Age', emoji: '🤖', level: 1, count: 0, maxCount: 4,
     hitSpeed: 1.8, speed: 'slow', range: 'melee-long', targets: 'ground', unitType: 'ground'
   },
 
