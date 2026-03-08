@@ -4,7 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { getArenaForTrophies, trophyRoadRewards } from '@/data/cards';
 import CardComponent from './CardComponent';
 import { motion } from 'framer-motion';
-import { Swords, Trophy, Users, ShoppingBag, Crown, Map, Star, Gift, Zap, Mail } from 'lucide-react';
+import { Swords, Trophy, Crown, Map, Star, Mail } from 'lucide-react';
 import splashImage from '@/assets/world-war-royale-splash.png';
 import logoImage from '@/assets/world-war-royale-logo.png';
 import { supabase } from '@/integrations/supabase/client';
