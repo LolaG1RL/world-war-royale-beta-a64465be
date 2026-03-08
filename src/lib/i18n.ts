@@ -430,6 +430,9 @@ const translations: TranslationMap = {
   'events.too_many_losses': { en: 'Too many losses!', es: '¡Demasiadas derrotas!', fr: 'Trop de défaites!', de: 'Zu viele Niederlagen!', pt: 'Muitas derrotas!', ja: '負けすぎ！', ko: '패배가 너무 많습니다!', zh: '失败太多！', ar: 'هزائم كثيرة!', ru: 'Слишком много поражений!' },
   'events.free': { en: 'Free', es: 'Gratis', fr: 'Gratuit', de: 'Gratis', pt: 'Grátis', ja: '無料', ko: '무료', zh: '免费', ar: 'مجاني', ru: 'Бесплатно' },
   'events.done': { en: 'DONE', es: 'HECHO', fr: 'FAIT', de: 'FERTIG', pt: 'FEITO', ja: '完了', ko: '완료', zh: '完成', ar: 'تم', ru: 'ГОТОВО' },
+  'events.quest_win_battles': { en: 'Win 3 Battles', es: 'Ganar 3 Batallas', fr: 'Gagner 3 Combats', de: '3 Kämpfe gewinnen', pt: 'Vencer 3 Batalhas', ja: '3回バトルに勝利', ko: '전투 3회 승리', zh: '赢得3场战斗', ar: 'فز بـ 3 معارك', ru: 'Выиграть 3 боя' },
+  'events.quest_play_cards': { en: 'Play 5 Cards', es: 'Jugar 5 Cartas', fr: 'Jouer 5 Cartes', de: '5 Karten spielen', pt: 'Jogar 5 Cartas', ja: 'カードを5枚使用', ko: '카드 5장 사용', zh: '使用5张卡牌', ar: 'العب 5 بطاقات', ru: 'Разыграть 5 карт' },
+  'events.quest_destroy_towers': { en: 'Destroy 10 Towers', es: 'Destruir 10 Torres', fr: 'Détruire 10 Tours', de: '10 Türme zerstören', pt: 'Destruir 10 Torres', ja: 'タワーを10個破壊', ko: '타워 10개 파괴', zh: '摧毁10座塔', ar: 'دمر 10 أبراج', ru: 'Разрушить 10 башен' },
 
   // ═══ Trophy Road extras ═══
   'trophy.trophies': { en: 'trophies', es: 'trofeos', fr: 'trophées', de: 'Trophäen', pt: 'troféus', ja: 'トロフィー', ko: '트로피', zh: '奖杯', ar: 'كؤوس', ru: 'трофеев' },
