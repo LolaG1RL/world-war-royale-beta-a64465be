@@ -840,6 +840,7 @@ interface ClanMsg {
 
 const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; profile: any; user: any; leaveClan: () => void; setScreen: (s: string) => void }) => {
   const { setProfile } = useGame();
+  const { language } = useSettings();
   const [chatMode, setChatMode] = useState<'info' | 'chat'>('info');
   const [messages, setMessages] = useState<ClanMsg[]>([]);
   const [msgInput, setMsgInput] = useState('');
