@@ -31,10 +31,15 @@ export interface GameCard {
   deathDamage?: number;
   chargeSpeed?: number; // charge attack multiplier
   shieldHp?: number;
+  lifetime?: number; // seconds before building self-destructs
   ability?: {
     name: string;
     description: string;
     cooldown?: number;
+  };
+  passive?: {
+    name: string;
+    description: string;
   };
 }
 
