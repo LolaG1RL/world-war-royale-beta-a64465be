@@ -84,11 +84,20 @@ const MainMenu = () => {
               <div className="text-[7px] text-muted-foreground">Special Challenge</div>
             </div>
           </button>
-          <button onClick={() => setScreen('mailbox')} className="bg-[hsl(220,15%,16%)] border border-border rounded-lg py-2 px-2 flex items-center gap-2 hover:bg-[hsl(220,15%,20%)] transition-colors relative">
+        </div>
+        <div className="flex gap-1.5 px-3 pb-2">
+          <button onClick={() => setScreen('mailbox')} className="flex-1 bg-[hsl(220,15%,16%)] border border-border rounded-lg py-2 px-2 flex items-center gap-2 hover:bg-[hsl(220,15%,20%)] transition-colors">
             <Mail className="w-4 h-4 text-primary" />
             <div className="text-left">
               <div className="text-[9px] font-bold text-foreground">Mailbox</div>
               <div className="text-[7px] text-muted-foreground">Messages</div>
+            </div>
+          </button>
+          <button onClick={() => setScreen('war-pass')} className="flex-1 bg-gradient-to-r from-[hsl(280,30%,16%)] to-[hsl(320,30%,16%)] border border-[hsl(280,20%,25%)] rounded-lg py-2 px-2 flex items-center gap-2 hover:from-[hsl(280,30%,20%)] hover:to-[hsl(320,30%,20%)] transition-colors">
+            <Crown className="w-4 h-4 text-[hsl(280,60%,65%)]" />
+            <div className="text-left">
+              <div className="text-[9px] font-bold text-foreground">War Pass</div>
+              <div className="text-[7px] text-muted-foreground">Earn Crowns</div>
             </div>
           </button>
         </div>
