@@ -77,7 +77,7 @@ const BannerCustomizer = () => {
 
       {/* Preview */}
       <div className="px-4 py-3 bg-[hsl(220,20%,11%)] border-b border-border">
-        <BattleBannerDisplay banner={banner} name={profile.name} trophies={profile.trophies} size="lg" />
+        <BattleBannerDisplay banner={banner} name={profile.name} trophies={profile.trophies} clanName={clan?.name} clanBanner={clan ? { bannerColor: clan.bannerColor, bannerShape: clan.bannerShape, iconId: clan.iconId, iconColor: clan.iconColor } : undefined} size="lg" />
       </div>
 
       {/* Sub tabs */}
