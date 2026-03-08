@@ -241,19 +241,7 @@ const RiverRaceScreen = () => {
     Array.from({ length: 3 }, (_, i) => ({ id: i, hp: 1000, maxHp: 1000, cards: [], destroyed: false }));
 
   const initWarDecks = (): WarDeck[] => {
-    const available = [...allCards];
-    const decks: WarDeck[] = [];
-    for (let d = 0; d < 4; d++) {
-      const deckCards: GameCard[] = [];
-      for (let c = 0; c < 8; c++) {
-        if (available.length > 0) {
-          const idx = Math.floor(Math.random() * Math.min(available.length, 30));
-          deckCards.push(available.splice(idx, 1)[0]);
-        }
-      }
-      decks.push({ cards: deckCards, usedToday: false });
-    }
-    return decks;
+    return Array.from({ length: 4 }, () => ({ cards: [], usedToday: false }));
   };
 
   const saveRaceData = (b: BoatData[], wd: WarDeck[], day: number) => {
