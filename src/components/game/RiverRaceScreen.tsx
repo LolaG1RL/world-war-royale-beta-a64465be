@@ -87,7 +87,14 @@ const RiverRaceScreen = () => {
   const [specialMode, setSpecialMode] = useState(SPECIAL_MODES[0]);
   const [loadingClans, setLoadingClans] = useState(true);
 
-  useEffect(() => { setIsTrainingDay(dayNumber <= 3); }, [dayNumber]);
+  // Calculate day from real time
+  useEffect(() => {
+    const stored = getStoredRiverData();
+    const weekStart = stored?.weekStart || Date.now();
+    const realDay = Math.min(7, Math.floor((Date.now() - weekStart) / (1000 * 60 * 60 * 24)) + 1);
+    setDayNumber(realDay);
+    setIsTrainingDay(realDay <= 3);
+  }, []);
 
   // On mount: load clans + check for completed battle
   useEffect(() => {
