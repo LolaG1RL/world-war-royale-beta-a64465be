@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { allEmotes, getOwnedEmotes, addOwnedEmote } from '@/data/emotes';
 
 // Stripe price IDs for real-money items
 const STRIPE_PRICES: Record<string, string> = {
@@ -212,7 +213,7 @@ const RewardReveal = ({ rewards, onClose }: { rewards: RewardItem[]; onClose: ()
 
 const ShopScreen = () => {
   const { setScreen, profile, setProfile, setDeck, deck } = useGame();
-  const [tab, setTab] = useState<'featured' | 'cards' | 'chests' | 'gems'>('featured');
+  const [tab, setTab] = useState<'featured' | 'cards' | 'chests' | 'gems' | 'emotes'>('featured');
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [rewardPopup, setRewardPopup] = useState<RewardItem[] | null>(null);
   const [purchasedDeals, setPurchasedDeals] = useState<Set<number>>(() => getPurchasedDeals());
@@ -220,11 +221,14 @@ const ShopScreen = () => {
   const countdown = useCountdownToMidnight();
   const dailyDeals = useMemo(() => getDailyDeals(), []);
   const dailyFreebies = useMemo(() => getDailyFreebieCards(), []);
+  const [purchasedEmotes, setPurchasedEmotes] = useState<Set<number>>(() => getEmoteDealsPurchased());
+  const [ownedEmoteIds, setOwnedEmoteIds] = useState(() => getOwnedEmotes());
 
   const filtered = tab === 'featured' ? shopItems :
     tab === 'cards' ? shopItems.filter(i => i.type === 'card') :
     tab === 'chests' ? shopItems.filter(i => i.type === 'chest') :
-    shopItems.filter(i => i.type === 'gems' || i.type === 'gold');
+    tab === 'gems' ? shopItems.filter(i => i.type === 'gems' || i.type === 'gold') :
+    [];
 
   const showRewards = useCallback((rewards: RewardItem[]) => {
     setRewardPopup(rewards);
