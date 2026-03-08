@@ -85,21 +85,21 @@ export interface TrophyRoadReward {
 }
 
 export const arenas = [
-  { id: 1, name: 'Training Camp', trophies: 0, emoji: '⛺' },
-  { id: 2, name: 'Goblin Stadium', trophies: 200, emoji: '🏟️' },
-  { id: 3, name: 'Bone Pit', trophies: 400, emoji: '💀' },
-  { id: 4, name: 'Barbarian Bowl', trophies: 600, emoji: '🪓' },
-  { id: 5, name: 'Spell Valley', trophies: 800, emoji: '🔮' },
-  { id: 6, name: "Builder's Workshop", trophies: 1000, emoji: '🔨' },
-  { id: 7, name: 'Royal Arena', trophies: 1200, emoji: '👑' },
-  { id: 8, name: 'Frozen Peak', trophies: 1400, emoji: '❄️' },
-  { id: 9, name: 'Jungle Arena', trophies: 1600, emoji: '🌿' },
-  { id: 10, name: 'Hog Mountain', trophies: 1800, emoji: '🐗' },
-  { id: 11, name: 'Electro Valley', trophies: 2000, emoji: '⚡' },
-  { id: 12, name: 'Spooky Town', trophies: 2200, emoji: '🎃' },
-  { id: 13, name: 'Rascals Hideout', trophies: 2600, emoji: '🗡️' },
-  { id: 14, name: 'Serenity Peak', trophies: 3000, emoji: '🏔️' },
-  { id: 15, name: 'Legendary Arena', trophies: 4000, emoji: '🏆' },
+  { id: 1, name: 'Boot Camp', trophies: 0, emoji: '⛺' },
+  { id: 2, name: 'Bronze Trenches', trophies: 200, emoji: '🏟️' },
+  { id: 3, name: 'Fallen Ruins', trophies: 400, emoji: '💀' },
+  { id: 4, name: 'Iron Wargrounds', trophies: 600, emoji: '🪓' },
+  { id: 5, name: 'Mystic Frontline', trophies: 800, emoji: '🔮' },
+  { id: 6, name: 'Siege Workshop', trophies: 1000, emoji: '🔨' },
+  { id: 7, name: 'Imperial Fortress', trophies: 1200, emoji: '👑' },
+  { id: 8, name: 'Frozen Battlefield', trophies: 1400, emoji: '❄️' },
+  { id: 9, name: 'Jungle Warzone', trophies: 1600, emoji: '🌿' },
+  { id: 10, name: 'Warlord Summit', trophies: 1800, emoji: '🐗' },
+  { id: 11, name: 'Thunder Bastion', trophies: 2000, emoji: '⚡' },
+  { id: 12, name: 'Shadow Citadel', trophies: 2200, emoji: '🎃' },
+  { id: 13, name: 'Outlaw Garrison', trophies: 2600, emoji: '🗡️' },
+  { id: 14, name: 'Eternal Peaks', trophies: 3000, emoji: '🏔️' },
+  { id: 15, name: 'Legends Colosseum', trophies: 4000, emoji: '🏆' },
 ];
 
 export const allCards: GameCard[] = [
