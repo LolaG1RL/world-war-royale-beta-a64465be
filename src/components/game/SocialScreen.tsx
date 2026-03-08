@@ -257,7 +257,7 @@ const SocialScreen = () => {
       role: 'member',
     });
     if (error) {
-      if (error.code === '23505') toast.error('You are already in a clan!');
+      if (error.code === '23505') toast.error(T('social.toast_already_in_clan'));
       else toast.error(error.message);
     } else {
       const { count } = await supabase
@@ -280,7 +280,7 @@ const SocialScreen = () => {
         iconColor: clanRow.icon_color,
       });
       setShowClanSearch(false);
-      toast.success(`Joined ${clanRow.name}!`);
+      toast.success(`${T('social.toast_joined')} ${clanRow.name}!`);
     }
     setJoiningClan(null);
   };
@@ -334,7 +334,7 @@ const SocialScreen = () => {
     setClanName('');
     setClanDescription('');
     setCustomizeStep('info');
-    toast.success('Clan created!');
+    toast.success(T('social.toast_clan_created'));
   };
 
   // Leave clan
@@ -342,7 +342,7 @@ const SocialScreen = () => {
     if (!user) return;
     await supabase.from('clan_members').delete().eq('user_id', user.id);
     setClan(null);
-    toast.success('Left clan');
+    toast.success(T('social.toast_left_clan'));
   };
 
   // Add friend by tag
@@ -359,12 +359,12 @@ const SocialScreen = () => {
       .maybeSingle();
 
     if (!targetProfile) {
-      toast.error('Player not found!');
+      toast.error(T('social.toast_player_not_found'));
       setAddingFriend(false);
       return;
     }
     if (targetProfile.user_id === user.id) {
-      toast.error("You can't add yourself!");
+      toast.error(T('social.toast_cant_add_self'));
       setAddingFriend(false);
       return;
     }
@@ -376,10 +376,10 @@ const SocialScreen = () => {
     });
 
     if (error) {
-      if (error.code === '23505') toast.error('Already friends!');
+      if (error.code === '23505') toast.error(T('social.toast_already_friends'));
       else toast.error(error.message);
     } else {
-      toast.success('Friend added!');
+      toast.success(T('social.toast_friend_added'));
       setFriendTag('');
       loadFriends();
     }
