@@ -286,7 +286,11 @@ const WarPassScreen = () => {
             <div className="text-[8px] text-muted-foreground">Get exclusive rewards all season long</div>
           </div>
           <button
-            onClick={handleBuyPass}
+            onClick={() => setConfirmAction({
+              label: 'War Pass+',
+              cost: '$4.99',
+              onConfirm: () => { handleBuyPass(); setConfirmAction(null); }
+            })}
             disabled={purchasing}
             className="px-4 py-2 rounded-lg text-[11px] font-bold bg-gradient-to-r from-[hsl(340,60%,45%)] to-[hsl(280,50%,45%)] text-foreground hover:brightness-110 border border-[hsl(340,50%,55%)] disabled:opacity-50 flex items-center gap-1.5"
           >
