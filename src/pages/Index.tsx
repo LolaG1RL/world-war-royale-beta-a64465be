@@ -1,5 +1,6 @@
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { GameProvider, useGame } from '@/context/GameContext';
+import { SettingsProvider } from '@/context/SettingsContext';
 import DeafIDLogin from '@/components/auth/DeafIDLogin';
 import UsernamePicker from '@/components/auth/UsernamePicker';
 import MainMenu from '@/components/game/MainMenu';
@@ -17,6 +18,7 @@ import MailboxScreen from '@/components/game/MailboxScreen';
 import WarPassScreen from '@/components/game/WarPassScreen';
 import RiverRaceScreen from '@/components/game/RiverRaceScreen';
 import DeafMode from '@/components/game/DeafMode';
+import SettingsScreen from '@/components/game/SettingsScreen';
 
 const GameRouter = () => {
   const { screen } = useGame();
@@ -35,6 +37,7 @@ const GameRouter = () => {
     case 'mailbox': return <MailboxScreen />;
     case 'war-pass': return <WarPassScreen />;
     case 'river-race': return <RiverRaceScreen />;
+    case 'settings': return <SettingsScreen />;
     default: return <MainMenu />;
   }
 };
@@ -57,10 +60,12 @@ const AuthGate = () => {
   if (needsUsername) return <UsernamePicker />;
 
   return (
-    <GameProvider>
-      <GameRouter />
-      <DeafMode />
-    </GameProvider>
+    <SettingsProvider>
+      <GameProvider>
+        <GameRouter />
+        <DeafMode />
+      </GameProvider>
+    </SettingsProvider>
   );
 };
 

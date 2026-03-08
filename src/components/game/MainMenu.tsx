@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useGame } from '@/context/GameContext';
 import { useAuth } from '@/context/AuthContext';
+import { useSettings } from '@/context/SettingsContext';
 import { getArenaForTrophies, trophyRoadRewards, getXpForLevel, getLevelReward } from '@/data/cards';
 import CardComponent from './CardComponent';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Swords, Trophy, Crown, Map, Star, Mail } from 'lucide-react';
+import { Swords, Trophy, Crown, Map, Star, Mail, Settings } from 'lucide-react';
 import splashImage from '@/assets/world-war-royale-splash.png';
 import { supabase } from '@/integrations/supabase/client';
 import { BottomNav } from './BottomNav';
@@ -12,12 +13,19 @@ import BattleBannerDisplay from './BattleBannerDisplay';
 import { getPlayerBanner } from '@/data/banners';
 import ArenaPreview from './ArenaPreview';
 import RevealScreen, { RevealItem } from './RevealScreen';
+import { updateSfxSettings, playCoinCollect } from '@/lib/sfx';
 
 const MainMenu = () => {
   const { profile, deck, chests, setScreen, setActiveTab, setProfile } = useGame();
   const { signOut, user } = useAuth();
+  const { sfxEnabled, sfxVolume } = useSettings();
   const arena = getArenaForTrophies(profile.trophies);
   const playerBanner = getPlayerBanner();
+
+  // Sync SFX settings to the audio module
+  useEffect(() => {
+    updateSfxSettings(sfxEnabled, sfxVolume);
+  }, [sfxEnabled, sfxVolume]);
   const [unreadMail, setUnreadMail] = useState(0);
   const [unclaimedTrophy, setUnclaimedTrophy] = useState(0);
   const [unclaimedWarPass, setUnclaimedWarPass] = useState(0);
@@ -100,16 +108,21 @@ const MainMenu = () => {
           <button onClick={() => setScreen('profile')} className="flex-1 min-w-0 hover:opacity-80 transition-opacity">
             <BattleBannerDisplay banner={playerBanner} name={profile.name} trophies={profile.trophies} size="sm" />
           </button>
-          {/* Resources */}
-          <div className="flex flex-col gap-1 flex-shrink-0">
-            <div className="flex items-center gap-1 bg-[hsl(220,15%,16%)] pl-1.5 pr-2.5 py-1 rounded-full border border-border">
-              <span className="text-xs">💰</span>
-              <span className="text-[10px] font-bold text-foreground">{profile.gold.toLocaleString()}</span>
+          {/* Resources + Settings */}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1 bg-[hsl(220,15%,16%)] pl-1.5 pr-2.5 py-1 rounded-full border border-border">
+                <span className="text-xs">💰</span>
+                <span className="text-[10px] font-bold text-foreground">{profile.gold.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center gap-1 bg-[hsl(220,15%,16%)] pl-1.5 pr-2.5 py-1 rounded-full border border-border">
+                <span className="text-xs">💎</span>
+                <span className="text-[10px] font-bold text-foreground">{profile.gems}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1 bg-[hsl(220,15%,16%)] pl-1.5 pr-2.5 py-1 rounded-full border border-border">
-              <span className="text-xs">💎</span>
-              <span className="text-[10px] font-bold text-foreground">{profile.gems}</span>
-            </div>
+            <button onClick={() => setScreen('settings')} className="w-7 h-7 rounded-full bg-[hsl(220,15%,16%)] border border-border flex items-center justify-center hover:bg-[hsl(220,15%,22%)] transition-colors">
+              <Settings className="w-3.5 h-3.5 text-muted-foreground" />
+            </button>
           </div>
         </div>
       </div>
@@ -300,6 +313,7 @@ const MainMenu = () => {
                       {canClaim && (
                         <button
                           onClick={() => {
+                            playCoinCollect();
                             const items: RevealItem[] = [];
                             if (reward.type === 'gold') {
                               setProfile(p => ({ ...p, gold: p.gold + reward.amount }));
