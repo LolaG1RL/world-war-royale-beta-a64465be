@@ -336,6 +336,70 @@ export const allCards: GameCard[] = [
     hitSpeed: 1.8, speed: 'slow', range: 'melee-long', targets: 'ground', unitType: 'ground'
   },
 
+  // ========== BUILDINGS ==========
+  {
+    id: 'cannon', name: 'Cannon', elixir: 3, rarity: 'common', type: 'building',
+    hp: 800, damage: 100, description: 'Defensive cannon that targets ground troops. Reliable and cheap.',
+    era: 'Colonial', emoji: '💥', level: 1, count: 0, maxCount: 800,
+    hitSpeed: 0.8, range: 5.5, targets: 'ground', unitType: 'ground', lifetime: 30
+  },
+  {
+    id: 'watchtower', name: 'Watchtower', elixir: 4, rarity: 'rare', type: 'building',
+    hp: 1000, damage: 70, description: 'Tall tower that shoots arrows at air and ground. Great range.',
+    era: 'Medieval', emoji: '🏰', level: 1, count: 0, maxCount: 50,
+    hitSpeed: 1.0, range: 7.0, targets: 'ground-air', unitType: 'ground', lifetime: 35
+  },
+  {
+    id: 'bomb-tower', name: 'Bomb Tower', elixir: 4, rarity: 'rare', type: 'building',
+    hp: 1200, damage: 120, description: 'Lobs explosive bombs at ground troops. Splash damage!',
+    era: 'Medieval', emoji: '💣', level: 1, count: 0, maxCount: 50,
+    hitSpeed: 1.6, range: 5.0, targets: 'ground', unitType: 'ground', splashRadius: 1.5, lifetime: 25, deathDamage: 200
+  },
+  {
+    id: 'inferno-tower', name: 'Inferno Tower', elixir: 5, rarity: 'epic', type: 'building',
+    hp: 1500, damage: 40, description: 'Beam that ramps up damage over time. Melts tanks.',
+    era: 'Fantasy', emoji: '🔥', level: 1, count: 0, maxCount: 10,
+    hitSpeed: 0.4, range: 6.0, targets: 'ground-air', unitType: 'ground', lifetime: 35
+  },
+  {
+    id: 'tombstone', name: 'Tombstone', elixir: 3, rarity: 'common', type: 'building',
+    hp: 500, damage: 0, description: 'Periodically spawns skeletons. Spawns more on death.',
+    era: 'Fantasy', emoji: '🪦', level: 1, count: 0, maxCount: 400,
+    hitSpeed: 0, range: 0, targets: 'ground', unitType: 'ground', lifetime: 40
+  },
+  {
+    id: 'tesla', name: 'Tesla Coil', elixir: 4, rarity: 'epic', type: 'building',
+    hp: 900, damage: 130, description: 'Hidden electrical tower. Zaps air and ground enemies.',
+    era: 'Steampunk', emoji: '⚡', level: 1, count: 0, maxCount: 10,
+    hitSpeed: 1.1, range: 5.5, targets: 'ground-air', unitType: 'ground', lifetime: 30
+  },
+
+  // ========== MORE BUILDING-TARGETING TROOPS ==========
+  {
+    id: 'siege-ram', name: 'Siege Ram', elixir: 4, rarity: 'rare', type: 'troop',
+    hp: 1800, damage: 250, description: 'Armored battering ram that charges at buildings. Releases troops on death.',
+    era: 'Medieval', emoji: '🪵', level: 1, count: 0, maxCount: 20,
+    hitSpeed: 2.0, speed: 'medium', range: 'melee-short', targets: 'buildings', unitType: 'ground'
+  },
+  {
+    id: 'giant', name: 'Giant', elixir: 5, rarity: 'common', type: 'troop',
+    hp: 3500, damage: 150, description: 'Huge slow brute that only attacks buildings. Massive HP pool.',
+    era: 'Fantasy', emoji: '🧌', level: 1, count: 0, maxCount: 400,
+    hitSpeed: 1.5, speed: 'slow', range: 'melee-short', targets: 'buildings', unitType: 'ground'
+  },
+  {
+    id: 'royal-giant', name: 'Royal Giant', elixir: 6, rarity: 'rare', type: 'troop',
+    hp: 2800, damage: 180, description: 'Giant with a cannon. Targets buildings from range.',
+    era: 'Medieval', emoji: '🫅', level: 1, count: 0, maxCount: 20,
+    hitSpeed: 1.7, speed: 'slow', range: 5.0, targets: 'buildings', unitType: 'ground'
+  },
+  {
+    id: 'wall-breakers', name: 'Wall Breakers', elixir: 2, rarity: 'common', type: 'troop',
+    hp: 300, damage: 400, description: 'Two speedy bombers that charge at buildings and explode!',
+    era: 'Medieval', emoji: '💀', level: 1, count: 0, maxCount: 200,
+    hitSpeed: 1.0, speed: 'very-fast', range: 'melee-short', targets: 'buildings', unitType: 'ground', deployCount: 2, deathDamage: 400
+  },
+
   // ========== LEGENDARY ==========
   { 
     id: 'napoleon', name: 'Napoleon', elixir: 6, rarity: 'legendary', type: 'troop', 
@@ -393,10 +457,11 @@ export const allCards: GameCard[] = [
   },
   { 
     id: 'joan-of-arc', name: 'Joan of Arc', elixir: 5, rarity: 'champion', type: 'troop', 
-    hp: 2500, damage: 200, description: 'Divine warrior maiden. Ability: Rally Cry - buffs all allies attack speed by 50% for 5s. Passive: Inspired allies deal +15% damage.', 
+    hp: 2500, damage: 200, description: 'Divine warrior maiden. Ability: Rally Cry - buffs all allies attack speed by 50% for 5s. Passive: Inspired - all allied troops permanently deal +20% damage while Joan is alive on the field.',
     era: 'Medieval France', emoji: '⚜️', level: 1, count: 0, maxCount: 1,
     hitSpeed: 1.4, speed: 'medium', range: 'melee-medium', targets: 'ground', unitType: 'ground',
-    ability: { name: 'Rally Cry', description: '+50% attack speed for all allies for 5s', cooldown: 12 }
+    ability: { name: 'Rally Cry', description: '+50% attack speed for all allies for 5s', cooldown: 12 },
+    passive: { name: 'Inspired', description: 'All allied troops deal +20% damage while Joan is alive' }
   },
 
 ];
