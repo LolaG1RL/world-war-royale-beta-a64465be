@@ -26,8 +26,8 @@ const TrophyRoadScreen = () => {
     localStorage.setItem('trophy_road_claimed', JSON.stringify([...next]));
   };
 
-  const generateChestRewards = (chestType: string): RewardItem[] => {
-    const items: RewardItem[] = [];
+  const generateChestRewards = (chestType: string): RevealItem[] => {
+    const items: RevealItem[] = [];
     let numCards = 3;
     let goldAmount = 100;
 
@@ -49,8 +49,8 @@ const TrophyRoadScreen = () => {
     return items;
   };
 
-  const generateCardRewards = (amount: number): RewardItem[] => {
-    const items: RewardItem[] = [];
+  const generateCardRewards = (amount: number): RevealItem[] => {
+    const items: RevealItem[] = [];
     for (let i = 0; i < amount; i++) {
       const card = allCards[Math.floor(Math.random() * allCards.length)];
       const existing = items.find(r => r.name === card.name);
@@ -64,8 +64,7 @@ const TrophyRoadScreen = () => {
     const reward = trophyRoadRewards.find(r => r.trophies === trophies);
     if (!reward || claimedRewards.has(trophies)) return;
 
-    let items: RewardItem[] = [];
-    setRewardTitle(reward.name);
+    let items: RevealItem[] = [];
 
     if (reward.type === 'gold') {
       setProfile(p => ({ ...p, gold: p.gold + reward.amount }));
@@ -75,19 +74,25 @@ const TrophyRoadScreen = () => {
       items = [{ emoji: '💎', name: 'Gems', count: reward.amount, rarity: 'epic' }];
     } else if (reward.type === 'chest') {
       items = generateChestRewards(reward.name);
-      // Grant gold from chest
       const goldItem = items.find(i => i.name === 'Gold');
       if (goldItem) setProfile(p => ({ ...p, gold: p.gold + goldItem.count }));
     } else if (reward.type === 'cards') {
       items = generateCardRewards(reward.amount);
     }
 
-    setRewardItems(items);
-    setShowRewardPopup(true);
+    // Grant card inventory
+    items.forEach(item => {
+      const card = allCards.find(c => c.name === item.name);
+      if (card) addCards(card.id, item.count);
+    });
+
+    setRevealItems(items);
+    setRevealTitle(reward.name);
 
     const next = new Set(claimedRewards);
     next.add(trophies);
     saveClaimed(next);
+  };
   };
 
   const rarityColor = (rarity: string) => {
