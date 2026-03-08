@@ -4,6 +4,7 @@ import { useGame } from '@/context/GameContext';
 import { allCards } from '@/data/cards';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 const DEAF_MODE_EMAIL = 'tuasfait@gmail.com';
 
