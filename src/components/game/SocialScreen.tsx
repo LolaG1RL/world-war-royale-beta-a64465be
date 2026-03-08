@@ -895,11 +895,14 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                   <div className="text-[9px] font-bold text-primary uppercase tracking-wider">🔄 Post a Trade Request</div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[8px] text-muted-foreground">You offer:</label>
+                      <label className="text-[8px] text-muted-foreground">You offer (owned):</label>
                       <select value={tradeOffer} onChange={e => setTradeOffer(e.target.value)}
                         className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-[9px] text-foreground">
                         <option value="">Select card...</option>
-                        {allCards.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
+                        {ownedCards.map(c => {
+                          const entry = getCardEntry(c.id);
+                          return <option key={c.id} value={c.id}>{c.emoji} {c.name} — x{entry.count}</option>;
+                        })}
                       </select>
                     </div>
                     <div>
