@@ -240,6 +240,23 @@ const BattleArena = () => {
           ))}
         </AnimatePresence>
 
+        {/* Emote display */}
+        <AnimatePresence>
+          {activeEmote && (
+            <motion.div
+              key={activeEmote.key}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+              className="absolute z-30"
+              style={{ left: activeEmote.side === 'player' ? '70%' : '30%', top: activeEmote.side === 'player' ? '70%' : '20%', transform: 'translate(-50%,-50%)' }}
+            >
+              <div className="w-14 h-14 rounded-full bg-[hsl(220,20%,15%,0.9)] border-2 border-primary/50 p-1 shadow-xl" dangerouslySetInnerHTML={{ __html: activeEmote.svg }} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {selectedCard !== null && (
           <div className="absolute bottom-0 left-0 right-0 top-1/2 border-t-2 border-dashed border-primary/20 bg-primary/5 pointer-events-none" />
         )}
@@ -261,8 +278,39 @@ const BattleArena = () => {
         </div>
       </div>
 
+      {/* Emote panel */}
+      <AnimatePresence>
+        {showEmotes && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="bg-[hsl(220,20%,9%)] border-t border-border overflow-hidden">
+            <div className="flex gap-1 p-1.5 justify-center flex-wrap">
+              {equippedEmotes.map(emote => emote && (
+                <button key={emote.id} onClick={() => {
+                  setEmoteCounter(p => p + 1);
+                  setActiveEmote({ svg: emote.svg, side: 'player', key: emoteCounter });
+                  setTimeout(() => setActiveEmote(null), 2500);
+                  setShowEmotes(false);
+                  // Enemy responds randomly
+                  setTimeout(() => {
+                    const rnd = allEmotes[Math.floor(Math.random() * allEmotes.length)];
+                    setEmoteCounter(p => p + 1);
+                    setActiveEmote({ svg: rnd.svg, side: 'enemy', key: emoteCounter + 1000 });
+                    setTimeout(() => setActiveEmote(null), 2500);
+                  }, 1500 + Math.random() * 2000);
+                }} className="w-9 h-9 rounded-full bg-[hsl(220,15%,16%)] border border-border p-1 hover:border-primary/50 transition-colors">
+                  <div dangerouslySetInnerHTML={{ __html: emote.svg }} />
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Card hand */}
       <div className="px-1.5 py-2 bg-[hsl(220,20%,9%)] border-t border-border flex items-end justify-center gap-1">
+        {/* Emote button */}
+        <button onClick={() => setShowEmotes(!showEmotes)} className={`w-8 h-8 rounded-full flex items-center justify-center text-sm mr-1 transition-colors ${showEmotes ? 'bg-primary/20 border border-primary/40' : 'bg-[hsl(220,15%,16%)] border border-border'}`}>
+          😀
+        </button>
         {nextCard && (
           <div className="mr-1.5">
             <div className="text-[6px] text-muted-foreground text-center mb-0.5 uppercase tracking-wider">Next</div>
