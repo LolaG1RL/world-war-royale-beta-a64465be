@@ -1,7 +1,35 @@
 import { useGame } from '@/context/GameContext';
 import { BottomNav } from './ShopScreen';
 import { useState } from 'react';
-import { MessageCircle, UserPlus, Search, Shield, Swords as SwordsIcon, Plus, Trophy } from 'lucide-react';
+import { MessageCircle, UserPlus, Search, Shield, Swords as SwordsIcon, Plus, Trophy, ChevronLeft, ChevronRight } from 'lucide-react';
+import ClanFlag from './ClanFlag';
+
+const BANNER_COLORS = [
+  '#b91c1c', '#dc2626', '#ef4444', // reds
+  '#c2410c', '#ea580c', '#f97316', // oranges
+  '#a16207', '#ca8a04', '#eab308', // yellows
+  '#15803d', '#16a34a', '#22c55e', // greens
+  '#0e7490', '#0891b2', '#06b6d4', // cyans
+  '#1d4ed8', '#2563eb', '#3b82f6', // blues
+  '#7c3aed', '#8b5cf6', '#a78bfa', // purples
+  '#be185d', '#db2777', '#ec4899', // pinks
+  '#1e293b', '#334155', '#475569', // slates
+  '#18181b', '#fafaf9', '#78716c', // neutrals
+];
+
+const ICON_EMOJIS = [
+  '⚔️', '🛡️', '🗡️', '🏹', '🔥', '💀', '👑', '🦅',
+  '🐉', '🦁', '🐺', '🐍', '🦂', '🐙', '🐗', '🦇',
+  '⚡', '💎', '🌟', '☠️', '🔱', '⭐', '🎯', '🪓',
+  '🏰', '⛰️', '🌋', '🌊', '🎖️', '🏆', '💣', '🪖',
+];
+
+const ICON_COLORS = [
+  '#ffffff', '#fef08a', '#fde047', '#facc15',
+  '#f97316', '#ef4444', '#ec4899', '#a78bfa',
+  '#60a5fa', '#22d3ee', '#34d399', '#a3e635',
+  '#1e293b', '#000000',
+];
 
 const SocialScreen = () => {
   const { setScreen, clan, profile, setClan, setProfile } = useGame();
@@ -9,6 +37,10 @@ const SocialScreen = () => {
   const [showCreateClan, setShowCreateClan] = useState(false);
   const [clanName, setClanName] = useState('');
   const [clanDescription, setClanDescription] = useState('');
+  const [bannerColor, setBannerColor] = useState(BANNER_COLORS[5]);
+  const [iconEmoji, setIconEmoji] = useState(ICON_EMOJIS[0]);
+  const [iconColor, setIconColor] = useState(ICON_COLORS[0]);
+  const [customizeStep, setCustomizeStep] = useState<'info' | 'flag'>('info');
 
   const handleCreateClan = () => {
     if (!clanName.trim() || clanName.length < 3) return;
@@ -21,13 +53,17 @@ const SocialScreen = () => {
       members: 1,
       maxMembers: 50,
       trophies: profile.trophies,
-      badge: '⚔️',
+      badge: iconEmoji,
       description: clanDescription.trim() || 'A new clan ready for war!',
       donations: 0,
+      bannerColor,
+      iconEmoji,
+      iconColor,
     });
     setShowCreateClan(false);
     setClanName('');
     setClanDescription('');
+    setCustomizeStep('info');
   };
 
   return (
@@ -52,45 +88,119 @@ const SocialScreen = () => {
       {tab === 'clan' && (
         <>
           {!clan ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-6">
+            <div className="flex-1 overflow-y-auto flex flex-col items-center justify-start p-4">
               {showCreateClan ? (
                 <div className="w-full max-w-xs space-y-3">
                   <h3 className="text-sm font-display font-bold text-foreground text-center">Create a Clan</h3>
                   <p className="text-[10px] text-muted-foreground text-center">Costs 💎 100 gems</p>
-                  <input
-                    className="w-full bg-secondary rounded-lg px-3 py-2 text-xs text-foreground border border-border"
-                    placeholder="Clan name (3-15 chars)"
-                    value={clanName}
-                    onChange={e => setClanName(e.target.value.substring(0, 15))}
-                  />
-                  <textarea
-                    className="w-full bg-secondary rounded-lg px-3 py-2 text-xs text-foreground border border-border resize-none"
-                    placeholder="Description (optional)"
-                    rows={2}
-                    value={clanDescription}
-                    onChange={e => setClanDescription(e.target.value.substring(0, 100))}
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setShowCreateClan(false)}
-                      className="flex-1 py-2 bg-secondary text-muted-foreground rounded-lg text-xs font-bold border border-border"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleCreateClan}
-                      disabled={profile.gems < 100 || clanName.trim().length < 3}
-                      className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold disabled:opacity-40"
-                    >
-                      Create (💎 100)
-                    </button>
+
+                  {/* Flag preview */}
+                  <div className="flex justify-center py-2">
+                    <ClanFlag bannerColor={bannerColor} iconEmoji={iconEmoji} iconColor={iconColor} size="lg" />
                   </div>
-                  {profile.gems < 100 && (
-                    <p className="text-[9px] text-destructive text-center">Not enough gems! You have {profile.gems}.</p>
+
+                  {customizeStep === 'info' && (
+                    <>
+                      <input
+                        className="w-full bg-secondary rounded-lg px-3 py-2 text-xs text-foreground border border-border"
+                        placeholder="Clan name (3-15 chars)"
+                        value={clanName}
+                        onChange={e => setClanName(e.target.value.substring(0, 15))}
+                      />
+                      <textarea
+                        className="w-full bg-secondary rounded-lg px-3 py-2 text-xs text-foreground border border-border resize-none"
+                        placeholder="Description (optional)"
+                        rows={2}
+                        value={clanDescription}
+                        onChange={e => setClanDescription(e.target.value.substring(0, 100))}
+                      />
+                      <button
+                        onClick={() => setCustomizeStep('flag')}
+                        disabled={clanName.trim().length < 3}
+                        className="w-full py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold disabled:opacity-40 flex items-center justify-center gap-1"
+                      >
+                        Customize Flag <ChevronRight className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => { setShowCreateClan(false); setCustomizeStep('info'); }}
+                        className="w-full py-2 bg-secondary text-muted-foreground rounded-lg text-xs font-bold border border-border"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
+
+                  {customizeStep === 'flag' && (
+                    <>
+                      {/* Banner color */}
+                      <div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Banner Color</div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {BANNER_COLORS.map(c => (
+                            <button
+                              key={c}
+                              onClick={() => setBannerColor(c)}
+                              className={`w-6 h-6 rounded-md border-2 transition-all ${bannerColor === c ? 'border-foreground scale-110' : 'border-transparent'}`}
+                              style={{ backgroundColor: c }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Icon */}
+                      <div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Icon</div>
+                        <div className="flex flex-wrap gap-1">
+                          {ICON_EMOJIS.map(e => (
+                            <button
+                              key={e}
+                              onClick={() => setIconEmoji(e)}
+                              className={`w-7 h-7 rounded-md flex items-center justify-center text-sm transition-all ${iconEmoji === e ? 'bg-primary/30 border border-primary scale-110' : 'bg-secondary border border-border'}`}
+                            >
+                              {e}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Icon color */}
+                      <div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Icon Color</div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {ICON_COLORS.map(c => (
+                            <button
+                              key={c}
+                              onClick={() => setIconColor(c)}
+                              className={`w-6 h-6 rounded-full border-2 transition-all ${iconColor === c ? 'border-foreground scale-110' : 'border-muted'}`}
+                              style={{ backgroundColor: c }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-1">
+                        <button
+                          onClick={() => setCustomizeStep('info')}
+                          className="flex-1 py-2 bg-secondary text-muted-foreground rounded-lg text-xs font-bold border border-border flex items-center justify-center gap-1"
+                        >
+                          <ChevronLeft className="w-3 h-3" />Back
+                        </button>
+                        <button
+                          onClick={handleCreateClan}
+                          disabled={profile.gems < 100 || clanName.trim().length < 3}
+                          className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold disabled:opacity-40"
+                        >
+                          Create (💎 100)
+                        </button>
+                      </div>
+                      {profile.gems < 100 && (
+                        <p className="text-[9px] text-destructive text-center">Not enough gems! You have {profile.gems}.</p>
+                      )}
+                    </>
                   )}
                 </div>
               ) : (
-                <>
+                <div className="flex-1 flex flex-col items-center justify-center">
                   <Shield className="w-12 h-12 text-muted-foreground/30 mb-3" />
                   <div className="text-sm font-display font-bold text-foreground">No Clan</div>
                   <div className="text-xs text-muted-foreground text-center mt-1">Join or create a clan to battle together!</div>
@@ -105,17 +215,20 @@ const SocialScreen = () => {
                       <Plus className="w-3 h-3" />Create (💎 100)
                     </button>
                   </div>
-                </>
+                </div>
               )}
             </div>
           ) : (
             <>
-              {/* Clan header */}
+              {/* Clan header with flag */}
               <div className="bg-[hsl(220,20%,13%)] p-3 border-b border-border">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-primary/20 border-2 border-primary/40 flex items-center justify-center text-2xl">
-                    {clan.badge}
-                  </div>
+                  <ClanFlag
+                    bannerColor={clan.bannerColor}
+                    iconEmoji={clan.iconEmoji}
+                    iconColor={clan.iconColor}
+                    size="md"
+                  />
                   <div className="flex-1">
                     <div className="text-sm font-display font-bold text-foreground">{clan.name}</div>
                     <div className="text-[9px] text-muted-foreground">{clan.tag} • {clan.members}/{clan.maxMembers} members</div>
