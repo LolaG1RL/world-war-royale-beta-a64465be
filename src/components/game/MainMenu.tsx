@@ -6,6 +6,7 @@ import CardComponent from './CardComponent';
 import { motion } from 'framer-motion';
 import { Swords, Trophy, Users, ShoppingBag, Crown, Map, Star, Gift, Zap, Mail } from 'lucide-react';
 import splashImage from '@/assets/world-war-royale-splash.png';
+import logoImage from '@/assets/world-war-royale-logo.png';
 import { supabase } from '@/integrations/supabase/client';
 
 const MainMenu = () => {
@@ -183,10 +184,7 @@ const MainMenu = () => {
             transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
             className="mb-4"
           >
-            <h1 className="font-display font-black text-lg text-foreground text-center tracking-widest uppercase">
-              World War Royale
-            </h1>
-            <p className="text-[10px] text-primary text-center font-bold tracking-[0.3em]">V1.0</p>
+            <img src={logoImage} alt="World War Royale" className="w-48 h-auto drop-shadow-2xl" />
           </motion.div>
 
           <motion.button

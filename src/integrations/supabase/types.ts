@@ -132,6 +132,33 @@ export type Database = {
         }
         Relationships: []
       }
+      deaf_menu_grants: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          granted_by_user_id: string
+          id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          granted_by_user_id: string
+          id?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          granted_by_user_id?: string
+          id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
       friends: {
         Row: {
           created_at: string
@@ -308,7 +335,34 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      admin_get_all_deaf_grants: {
+        Args: never
+        Returns: {
+          created_at: string
+          expires_at: string | null
+          granted_by_user_id: string
+          id: string
+          user_id: string
+          username: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "deaf_menu_grants"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      admin_grant_deaf_menu: {
+        Args: {
+          p_expires_at?: string
+          p_granted_by: string
+          p_user_id: string
+          p_username: string
+        }
+        Returns: string
+      }
+      admin_revoke_deaf_menu: { Args: { p_grant_id: string }; Returns: boolean }
+      check_deaf_menu_access: { Args: { p_user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
