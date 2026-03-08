@@ -14,7 +14,19 @@ const DeafIDLogin = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setGoogleLoading(true);
+    const result = await lovable.auth.signInWithOAuth('google', {
+      redirect_uri: window.location.origin,
+    });
+    if (result?.error) {
+      setError(result.error.message || 'Google sign-in failed');
+    }
+    setGoogleLoading(false);
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
