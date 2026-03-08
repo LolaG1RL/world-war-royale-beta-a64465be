@@ -789,7 +789,8 @@ const RiverRaceScreen = () => {
             <div className="grid grid-cols-4 gap-1.5">
               {allCards.filter(c => {
                 const entry = getCardEntry(c.id);
-                return entry.count > 0 && !playerBoat.defenses[editingDefenseIdx]?.cards.includes(c.id);
+                const currentDefCards = playerBoat.defenses[editingDefenseIdx]?.cards || [];
+                return entry.count > 0 && !currentDefCards.includes(c.id);
               }).map(card => (
                 <button key={card.id} onClick={() => addCardToDefense(editingDefenseIdx, card.id)}
                   className="bg-[hsl(220,15%,14%)] border border-border rounded-lg p-1.5 flex flex-col items-center gap-0.5 hover:border-primary/40 transition-colors">
