@@ -10,6 +10,7 @@ import { allCards } from '@/data/cards';
 import { allEmotes, addOwnedEmote, getOwnedEmotes } from '@/data/emotes';
 import { allBackgrounds, allEmblems, addOwnedBackground, addOwnedEmblem, getOwnedBackgrounds, getOwnedEmblems } from '@/data/banners';
 import { addCards, markCardsOwned } from '@/data/cardInventory';
+import RevealScreen, { RevealItem } from './RevealScreen';
 
 // ── Seeded random ──
 function seededRng(seed: number) {
