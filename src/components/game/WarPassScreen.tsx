@@ -7,6 +7,8 @@ import { BottomNav } from './BottomNav';
 import { toast } from 'sonner';
 import { allCards } from '@/data/cards';
 import { addCards } from '@/data/cardInventory';
+import { addOwnedBackground, addOwnedEmblem } from '@/data/banners';
+import { addOwnedEmote } from '@/data/emotes';
 
 interface RewardItem { emoji: string; name: string; count: number; rarity: string; }
 
