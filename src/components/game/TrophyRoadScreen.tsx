@@ -1,12 +1,40 @@
+import { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { BottomNav } from './ShopScreen';
 import { trophyRoadRewards, arenas, getArenaForTrophies } from '@/data/cards';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Lock, Check, Trophy } from 'lucide-react';
+import { ChevronLeft, Lock, Check, Trophy, Gift } from 'lucide-react';
+import { toast } from 'sonner';
 
 const TrophyRoadScreen = () => {
-  const { setScreen, profile } = useGame();
+  const { setScreen, profile, setProfile } = useGame();
   const currentArena = getArenaForTrophies(profile.trophies);
+  const [claimedRewards, setClaimedRewards] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    const saved = localStorage.getItem('trophy_road_claimed');
+    if (saved) {
+      try { setClaimedRewards(new Set(JSON.parse(saved))); } catch {}
+    }
+  }, []);
+
+  const saveClaimed = (next: Set<number>) => {
+    setClaimedRewards(next);
+    localStorage.setItem('trophy_road_claimed', JSON.stringify([...next]));
+  };
+
+  const claimReward = (trophies: number) => {
+    const reward = trophyRoadRewards.find(r => r.trophies === trophies);
+    if (!reward || claimedRewards.has(trophies)) return;
+
+    if (reward.type === 'gold') setProfile(p => ({ ...p, gold: p.gold + reward.amount }));
+    else if (reward.type === 'gems') setProfile(p => ({ ...p, gems: p.gems + reward.amount }));
+
+    const next = new Set(claimedRewards);
+    next.add(trophies);
+    saveClaimed(next);
+    toast.success(`Claimed: ${reward.name}!`);
+  };
 
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
@@ -35,11 +63,9 @@ const TrophyRoadScreen = () => {
 
       {/* Trophy road - scrollable */}
       <div className="flex-1 overflow-y-auto">
-        {/* Arena sections */}
         {[...arenas].reverse().map((arena, ai) => {
           const arenaRewards = trophyRoadRewards.filter(r => r.trophies >= arena.trophies && r.trophies < (arenas[arenas.length - 1 - ai + 1]?.trophies || 99999));
           const isCurrentArena = arena.id === currentArena.id;
-          const isPast = arena.trophies < currentArena.trophies;
           const isFuture = arena.trophies > profile.trophies;
 
           return (
@@ -59,22 +85,33 @@ const TrophyRoadScreen = () => {
               {arenaRewards.length > 0 && (
                 <div className="px-3 pb-2">
                   <div className="flex flex-wrap gap-1.5">
-                    {arenaRewards.map((reward, ri) => (
-                      <motion.div
-                        key={ri}
-                        className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[8px] ${
-                          reward.claimed
-                            ? 'bg-muted/30 border-border text-muted-foreground'
-                            : reward.trophies <= profile.trophies
-                            ? 'bg-primary/10 border-primary/30 text-primary font-bold'
-                            : 'bg-muted/10 border-border/50 text-muted-foreground/50'
-                        }`}
-                      >
-                        {reward.claimed ? <Check className="w-2.5 h-2.5" /> : <span>{reward.emoji}</span>}
-                        <span>{reward.name}</span>
-                        <span className="text-[7px] opacity-70">@{reward.trophies}</span>
-                      </motion.div>
-                    ))}
+                    {arenaRewards.map((reward, ri) => {
+                      const claimed = claimedRewards.has(reward.trophies);
+                      const claimable = !claimed && reward.trophies <= profile.trophies;
+
+                      return (
+                        <motion.button
+                          key={ri}
+                          whileTap={claimable ? { scale: 0.95 } : {}}
+                          onClick={claimable ? () => claimReward(reward.trophies) : undefined}
+                          disabled={!claimable}
+                          className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[8px] transition-colors ${
+                            claimed
+                              ? 'bg-muted/30 border-border text-muted-foreground'
+                              : claimable
+                              ? 'bg-primary/10 border-primary/30 text-primary font-bold ring-1 ring-primary/40 shadow-[0_0_8px_hsl(38,90%,50%,0.15)]'
+                              : 'bg-muted/10 border-border/50 text-muted-foreground/50'
+                          }`}
+                        >
+                          {claimed ? <Check className="w-2.5 h-2.5" /> : claimable ? <Gift className="w-2.5 h-2.5 animate-pulse" /> : <span>{reward.emoji}</span>}
+                          <span>{reward.name}</span>
+                          <span className="text-[7px] opacity-70">@{reward.trophies}</span>
+                          {claimable && !claimed && (
+                            <span className="text-[6px] font-bold text-primary animate-pulse ml-0.5">CLAIM</span>
+                          )}
+                        </motion.button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
