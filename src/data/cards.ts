@@ -39,7 +39,8 @@ export interface ClanData {
   description: string;
   donations: number;
   bannerColor: string;
-  iconEmoji: string;
+  bannerShape: string;
+  iconId: string;
   iconColor: string;
 }
 
