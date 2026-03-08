@@ -1,4 +1,6 @@
 import { useGame } from '@/context/GameContext';
+import { useSettings } from '@/context/SettingsContext';
+import { t } from '@/lib/i18n';
 import { shopItems, allCards } from '@/data/cards';
 import { X, Loader2, Check, Gift } from 'lucide-react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -293,6 +295,7 @@ const RewardReveal = ({ rewards, onClose }: { rewards: RewardItem[]; onClose: ()
 
 const ShopScreen = () => {
   const { setScreen, profile, setProfile, setDeck, deck } = useGame();
+  const { language } = useSettings();
   const [tab, setTab] = useState<'featured' | 'cards' | 'chests' | 'gems' | 'emotes' | 'banners'>('featured');
   const isWarPassActive = (() => {
     try {
@@ -489,7 +492,7 @@ const ShopScreen = () => {
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,25%,12%)] border-b border-border">
         <button onClick={() => setScreen('menu')} className="text-muted-foreground"><X className="w-4 h-4" /></button>
-        <h2 className="font-display font-bold text-foreground text-sm uppercase tracking-wider">Shop</h2>
+        <h2 className="font-display font-bold text-foreground text-sm uppercase tracking-wider">{t('shop.title', language)}</h2>
         <div className="flex items-center gap-2">
           <span className="text-[10px]">💰 {profile.gold.toLocaleString()}</span>
           <span className="text-[10px]">💎 {profile.gems}</span>

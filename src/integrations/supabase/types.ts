@@ -228,6 +228,27 @@ export type Database = {
         }
         Relationships: []
       }
+      player_inventory: {
+        Row: {
+          id: string
+          inventory_data: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          inventory_data?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          inventory_data?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       player_progress: {
         Row: {
           arena: number
