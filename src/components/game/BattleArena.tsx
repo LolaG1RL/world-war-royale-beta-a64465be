@@ -478,38 +478,61 @@ const BattleArena = () => {
     const card = hand[selectedCard];
     if (!card || elixir < card.elixir) return;
     
-    // Only deploy on player's side
-    if (ay < 50) return;
+    // Troops can only deploy on player's side; spells can target anywhere
+    if (card.type !== 'spell' && ay < 50) return;
     
     setElixir(p => p - card.elixir);
     
     if (card.type === 'spell') {
-      // Handle spell effects
-      const splash = (card.splashRadius || 2) * 5;
-      
-      // Damage enemies in radius
-      setDeployedUnits(units => units.map(u => {
-        if (u.side === 'player') return u;
-        const dist = Math.sqrt((ax - u.x) ** 2 + (ay - u.y) ** 2);
-        if (dist <= splash) {
-          return { ...u, hp: u.hp - card.damage };
+      // Special spell: Goblin Barrel spawns goblins at target location
+      if (card.id === 'goblin-barrel') {
+        const goblinCard = deck.find(c => c.id === 'goblin-scouts') || { 
+          ...card, type: 'troop' as const, hp: 200, damage: 60, hitSpeed: 0.8, 
+          speed: 'very-fast' as const, range: 'melee-short' as const, targets: 'ground' as const, unitType: 'ground' as const, deployCount: 1 
+        };
+        for (let i = 0; i < 3; i++) {
+          spawnUnit({ ...goblinCard, id: 'goblin-barrel-spawn', name: 'Goblin', emoji: '👺', deployCount: 1 } as any, 
+            ax + (i - 1) * 3, ay + (i - 1) * 2, 'player');
         }
-        return u;
-      }));
-      
-      // Damage towers
-      setTowers(t => t.map(tower => {
-        if (tower.side === 'player') return tower;
-        const dist = Math.sqrt((ax - tower.x) ** 2 + (ay - tower.y) ** 2);
-        if (dist <= splash) {
-          return { ...tower, hp: Math.max(0, tower.hp - card.damage) };
+      } else if (card.id === 'graveyard') {
+        // Graveyard: spawn skeletons over time
+        for (let i = 0; i < 8; i++) {
+          setTimeout(() => {
+            spawnUnit({ id: 'graveyard-skeleton', name: 'Skeleton', emoji: '💀', type: 'troop', 
+              elixir: 0, rarity: 'common', hp: 80, damage: 35, hitSpeed: 1.0, speed: 'fast', 
+              range: 'melee-short', targets: 'ground', unitType: 'ground', deployCount: 1,
+              description: '', era: '', level: 1, count: 0, maxCount: 0 } as any,
+              ax + (Math.random() - 0.5) * 10, ay + (Math.random() - 0.5) * 10, 'player');
+          }, i * 500);
         }
-        return tower;
-      }));
+      } else {
+        // Standard spell: area damage
+        const splash = (card.splashRadius || 2) * 5;
+        
+        // Damage enemies in radius
+        setDeployedUnits(units => units.map(u => {
+          if (u.side === 'player') return u;
+          const dist = Math.sqrt((ax - u.x) ** 2 + (ay - u.y) ** 2);
+          if (dist <= splash) {
+            return { ...u, hp: u.hp - card.damage };
+          }
+          return u;
+        }));
+        
+        // Damage towers
+        setTowers(t => t.map(tower => {
+          if (tower.side === 'player') return tower;
+          const dist = Math.sqrt((ax - tower.x) ** 2 + (ay - tower.y) ** 2);
+          if (dist <= splash) {
+            return { ...tower, hp: Math.max(0, tower.hp - card.damage) };
+          }
+          return tower;
+        }));
 
-      // Show damage indicator
-      damageCounter.current++;
-      setDamageNumbers(prev => [...prev, { id: damageCounter.current, x: ax, y: ay, damage: card.damage }]);
+        // Show damage indicator
+        damageCounter.current++;
+        setDamageNumbers(prev => [...prev, { id: damageCounter.current, x: ax, y: ay, damage: card.damage }]);
+      }
     } else {
       spawnUnit(card, ax, ay, 'player');
     }

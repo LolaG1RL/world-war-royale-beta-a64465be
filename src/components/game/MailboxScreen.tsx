@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Gift, UserPlus, Megaphone, ArrowLeft, Trash2, Check, X } from 'lucide-react';
+import { BottomNav } from './ShopScreen';
 
 interface MailMessage {
   id: string;
@@ -269,6 +270,7 @@ const MailboxScreen = () => {
           </div>
         )}
       </div>
+      <BottomNav active="battle" setScreen={setScreen} />
     </div>
   );
 };
