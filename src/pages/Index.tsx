@@ -30,6 +30,7 @@ const GameRouter = () => {
     case 'profile': return <ProfileScreen />;
     case 'chest-open': return <ChestOpenScreen />;
     case 'mailbox': return <MailboxScreen />;
+    case 'war-pass': return <WarPassScreen />;
     default: return <MainMenu />;
   }
 };
