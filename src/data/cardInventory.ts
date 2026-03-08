@@ -135,14 +135,30 @@ export const canRequest = (): boolean => {
   return Date.now() - last >= 12 * 60 * 60 * 1000; // 12 hours
 };
 
-export const getRequestTimeLeft = (): string => {
+export const getRequestTimeLeftMs = (): number => {
   const last = getRequestCooldown();
-  if (!last) return '';
+  if (!last) return 0;
   const diff = 12 * 60 * 60 * 1000 - (Date.now() - last);
+  return Math.max(0, diff);
+};
+
+export const getRequestTimeLeft = (): string => {
+  const diff = getRequestTimeLeftMs();
   if (diff <= 0) return '';
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
   return `${hours}h ${mins}m`;
+};
+
+export const getSkipCooldownCost = (): number => {
+  const remaining = getRequestTimeLeftMs();
+  if (remaining <= 0) return 0;
+  const total = 12 * 60 * 60 * 1000;
+  return Math.max(1, Math.ceil((remaining / total) * 100));
+};
+
+export const skipRequestCooldown = () => {
+  localStorage.removeItem(REQUEST_COOLDOWN_KEY);
 };
 
 interface DonationsToday {
