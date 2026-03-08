@@ -8,6 +8,8 @@ import { allEmotes, getEquippedEmotes } from '@/data/emotes';
 import BattleIntro from './BattleIntro';
 import BattleBannerDisplay from './BattleBannerDisplay';
 import { getPlayerBanner } from '@/data/banners';
+import { playBattleMusic, playOvertimeMusic, stopMusic } from '@/lib/music';
+import { playCardSfx } from '@/lib/sfx';
 
 interface DeployedUnit {
   id: string;
@@ -65,6 +67,21 @@ const BattleArena = () => {
   const [activeEmote, setActiveEmote] = useState<{svg: string; side: 'player' | 'enemy'; key: number} | null>(null);
   const [emoteCounter, setEmoteCounter] = useState(0);
   const [damageNumbers, setDamageNumbers] = useState<{id: number; x: number; y: number; damage: number}[]>([]);
+  const [spellProjectiles, setSpellProjectiles] = useState<{id: number; x: number; y: number; emoji: string; targetX: number; targetY: number}[]>([]);
+  const projectileCounter = useRef(0);
+
+  // Start arena music when intro finishes
+  useEffect(() => {
+    if (!showIntro) {
+      playBattleMusic(profile.arena);
+    }
+    return () => stopMusic();
+  }, [showIntro, profile.arena]);
+
+  // Switch to overtime music
+  useEffect(() => {
+    if (isDoubleElixir) playOvertimeMusic();
+  }, [isDoubleElixir]);
   const damageCounter = useRef(0);
   const equippedEmoteIds = getEquippedEmotes();
   const equippedEmotes = equippedEmoteIds.map(id => allEmotes.find(e => e.id === id)).filter(Boolean);
