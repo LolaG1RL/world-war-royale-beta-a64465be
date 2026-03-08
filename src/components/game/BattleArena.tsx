@@ -70,6 +70,11 @@ const BattleArena = () => {
   const enemyElixir = useRef(5);
   const gameTime = useRef(0);
 
+  // Champion ability state
+  const championCard = deck.find(c => c.rarity === 'champion' && c.ability);
+  const [abilityCooldown, setAbilityCooldown] = useState(0);
+  const [abilityActive, setAbilityActive] = useState(false);
+
   const towersRef = useRef(towers);
   towersRef.current = towers;
   const deployedUnitsRef = useRef(deployedUnits);
@@ -192,6 +197,64 @@ const BattleArena = () => {
     }, 1000 * rate);
     return () => clearInterval(interval);
   }, [maxElixir, isDoubleElixir]);
+
+  // Champion ability cooldown tick
+  useEffect(() => {
+    if (abilityCooldown <= 0) return;
+    const interval = setInterval(() => {
+      setAbilityCooldown(prev => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [abilityCooldown > 0]);
+
+  const activateAbility = useCallback(() => {
+    if (!championCard?.ability || abilityCooldown > 0 || abilityActive) return;
+    setAbilityActive(true);
+    setAbilityCooldown(championCard.ability.cooldown || 10);
+
+    // Apply ability effect: buff all player units
+    if (championCard.id === 'joan-of-arc') {
+      // Rally Cry: +50% attack speed for all allies for 5s (halve hitSpeed)
+      // We visually indicate it and apply a damage boost to simulate
+      setDeployedUnits(units => units.map(u => {
+        if (u.side === 'player') {
+          return { ...u, card: { ...u.card, hitSpeed: (u.card.hitSpeed || 1) * 0.5 } };
+        }
+        return u;
+      }));
+      setTimeout(() => {
+        setDeployedUnits(units => units.map(u => {
+          if (u.side === 'player') {
+            return { ...u, card: { ...u.card, hitSpeed: (u.card.hitSpeed || 0.5) * 2 } };
+          }
+          return u;
+        }));
+        setAbilityActive(false);
+      }, 5000);
+    } else if (championCard.id === 'alexander-the-great') {
+      // Macedonian Charge: deal 500 damage to nearest enemy tower
+      setTowers(t => t.map(tower => {
+        if (tower.side === 'enemy' && tower.hp > 0) {
+          return tower; // will be handled below
+        }
+        return tower;
+      }));
+      // Find nearest alive enemy tower and deal 500 damage
+      const aliveEnemyTowers = towers.filter(t => t.side === 'enemy' && t.hp > 0);
+      const princesses = aliveEnemyTowers.filter(t => t.type === 'princess');
+      const target = princesses.length > 0 ? princesses[0] : aliveEnemyTowers[0];
+      if (target) {
+        setTowers(t => t.map(tower =>
+          tower.id === target.id ? { ...tower, hp: Math.max(0, tower.hp - 500) } : tower
+        ));
+        damageCounter.current++;
+        setDamageNumbers(prev => [...prev, { id: damageCounter.current, x: target.x, y: target.y, damage: 500 }]);
+      }
+      setTimeout(() => setAbilityActive(false), 1000);
+    } else {
+      setTimeout(() => setAbilityActive(false), 3000);
+    }
+  }, [championCard, abilityCooldown, abilityActive, towers]);
 
   // Timer - use refs to avoid restarting interval
   const isDoubleElixirRef = useRef(isDoubleElixir);
@@ -757,6 +820,45 @@ const BattleArena = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Champion Ability Button */}
+        {championCard?.ability && (
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 z-40">
+            <motion.button
+              whileTap={abilityCooldown <= 0 ? { scale: 0.9 } : {}}
+              onClick={(e) => { e.stopPropagation(); activateAbility(); }}
+              disabled={abilityCooldown > 0}
+              className={`relative w-14 h-14 rounded-full border-2 flex flex-col items-center justify-center shadow-xl transition-all ${
+                abilityActive
+                  ? 'bg-primary/30 border-primary ring-2 ring-primary/50 animate-pulse'
+                  : abilityCooldown > 0
+                  ? 'bg-muted/60 border-muted-foreground/30 opacity-60'
+                  : 'bg-[hsl(340,40%,20%)] border-[hsl(340,60%,50%)] hover:border-[hsl(340,70%,60%)]'
+              }`}
+            >
+              <span className="text-lg">{championCard.emoji}</span>
+              {abilityCooldown > 0 && (
+                <>
+                  <div
+                    className="absolute inset-0 rounded-full border-2 border-transparent"
+                    style={{
+                      background: `conic-gradient(transparent ${((championCard.ability.cooldown! - abilityCooldown) / championCard.ability.cooldown!) * 100}%, hsl(0,0%,0%,0.6) 0%)`,
+                      mask: 'radial-gradient(circle, transparent 55%, black 56%)',
+                      WebkitMask: 'radial-gradient(circle, transparent 55%, black 56%)',
+                    }}
+                  />
+                  <span className="text-[9px] font-black text-foreground">{abilityCooldown}s</span>
+                </>
+              )}
+              {abilityCooldown <= 0 && !abilityActive && (
+                <span className="text-[6px] font-bold text-[hsl(340,60%,65%)] uppercase">Ready</span>
+              )}
+            </motion.button>
+            <div className="text-[7px] font-bold text-center text-foreground/70 mt-1 max-w-14 leading-tight">
+              {championCard.ability.name}
+            </div>
+          </div>
+        )}
 
         {selectedCard !== null && (
           <div className="absolute bottom-0 left-0 right-0 top-1/2 border-t-2 border-dashed border-primary/20 bg-primary/5 pointer-events-none">
