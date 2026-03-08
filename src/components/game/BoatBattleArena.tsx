@@ -103,7 +103,7 @@ const BoatBattleArena = () => {
             card,
             towerId: tower.id,
             key: prev + 50000,
-            hp: card.hitpoints || 300,
+            hp: card.hp || 300,
           }]);
           return prev + 1;
         });
@@ -208,7 +208,7 @@ const BoatBattleArena = () => {
         card,
         towerId,
         key: prev,
-        hp: card.hitpoints || 500,
+        hp: card.hp || 500,
       }]);
       return prev + 1;
     });
