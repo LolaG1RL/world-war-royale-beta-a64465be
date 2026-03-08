@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Language } from '@/lib/i18n';
+import { updateSfxSettings } from '@/lib/sfx';
+import { updateMusicSettings } from '@/lib/music';
 
 interface Settings {
   sfxEnabled: boolean;
