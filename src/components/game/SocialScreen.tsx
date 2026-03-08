@@ -753,9 +753,12 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
 
   const sendTradeRequest = async () => {
     if (!tradeOffer || !tradeWant || !clanId || !user) return;
+    if (tradeOffer === tradeWant) { toast.error("Can't trade a card for itself!"); return; }
     const offered = allCards.find(c => c.id === tradeOffer);
     const wanted = allCards.find(c => c.id === tradeWant);
     if (!offered || !wanted) return;
+    const offerEntry = getCardEntry(tradeOffer);
+    if (offerEntry.count <= 1) { toast.error("You need at least 2 of this card to trade!"); return; }
     setSending(true);
     await supabase.from('clan_messages').insert({
       clan_id: clanId,
@@ -771,6 +774,26 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
     setTradeWant('');
     setSending(false);
     toast.success('Trade request posted!');
+  };
+  
+  const acceptTrade = (msg: ClanMsg) => {
+    if (!msg.trade_card_offered || !msg.trade_card_wanted) return;
+    if (msg.user_id === user?.id) { toast.error("Can't accept your own trade!"); return; }
+    const offeredCard = allCards.find(c => c.id === msg.trade_card_offered);
+    const wantedCard = allCards.find(c => c.id === msg.trade_card_wanted);
+    if (!offeredCard || !wantedCard) return;
+    
+    // The acceptor needs to have the "wanted" card (what the poster wants)
+    const myWantedEntry = getCardEntry(msg.trade_card_wanted);
+    if (myWantedEntry.count <= 1) { toast.error(`You need at least 2 ${wantedCard.name} to trade!`); return; }
+    
+    // Execute trade: acceptor gives wanted card, receives offered card
+    removeCards(msg.trade_card_wanted, 1);
+    addCards(msg.trade_card_offered, 1);
+    
+    // Grant XP for trading
+    setProfile((p: any) => ({ ...p, xp: p.xp + 10 }));
+    toast.success(`Trade complete! Got ${offeredCard.emoji} ${offeredCard.name}, gave ${wantedCard.emoji} ${wantedCard.name}`);
   };
 
   const sendCardRequest = async () => {
