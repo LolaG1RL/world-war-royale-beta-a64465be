@@ -1,14 +1,16 @@
 import { useGame } from '@/context/GameContext';
 import { allCards } from '@/data/cards';
 import CardComponent from './CardComponent';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { GameCard } from '@/data/cards';
 import { allEmotes, getOwnedEmotes, getEquippedEmotes, setEquippedEmotes } from '@/data/emotes';
 import { BottomNav } from './ShopScreen';
+import { getCardEntry, getUpgradeRequirements, canUpgrade, upgradeCard, addCards } from '@/data/cardInventory';
+import { toast } from 'sonner';
 
 const CardCollection = () => {
-  const { deck, setDeck, setScreen, setActiveTab } = useGame();
+  const { deck, setDeck, setScreen, setActiveTab, profile, setProfile } = useGame();
   const [selectedCard, setSelectedCard] = useState<GameCard | null>(null);
   const [filter, setFilter] = useState<'all' | 'troop' | 'spell' | 'building'>('all');
   const [deckSlot, setDeckSlot] = useState(0);
@@ -16,6 +18,7 @@ const CardCollection = () => {
   const [mainTab, setMainTab] = useState<'cards' | 'emotes'>('cards');
   const [ownedEmotes] = useState(() => getOwnedEmotes());
   const [equipped, setEquipped] = useState(() => getEquippedEmotes());
+  const [, forceUpdate] = useState(0);
 
   const filtered = filter === 'all' ? allCards : allCards.filter(c => c.type === filter);
   const isInDeck = (card: GameCard) => decks[deckSlot].some(d => d.id === card.id);
@@ -42,6 +45,15 @@ const CardCollection = () => {
     }
     setEquipped(next);
     setEquippedEmotes(next);
+  };
+
+  const handleUpgrade = (card: GameCard) => {
+    if (!canUpgrade(card.id, card.rarity, profile.gold)) return;
+    const result = upgradeCard(card.id, card.rarity);
+    if (!result) return;
+    setProfile(p => ({ ...p, gold: p.gold - result.goldCost }));
+    toast.success(`${card.name} upgraded to Level ${result.newLevel}!`);
+    forceUpdate(n => n + 1);
   };
 
   const currentDeck = decks[deckSlot];
@@ -118,83 +130,132 @@ const CardCollection = () => {
           {/* Card grid */}
           <div className="flex-1 overflow-y-auto p-2 bg-[hsl(220,20%,10%)]">
             <div className="grid grid-cols-4 gap-1.5">
-              {filtered.map(card => (
-                <motion.div
-                  key={card.id}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setSelectedCard(card)}
-                  className={`${isInDeck(card) ? 'ring-2 ring-primary rounded-lg' : ''}`}
-                >
-                  <CardComponent card={card} size="md" showLevel showCount />
-                </motion.div>
-              ))}
+              {filtered.map(card => {
+                const entry = getCardEntry(card.id);
+                const enrichedCard = { ...card, level: entry.level, count: entry.count };
+                return (
+                  <motion.div
+                    key={card.id}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setSelectedCard(enrichedCard)}
+                    className={`relative ${isInDeck(card) ? 'ring-2 ring-primary rounded-lg' : ''}`}
+                  >
+                    <CardComponent card={enrichedCard} size="md" showLevel showCount />
+                    {canUpgrade(card.id, card.rarity, profile.gold) && (
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-hp-green rounded-full flex items-center justify-center z-10 animate-pulse">
+                        <span className="text-[8px] font-black text-foreground">⬆</span>
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Card detail modal */}
-          {selectedCard && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="absolute inset-0 bg-[hsl(0,0%,0%,0.85)] backdrop-blur-sm z-50 flex items-center justify-center p-4"
-              onClick={() => setSelectedCard(null)}
-            >
+          {/* Card detail modal with upgrade */}
+          <AnimatePresence>
+            {selectedCard && (
               <motion.div
-                initial={{ scale: 0.8, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                className="bg-card border border-border rounded-2xl p-5 max-w-xs w-full shadow-2xl"
-                onClick={e => e.stopPropagation()}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-[hsl(0,0%,0%,0.85)] backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                onClick={() => setSelectedCard(null)}
               >
-                <div className="flex justify-center mb-3">
-                  <CardComponent card={selectedCard} size="lg" showElixir showLevel />
-                </div>
-                <h3 className="font-display font-bold text-foreground text-lg text-center">{selectedCard.name}</h3>
-                <div className="flex items-center justify-center gap-2 mt-1">
-                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
-                    selectedCard.rarity === 'common' ? 'bg-common/20 text-common' :
-                    selectedCard.rarity === 'rare' ? 'bg-[hsl(210,60%,50%,0.2)] text-[hsl(210,60%,60%)]' :
-                    selectedCard.rarity === 'epic' ? 'bg-epic/20 text-epic' :
-                    selectedCard.rarity === 'legendary' ? 'bg-legendary/20 text-legendary' :
-                    'bg-[hsl(340,60%,50%,0.2)] text-[hsl(340,60%,60%)]'
-                  }`}>{selectedCard.rarity}</span>
-                  <span className="text-[10px] text-muted-foreground">• {selectedCard.era}</span>
-                </div>
-                <p className="text-foreground/80 text-xs text-center mt-3 leading-relaxed">{selectedCard.description}</p>
-                <div className="grid grid-cols-3 gap-2 mt-3">
-                  {selectedCard.hp && (
-                    <div className="bg-muted rounded-lg p-2 text-center">
-                      <div className="text-[8px] text-muted-foreground uppercase">Hitpoints</div>
-                      <div className="text-sm font-bold text-hp-green">{selectedCard.hp}</div>
-                    </div>
-                  )}
-                  <div className="bg-muted rounded-lg p-2 text-center">
-                    <div className="text-[8px] text-muted-foreground uppercase">Damage</div>
-                    <div className="text-sm font-bold text-accent">{selectedCard.damage}</div>
-                  </div>
-                  <div className="bg-muted rounded-lg p-2 text-center">
-                    <div className="text-[8px] text-muted-foreground uppercase">Elixir</div>
-                    <div className="text-sm font-bold text-elixir">{selectedCard.elixir}</div>
-                  </div>
-                </div>
-                <div className="mt-3 bg-muted rounded-lg p-2">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[9px] text-muted-foreground">Level {selectedCard.level}</span>
-                    <span className="text-[9px] text-muted-foreground">{selectedCard.count}/{selectedCard.maxCount}</span>
-                  </div>
-                  <div className="h-2 bg-[hsl(0,0%,0%,0.3)] rounded-full overflow-hidden">
-                    <div className="h-full bg-primary rounded-full" style={{ width: `${(selectedCard.count / selectedCard.maxCount) * 100}%` }} />
-                  </div>
-                </div>
-                <button
-                  onClick={() => { toggleDeck(selectedCard); setSelectedCard(null); }}
-                  className={`w-full mt-3 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider ${isInDeck(selectedCard) ? 'bg-accent text-accent-foreground' : currentDeck.length < 8 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground cursor-not-allowed'}`}
-                  disabled={!isInDeck(selectedCard) && currentDeck.length >= 8}
+                <motion.div
+                  initial={{ scale: 0.8, y: 20 }}
+                  animate={{ scale: 1, y: 0 }}
+                  className="bg-card border border-border rounded-2xl p-5 max-w-xs w-full shadow-2xl"
+                  onClick={e => e.stopPropagation()}
                 >
-                  {isInDeck(selectedCard) ? 'Remove from Deck' : 'Add to Deck'}
-                </button>
+                  {(() => {
+                    const entry = getCardEntry(selectedCard.id);
+                    const req = getUpgradeRequirements(selectedCard.id, selectedCard.rarity);
+                    const canUp = canUpgrade(selectedCard.id, selectedCard.rarity, profile.gold);
+                    const enriched = { ...selectedCard, level: entry.level, count: entry.count };
+                    
+                    return (
+                      <>
+                        <div className="flex justify-center mb-3">
+                          <CardComponent card={enriched} size="lg" showElixir showLevel />
+                        </div>
+                        <h3 className="font-display font-bold text-foreground text-lg text-center">{enriched.name}</h3>
+                        <div className="flex items-center justify-center gap-2 mt-1">
+                          <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                            enriched.rarity === 'common' ? 'bg-common/20 text-common' :
+                            enriched.rarity === 'rare' ? 'bg-[hsl(210,60%,50%,0.2)] text-[hsl(210,60%,60%)]' :
+                            enriched.rarity === 'epic' ? 'bg-epic/20 text-epic' :
+                            enriched.rarity === 'legendary' ? 'bg-legendary/20 text-legendary' :
+                            'bg-[hsl(340,60%,50%,0.2)] text-[hsl(340,60%,60%)]'
+                          }`}>{enriched.rarity}</span>
+                          <span className="text-[10px] text-muted-foreground">• {enriched.era}</span>
+                        </div>
+                        <p className="text-foreground/80 text-xs text-center mt-3 leading-relaxed">{enriched.description}</p>
+                        <div className="grid grid-cols-3 gap-2 mt-3">
+                          {enriched.hp && (
+                            <div className="bg-muted rounded-lg p-2 text-center">
+                              <div className="text-[8px] text-muted-foreground uppercase">Hitpoints</div>
+                              <div className="text-sm font-bold text-hp-green">{enriched.hp}</div>
+                            </div>
+                          )}
+                          <div className="bg-muted rounded-lg p-2 text-center">
+                            <div className="text-[8px] text-muted-foreground uppercase">Damage</div>
+                            <div className="text-sm font-bold text-accent">{enriched.damage}</div>
+                          </div>
+                          <div className="bg-muted rounded-lg p-2 text-center">
+                            <div className="text-[8px] text-muted-foreground uppercase">Elixir</div>
+                            <div className="text-sm font-bold text-elixir">{enriched.elixir}</div>
+                          </div>
+                        </div>
+
+                        {/* Upgrade section */}
+                        <div className="mt-3 bg-muted rounded-lg p-2">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[9px] text-muted-foreground">Level {entry.level}</span>
+                            {req && !req.maxLevel ? (
+                              <span className="text-[9px] text-muted-foreground">{entry.count}/{req.cardsNeeded} cards</span>
+                            ) : (
+                              <span className="text-[9px] text-primary font-bold">MAX LEVEL</span>
+                            )}
+                          </div>
+                          {req && !req.maxLevel && (
+                            <div className="h-2 bg-[hsl(0,0%,0%,0.3)] rounded-full overflow-hidden">
+                              <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${Math.min(100, (entry.count / req.cardsNeeded) * 100)}%` }} />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Upgrade button */}
+                        {req && !req.maxLevel && (
+                          <button
+                            onClick={() => {
+                              handleUpgrade(enriched);
+                              const newEntry = getCardEntry(selectedCard.id);
+                              setSelectedCard({ ...selectedCard, level: newEntry.level, count: newEntry.count });
+                            }}
+                            disabled={!canUp}
+                            className={`w-full mt-2 py-2 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 ${
+                              canUp ? 'bg-hp-green text-foreground' : 'bg-muted text-muted-foreground cursor-not-allowed'
+                            }`}
+                          >
+                            Upgrade 💰 {req.goldNeeded.toLocaleString()}
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => { toggleDeck(enriched); setSelectedCard(null); }}
+                          className={`w-full mt-2 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider ${isInDeck(enriched) ? 'bg-accent text-accent-foreground' : currentDeck.length < 8 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground cursor-not-allowed'}`}
+                          disabled={!isInDeck(enriched) && currentDeck.length >= 8}
+                        >
+                          {isInDeck(enriched) ? 'Remove from Deck' : 'Add to Deck'}
+                        </button>
+                      </>
+                    );
+                  })()}
+                </motion.div>
               </motion.div>
-            </motion.div>
-          )}
+            )}
+          </AnimatePresence>
         </>
       ) : (
         /* Emotes tab */
