@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '@/context/GameContext';
+import { useSettings } from '@/context/SettingsContext';
+import { t } from '@/lib/i18n';
 import { getPlayerBanner } from '@/data/banners';
 import BattleBannerDisplay from './BattleBannerDisplay';
 
 /** Pre-battle intro: player banner slides from bottom-left, opponent from top-right */
 const BattleIntro = ({ onComplete }: { onComplete: () => void }) => {
   const { profile, clan } = useGame();
+  const { language } = useSettings();
   const [visible, setVisible] = useState(true);
   const onCompleteRef = useRef(onComplete);
   const hasCompletedRef = useRef(false);
@@ -105,7 +108,7 @@ const BattleIntro = ({ onComplete }: { onComplete: () => void }) => {
             transition={{ delay: 2.5, duration: 0.5 }}
             className="absolute bottom-8 left-0 right-0 text-center"
           >
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Battle starting...</span>
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{t('battle.starting', language)}</span>
           </motion.div>
         </motion.div>
       )}

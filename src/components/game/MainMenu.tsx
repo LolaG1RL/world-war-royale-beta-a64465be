@@ -275,7 +275,7 @@ const MainMenu = () => {
               <div className="flex items-center justify-between px-4 py-3 bg-[hsl(220,25%,12%)] border-b border-border">
                 <button onClick={() => setShowLevelModal(false)} className="text-muted-foreground text-sm font-bold">✕</button>
                 <h3 className="font-display font-bold text-foreground text-sm">{t('menu.level_rewards', language)}</h3>
-                <div className="text-[10px] font-bold text-primary">Lvl {profile.level}</div>
+                <div className="text-[10px] font-bold text-primary">{t('menu.lvl', language)} {profile.level}</div>
               </div>
 
               {/* XP bar */}
@@ -361,9 +361,10 @@ const MainMenu = () => {
         {revealItems && (
           <RevealScreen
             items={revealItems}
-            title="⬆️ Level Reward!"
-            subtitle="You received:"
+            title={t('menu.level_reward_title', language)}
+            subtitle={t('menu.you_received', language)}
             onClose={() => setRevealItems(null)}
+            lang={language}
           />
         )}
       </AnimatePresence>

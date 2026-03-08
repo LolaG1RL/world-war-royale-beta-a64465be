@@ -19,7 +19,7 @@ const ProfileScreen = () => {
     if (playerTag) {
       navigator.clipboard.writeText(playerTag);
       setCopied(true);
-      toast.success('Player tag copied!');
+      toast.success(t('profile.tag_copied', language));
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -36,12 +36,12 @@ const ProfileScreen = () => {
   ];
 
   const badges = [
-    { name: 'Grand Champion', emoji: '🏆', earned: false },
-    { name: 'War Hero', emoji: '⚔️', earned: profile.warDayWins > 0 },
-    { name: 'Card Master', emoji: '🃏', earned: profile.clanCardsCollected > 0 },
-    { name: 'Generous Donor', emoji: '📦', earned: profile.totalDonations > 0 },
-    { name: 'Legendary Player', emoji: '🌟', earned: profile.maxTrophies >= 4000 },
-    { name: 'Speed Demon', emoji: '⚡', earned: profile.wins >= 100 },
+    { name: t('profile.badge.grand_champion', language), emoji: '🏆', earned: false },
+    { name: t('profile.badge.war_hero', language), emoji: '⚔️', earned: profile.warDayWins > 0 },
+    { name: t('profile.badge.card_master', language), emoji: '🃏', earned: profile.clanCardsCollected > 0 },
+    { name: t('profile.badge.generous_donor', language), emoji: '📦', earned: profile.totalDonations > 0 },
+    { name: t('profile.badge.legendary_player', language), emoji: '🌟', earned: profile.maxTrophies >= 4000 },
+    { name: t('profile.badge.speed_demon', language), emoji: '⚡', earned: profile.wins >= 100 },
   ];
 
   return (
@@ -63,7 +63,7 @@ const ProfileScreen = () => {
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="text-base font-display font-bold text-foreground">{profile.name}</span>
-                <span className="bg-[hsl(210,60%,40%)] px-1.5 py-0.5 rounded text-[8px] font-bold text-foreground">Lvl {profile.level}</span>
+                <span className="bg-[hsl(210,60%,40%)] px-1.5 py-0.5 rounded text-[8px] font-bold text-foreground">{t('menu.lvl', language)} {profile.level}</span>
               </div>
               <button
                 onClick={copyTag}
@@ -81,19 +81,19 @@ const ProfileScreen = () => {
           {/* XP bar */}
           <div className="mt-3">
             <div className="flex items-center justify-between text-[8px] text-muted-foreground mb-0.5">
-              <span>Level {profile.level}</span>
+              <span>{t('common.level', language)} {profile.level}</span>
               <span>{profile.xp}/{profile.maxXp} XP</span>
             </div>
             <div className="h-2 bg-muted rounded-full overflow-hidden">
               <div className="h-full bg-[hsl(210,60%,50%)] rounded-full" style={{ width: `${(profile.xp / profile.maxXp) * 100}%` }} />
             </div>
           </div>
-          <p className="text-[8px] text-muted-foreground mt-2">Share your player tag so friends can add you!</p>
+          <p className="text-[8px] text-muted-foreground mt-2">{t('profile.share_tag', language)}</p>
         </div>
 
         {/* Stats grid */}
         <div className="p-3">
-          <div className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider mb-2">Battle Statistics</div>
+          <div className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider mb-2">{t('profile.battle_stats', language)}</div>
           <div className="grid grid-cols-2 gap-1.5">
             {stats.map((stat, i) => (
               <div key={i} className="bg-card border border-border rounded-lg p-2 flex items-center gap-2">
@@ -110,7 +110,7 @@ const ProfileScreen = () => {
         {/* Win rate */}
         <div className="px-3 pb-3">
           <div className="bg-card border border-border rounded-lg p-3">
-            <div className="text-[10px] font-bold text-foreground mb-2">Win Rate</div>
+            <div className="text-[10px] font-bold text-foreground mb-2">{t('profile.win_rate', language)}</div>
             <div className="flex items-center gap-2">
               <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden flex">
                 {(profile.wins + profile.losses) > 0 ? (
@@ -129,7 +129,7 @@ const ProfileScreen = () => {
 
         {/* Badges */}
         <div className="px-3 pb-3">
-          <div className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider mb-2">Badges</div>
+          <div className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider mb-2">{t('profile.badges', language)}</div>
           <div className="grid grid-cols-3 gap-1.5">
             {badges.map((badge, i) => (
               <div key={i} className={`bg-card border rounded-lg p-2 text-center ${badge.earned ? 'border-primary/30' : 'border-border opacity-40'}`}>
@@ -142,7 +142,7 @@ const ProfileScreen = () => {
 
         {/* Favorite deck */}
         <div className="px-3 pb-3">
-          <div className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider mb-2">Favorite Deck</div>
+          <div className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider mb-2">{t('profile.fav_deck', language)}</div>
           <div className="bg-card border border-border rounded-lg p-2">
             <div className="grid grid-cols-8 gap-0.5">
               {deck.map(card => (

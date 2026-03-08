@@ -377,7 +377,7 @@ const SocialScreen = () => {
   const removeFriend = async (friendId: string) => {
     await supabase.from('friends').delete().eq('id', friendId);
     setFriends(prev => prev.filter(f => f.id !== friendId));
-    toast.success('Friend removed');
+    toast.success(t('social.friend_removed', language));
   };
 
   // Detect user country on mount
@@ -480,12 +480,12 @@ const SocialScreen = () => {
                 <div className="w-full space-y-3">
                   <div className="flex items-center gap-2">
                     <button onClick={() => setShowClanSearch(false)} className="text-muted-foreground"><ChevronLeft className="w-4 h-4" /></button>
-                    <h3 className="text-sm font-display font-bold text-foreground">Search Clans</h3>
+                    <h3 className="text-sm font-display font-bold text-foreground">{t('social.search_clans', language)}</h3>
                   </div>
                   <div className="flex gap-2">
                     <input
                       className="flex-1 bg-secondary rounded-lg px-3 py-2 text-xs text-foreground border border-border"
-                      placeholder="Clan name..."
+                      placeholder={t('social.clan_name_placeholder', language)}
                       value={clanSearchQuery}
                       onChange={e => setClanSearchQuery(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && searchClans()}
@@ -495,7 +495,7 @@ const SocialScreen = () => {
                     </button>
                   </div>
                   {clanSearchResults.length === 0 && !searchingClans && (
-                    <div className="text-center text-xs text-muted-foreground py-6">Search for clans to join</div>
+                    <div className="text-center text-xs text-muted-foreground py-6">{t('social.search_join', language)}</div>
                   )}
                   <div className="space-y-2">
                     {clanSearchResults.map(c => (
@@ -511,7 +511,7 @@ const SocialScreen = () => {
                           disabled={joiningClan === c.id}
                           className="bg-primary text-primary-foreground px-3 py-1.5 rounded-lg text-[10px] font-bold disabled:opacity-50"
                         >
-                          {joiningClan === c.id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Join'}
+                          {joiningClan === c.id ? <Loader2 className="w-3 h-3 animate-spin" /> : t('social.join', language)}
                         </button>
                       </div>
                     ))}
@@ -519,8 +519,8 @@ const SocialScreen = () => {
                 </div>
               ) : showCreateClan ? (
                 <div className="w-full max-w-xs space-y-3">
-                  <h3 className="text-sm font-display font-bold text-foreground text-center">Create a Clan</h3>
-                  <p className="text-[10px] text-muted-foreground text-center">Costs 💎 100 gems</p>
+                  <h3 className="text-sm font-display font-bold text-foreground text-center">{t('social.create_clan', language)}</h3>
+                  <p className="text-[10px] text-muted-foreground text-center">{t('social.costs_gems', language)}</p>
 
                   <div className="flex justify-center py-2">
                     <ClanFlag bannerColor={bannerColor} bannerShape={bannerShape} iconId={iconId} iconColor={iconColor} size="lg" />
@@ -530,13 +530,13 @@ const SocialScreen = () => {
                     <>
                       <input
                         className="w-full bg-secondary rounded-lg px-3 py-2 text-xs text-foreground border border-border"
-                        placeholder="Clan name (3-15 chars)"
+                        placeholder={t('social.clan_name_input', language)}
                         value={clanName}
                         onChange={e => setClanName(e.target.value.substring(0, 15))}
                       />
                       <textarea
                         className="w-full bg-secondary rounded-lg px-3 py-2 text-xs text-foreground border border-border resize-none"
-                        placeholder="Description (optional)"
+                        placeholder={t('social.description_optional', language)}
                         rows={2}
                         value={clanDescription}
                         onChange={e => setClanDescription(e.target.value.substring(0, 100))}
@@ -546,13 +546,13 @@ const SocialScreen = () => {
                         disabled={clanName.trim().length < 3}
                         className="w-full py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold disabled:opacity-40 flex items-center justify-center gap-1"
                       >
-                        Customize Flag <ChevronRight className="w-3 h-3" />
+                        {t('social.customize_flag', language)} <ChevronRight className="w-3 h-3" />
                       </button>
                       <button
                         onClick={() => { setShowCreateClan(false); setCustomizeStep('info'); }}
                         className="w-full py-2 bg-secondary text-muted-foreground rounded-lg text-xs font-bold border border-border"
                       >
-                        Cancel
+                        {t('shop.cancel', language)}
                       </button>
                     </>
                   )}
@@ -560,7 +560,7 @@ const SocialScreen = () => {
                   {customizeStep === 'flag' && (
                     <>
                       <div>
-                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Banner Shape</div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">{t('social.banner_shape', language)}</div>
                         <div className="flex gap-2 flex-wrap">
                           {BANNER_SHAPES.map(shape => (
                             <button key={shape.id} onClick={() => setBannerShape(shape.id)}
@@ -573,7 +573,7 @@ const SocialScreen = () => {
                         </div>
                       </div>
                       <div>
-                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Banner Color</div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">{t('social.banner_color', language)}</div>
                         <div className="flex flex-wrap gap-1.5">
                           {BANNER_COLORS.map(c => (
                             <button key={c} onClick={() => setBannerColor(c)}
@@ -583,7 +583,7 @@ const SocialScreen = () => {
                         </div>
                       </div>
                       <div>
-                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Icon</div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">{t('social.icon', language)}</div>
                         <div className="flex flex-wrap gap-1">
                           {CLAN_ICONS.map(({ id, Icon }) => (
                             <button key={id} onClick={() => setIconId(id)}
@@ -594,7 +594,7 @@ const SocialScreen = () => {
                         </div>
                       </div>
                       <div>
-                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Icon Color</div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">{t('social.icon_color', language)}</div>
                         <div className="flex flex-wrap gap-1.5">
                           {ICON_COLORS.map(c => (
                             <button key={c} onClick={() => setIconColor(c)}
@@ -606,15 +606,15 @@ const SocialScreen = () => {
                       <div className="flex gap-2 pt-1">
                         <button onClick={() => setCustomizeStep('info')}
                           className="flex-1 py-2 bg-secondary text-muted-foreground rounded-lg text-xs font-bold border border-border flex items-center justify-center gap-1">
-                          <ChevronLeft className="w-3 h-3" />Back
+                          <ChevronLeft className="w-3 h-3" />{t('common.back', language)}
                         </button>
                         <button onClick={handleCreateClan} disabled={profile.gems < 100 || clanName.trim().length < 3}
                           className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold disabled:opacity-40">
-                          Create (💎 100)
+                          {t('social.create_cost', language)}
                         </button>
                       </div>
                       {profile.gems < 100 && (
-                        <p className="text-[9px] text-destructive text-center">Not enough gems! You have {profile.gems}.</p>
+                        <p className="text-[9px] text-destructive text-center">{t('social.not_enough_gems', language)} {t('social.you_have', language)} {profile.gems}.</p>
                       )}
                     </>
                   )}
@@ -622,16 +622,16 @@ const SocialScreen = () => {
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center">
                   <Shield className="w-12 h-12 text-muted-foreground/30 mb-3" />
-                  <div className="text-sm font-display font-bold text-foreground">No Clan</div>
-                  <div className="text-xs text-muted-foreground text-center mt-1">Join or create a clan to battle together!</div>
+                   <div className="text-sm font-display font-bold text-foreground">{t('social.no_clan', language)}</div>
+                  <div className="text-xs text-muted-foreground text-center mt-1">{t('social.join_create', language)}</div>
                   <div className="flex gap-2 mt-4">
                     <button onClick={() => { setShowClanSearch(true); searchClans(); }}
                       className="px-6 py-2 bg-secondary text-muted-foreground rounded-lg text-xs font-bold border border-border flex items-center gap-1">
-                      <Search className="w-3 h-3" />Search Clans
+                      <Search className="w-3 h-3" />{t('social.search_clans', language)}
                     </button>
                     <button onClick={() => setShowCreateClan(true)}
                       className="px-6 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold flex items-center gap-1">
-                      <Plus className="w-3 h-3" />Create (💎 100)
+                      <Plus className="w-3 h-3" />{t('social.create_cost', language)}
                     </button>
                   </div>
                 </div>
@@ -647,7 +647,7 @@ const SocialScreen = () => {
         <div className="flex-1 overflow-y-auto">
           {/* Add friend input */}
           <div className="p-3 border-b border-border bg-[hsl(220,20%,13%)]">
-            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Add by Player Tag</div>
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t('social.add_by_tag', language)}</div>
             <div className="flex items-center gap-2">
               <input
                 className="flex-1 bg-secondary rounded-lg px-3 py-2 text-xs text-foreground border border-border"
@@ -659,14 +659,14 @@ const SocialScreen = () => {
               <button onClick={addFriend} disabled={addingFriend || !friendTag.trim()}
                 className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-50 flex items-center gap-1">
                 {addingFriend ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserPlus className="w-3 h-3" />}
-                Add
+                {t('social.add_friend', language)}
               </button>
             </div>
           </div>
 
           {/* Your tag */}
           <div className="px-3 py-2 border-b border-border/50 bg-[hsl(220,20%,11%)]">
-            <div className="text-[8px] text-muted-foreground">Your tag: <span className="text-primary font-bold">{playerTag}</span></div>
+            <div className="text-[8px] text-muted-foreground">{t('social.your_tag', language)}: <span className="text-primary font-bold">{playerTag}</span></div>
           </div>
 
           {/* Friends list */}
@@ -675,7 +675,7 @@ const SocialScreen = () => {
           ) : friends.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8">
               <UserPlus className="w-10 h-10 text-muted-foreground/30 mb-2" />
-              <div className="text-xs text-muted-foreground">No friends yet. Add someone by their tag!</div>
+              <div className="text-xs text-muted-foreground">{t('social.no_friends', language)}</div>
             </div>
           ) : (
             friends.map((f, i) => (
@@ -702,7 +702,7 @@ const SocialScreen = () => {
           <div className="flex bg-[hsl(220,20%,12%)] border-b border-border">
             {(['local', 'worldwide', 'top100'] as const).map(st => (
               <button key={st} onClick={() => setGlobalSubTab(st)} className={`flex-1 py-1.5 text-[9px] font-bold uppercase tracking-wider ${globalSubTab === st ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
-                {st === 'local' ? `🏠 Local` : st === 'worldwide' ? '🌍 Worldwide' : '👑 Top #100'}
+                {st === 'local' ? t('social.local', language) : st === 'worldwide' ? t('social.worldwide', language) : t('social.top100', language)}
               </button>
             ))}
           </div>
@@ -710,13 +710,13 @@ const SocialScreen = () => {
           {/* Location info */}
           {globalSubTab === 'local' && (
             <div className="px-3 py-2 bg-[hsl(220,20%,11%)] border-b border-border/50 flex items-center justify-between">
-              <div className="text-[9px] text-muted-foreground">📍 Your location: <span className="text-foreground font-bold">{userCountry || 'Detecting...'}</span></div>
-              {myLocalRank && <div className="text-[9px] text-primary font-bold">Your rank: #{myLocalRank}</div>}
+              <div className="text-[9px] text-muted-foreground">📍 {t('social.your_location', language)}: <span className="text-foreground font-bold">{userCountry || t('social.detecting', language)}</span></div>
+              {myLocalRank && <div className="text-[9px] text-primary font-bold">{t('social.your_rank', language)}: #{myLocalRank}</div>}
             </div>
           )}
           {globalSubTab === 'worldwide' && myWorldRank && (
             <div className="px-3 py-2 bg-[hsl(220,20%,11%)] border-b border-border/50">
-              <div className="text-[9px] text-primary font-bold">🌍 Your worldwide rank: #{myWorldRank}</div>
+              <div className="text-[9px] text-primary font-bold">🌍 {t('social.your_rank', language)}: #{myWorldRank}</div>
             </div>
           )}
 
@@ -726,7 +726,7 @@ const SocialScreen = () => {
               onClick={() => setShowRewardsPanel(!showRewardsPanel)}
               className="mx-3 mt-2 mb-1 px-3 py-2 bg-gradient-to-r from-[hsl(38,80%,20%)] to-[hsl(38,60%,15%)] border border-primary/30 rounded-lg text-[9px] font-bold text-primary flex items-center justify-between"
             >
-              <span>🏅 {globalSubTab === 'top100' ? 'Top 100 Rewards — Exclusive Banners & Emotes' : 'Top 10 National Rewards'}</span>
+              <span>🏅 {globalSubTab === 'top100' ? t('social.top100_rewards', language) : t('social.top10_rewards', language)}</span>
               <span className="text-[8px]">{showRewardsPanel ? '▲' : '▼'}</span>
             </button>
           )}
@@ -753,7 +753,7 @@ const SocialScreen = () => {
                     </div>
                   ))}
                   {globalSubTab === 'top100' && (
-                    <div className="text-[8px] text-muted-foreground text-center py-1">...and 80 more ranked rewards</div>
+                    <div className="text-[8px] text-muted-foreground text-center py-1">{t('social.more_rewards', language)}</div>
                   )}
                 </div>
               </motion.div>
@@ -773,7 +773,7 @@ const SocialScreen = () => {
                 <div className="flex flex-col items-center justify-center py-8">
                   <Trophy className="w-10 h-10 text-muted-foreground/30 mb-2" />
                   <div className="text-xs text-muted-foreground">
-                    {globalSubTab === 'local' ? 'No players from your country yet' : 'No players yet'}
+                    {globalSubTab === 'local' ? t('social.no_local_players', language) : t('social.no_players', language)}
                   </div>
                 </div>
               );
@@ -799,7 +799,7 @@ const SocialScreen = () => {
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-bold text-foreground truncate">
-                        {entry.username} {isYou && <span className="text-[8px] text-primary">(You)</span>}
+                        {entry.username} {isYou && <span className="text-[8px] text-primary">({t('common.you', language)})</span>}
                       </div>
                       <div className="text-[8px] text-muted-foreground">
                         {entry.player_tag} • {entry.wins}W
@@ -1049,7 +1049,7 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
               <ClanFlag bannerColor={clan.bannerColor} bannerShape={clan.bannerShape} iconId={clan.iconId} iconColor={clan.iconColor} size="md" />
               <div className="flex-1">
                 <div className="text-sm font-display font-bold text-foreground">{clan.name}</div>
-                <div className="text-[9px] text-muted-foreground">{clan.tag} • {clan.members}/{clan.maxMembers} members</div>
+                <div className="text-[9px] text-muted-foreground">{clan.tag} • {clan.members}/{clan.maxMembers} {t('social.members', language)}</div>
                 <div className="flex items-center gap-3 mt-1">
                   <span className="text-[9px] text-primary font-bold">🏆 {clan.trophies?.toLocaleString()}</span>
                 </div>
@@ -1058,13 +1058,13 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
             <p className="text-[9px] text-muted-foreground mt-2 italic">"{clan.description}"</p>
             <div className="flex gap-2 mt-2">
               <button onClick={() => setChatMode('chat')} className="flex-1 py-1.5 bg-primary/20 text-primary rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
-                <MessageCircle className="w-3 h-3" />Chat
+                <MessageCircle className="w-3 h-3" />{t('social.chat', language)}
               </button>
               <button onClick={() => setScreen('river-race')} className="flex-1 py-1.5 bg-[hsl(200,40%,20%)] text-[hsl(200,70%,65%)] rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
-                <SwordsIcon className="w-3 h-3" />River Race
+                <SwordsIcon className="w-3 h-3" />{t('battle.river_race', language)}
               </button>
               <button onClick={leaveClan} className="flex-1 py-1.5 bg-destructive/20 text-destructive rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
-                <X className="w-3 h-3" />Leave
+                <X className="w-3 h-3" />{t('social.leave', language)}
               </button>
             </div>
           </div>
@@ -1075,7 +1075,7 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
               <div className="w-2 h-2 rounded-full bg-hp-green" />
               <div className="flex-1">
                 <div className="text-xs font-bold text-foreground">{profile.name}</div>
-                <div className="text-[8px] text-primary">Leader</div>
+                <div className="text-[8px] text-primary">{t('social.leader', language)}</div>
               </div>
               <div className="text-right">
                 <div className="text-[10px] font-bold text-foreground flex items-center gap-1 justify-end">🏆 {profile.trophies}</div>
@@ -1091,10 +1091,10 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
             <MessageCircle className="w-4 h-4 text-primary" />
             <span className="text-xs font-bold text-foreground flex-1">{clan.name} Chat</span>
             <button onClick={() => { setShowTrade(!showTrade); setShowRequest(false); }} className="bg-primary/20 text-primary px-2 py-1 rounded text-[9px] font-bold flex items-center gap-1">
-              <Repeat className="w-3 h-3" />Trade
+              <Repeat className="w-3 h-3" />{t('social.trade', language)}
             </button>
             <button onClick={() => { setShowRequest(!showRequest); setShowTrade(false); }} className="bg-hp-green/20 text-hp-green px-2 py-1 rounded text-[9px] font-bold flex items-center gap-1">
-              <Gift className="w-3 h-3" />Request
+              <Gift className="w-3 h-3" />{t('social.request', language)}
             </button>
           </div>
 
@@ -1104,13 +1104,13 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                 className="bg-[hsl(220,20%,11%)] border-b border-border overflow-hidden">
                 <div className="p-3 space-y-2">
-                  <div className="text-[9px] font-bold text-primary uppercase tracking-wider">🔄 Post a Trade Request</div>
+                  <div className="text-[9px] font-bold text-primary uppercase tracking-wider">{t('social.post_trade', language)}</div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[8px] text-muted-foreground">You offer (owned):</label>
+                      <label className="text-[8px] text-muted-foreground">{t('social.you_offer', language)}</label>
                       <select value={tradeOffer} onChange={e => setTradeOffer(e.target.value)}
                         className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-[9px] text-foreground">
-                        <option value="">Select card...</option>
+                         <option value="">{t('social.select_card', language)}</option>
                         {ownedCards.map(c => {
                           const entry = getCardEntry(c.id);
                           return <option key={c.id} value={c.id}>{c.emoji} {c.name} — x{entry.count}</option>;
@@ -1118,20 +1118,20 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                       </select>
                     </div>
                     <div>
-                      <label className="text-[8px] text-muted-foreground">You want:</label>
+                      <label className="text-[8px] text-muted-foreground">{t('social.you_want', language)}</label>
                       <select value={tradeWant} onChange={e => setTradeWant(e.target.value)}
                         className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-[9px] text-foreground">
-                        <option value="">Select card...</option>
+                         <option value="">{t('social.select_card', language)}</option>
                         {allCards.filter(c => c.id !== tradeOffer).map(c => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
                       </select>
                     </div>
                   </div>
                   {tradeOffer === tradeWant && tradeOffer && (
-                    <div className="text-[9px] text-destructive">⚠️ Can't trade a card for itself!</div>
+                    <div className="text-[9px] text-destructive">⚠️ {t('social.cant_trade_self', language)}</div>
                   )}
                   <button onClick={sendTradeRequest} disabled={!tradeOffer || !tradeWant || tradeOffer === tradeWant || sending}
                     className="w-full py-1.5 bg-primary text-primary-foreground rounded-lg text-[10px] font-bold disabled:opacity-50">
-                    Post Trade Request
+                    {t('social.post_trade_btn', language)}
                   </button>
                 </div>
               </motion.div>
@@ -1144,7 +1144,7 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                 className="bg-[hsl(120,15%,11%)] border-b border-border overflow-hidden">
                 <div className="p-3 space-y-2">
-                  <div className="text-[9px] font-bold text-hp-green uppercase tracking-wider">🙏 Request a Card</div>
+                  <div className="text-[9px] font-bold text-hp-green uppercase tracking-wider">{t('social.request_card', language)}</div>
                   {!canRequest() && (
                     <div className="flex items-center gap-2">
                       <div className="text-[9px] text-destructive">⏳ Cooldown: {getRequestTimeLeft()}</div>
@@ -1158,15 +1158,15 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                         skipRequestCooldown();
                         toast.success(`Skipped cooldown for ${cost} 💎`);
                       }} className="px-2 py-0.5 bg-primary text-primary-foreground rounded text-[8px] font-bold">
-                        Skip ({getSkipCooldownCost()} 💎)
+                        {t('social.skip_cost', language)} ({getSkipCooldownCost()} 💎)
                       </button>
                     </div>
                   )}
                   <div>
-                    <label className="text-[8px] text-muted-foreground">Card to request:</label>
+                    <label className="text-[8px] text-muted-foreground">{t('social.card_to_request', language)}</label>
                     <select value={requestCardId} onChange={e => setRequestCardId(e.target.value)}
                       className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-[9px] text-foreground">
-                      <option value="">Select card...</option>
+                      <option value="">{t('social.select_card', language)}</option>
                       {requestableCards.map(c => {
                         const entry = getCardEntry(c.id);
                         return <option key={c.id} value={c.id}>{c.emoji} {c.name} ({c.rarity}){entry.count > 0 ? ` — x${entry.count}` : ''}</option>;
@@ -1178,13 +1178,13 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                     if (!card) return null;
                     return (
                       <div className="text-[8px] text-muted-foreground">
-                        Max donations/day: <span className="text-foreground font-bold">{DONATION_LIMITS[card.rarity]}</span> • 12h cooldown between requests
+                        {t('social.max_donations', language)}: <span className="text-foreground font-bold">{DONATION_LIMITS[card.rarity]}</span> • {t('social.cooldown_between', language)}
                       </div>
                     );
                   })()}
                   <button onClick={sendCardRequest} disabled={!requestCardId || sending || !canRequest()}
                     className="w-full py-1.5 bg-hp-green text-foreground rounded-lg text-[10px] font-bold disabled:opacity-50">
-                    Request Card
+                    {t('social.request_card_btn', language)}
                   </button>
                 </div>
               </motion.div>
@@ -1194,7 +1194,7 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
           {/* Chat messages */}
           <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5">
             {messages.length === 0 && (
-              <div className="text-center text-[10px] text-muted-foreground py-8">No messages yet. Say hi! 👋</div>
+              <div className="text-center text-[10px] text-muted-foreground py-8">{t('social.no_messages', language)}</div>
             )}
             {messages.map(msg => {
               const isMe = msg.user_id === user?.id;
@@ -1230,7 +1230,7 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                         onClick={() => acceptTrade(msg)}
                         className="mt-1 px-3 py-1 bg-primary/20 text-primary rounded-lg text-[9px] font-bold flex items-center gap-1 hover:bg-primary/30 transition-colors"
                       >
-                        <Repeat className="w-3 h-3" /> Accept Trade
+                        <Repeat className="w-3 h-3" /> {t('social.accept_trade', language)}
                       </button>
                     )}
                     {isRequest && msg.trade_card_wanted && (
@@ -1238,7 +1238,7 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                         onClick={() => donateCard(msg)}
                         className="mt-1 px-3 py-1 bg-hp-green/20 text-hp-green rounded-lg text-[9px] font-bold flex items-center gap-1 hover:bg-hp-green/30 transition-colors"
                       >
-                        <Gift className="w-3 h-3" /> Donate
+                        <Gift className="w-3 h-3" /> {t('social.donate', language)}
                       </button>
                     )}
                     {!isEmote && <div className="text-[7px] text-muted-foreground text-right mt-0.5">{formatTime(msg.created_at)}</div>}
@@ -1262,7 +1262,7 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                     </button>
                   ))}
                   {equippedEmotesData.length === 0 && (
-                    <div className="col-span-8 text-[9px] text-muted-foreground text-center py-2">No emotes equipped! Go to Cards → Emotes to equip some.</div>
+                    <div className="col-span-8 text-[9px] text-muted-foreground text-center py-2">{t('social.no_emotes_equipped', language)}</div>
                   )}
                 </div>
               </motion.div>
@@ -1279,7 +1279,7 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
               value={msgInput}
               onChange={e => setMsgInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && sendMessage()}
-              placeholder="Type a message..."
+              placeholder={t('social.type_message', language)}
               className="flex-1 bg-secondary border border-border rounded-lg px-3 py-2 text-[10px] text-foreground placeholder:text-muted-foreground"
             />
             <button onClick={sendMessage} disabled={!msgInput.trim() || sending}
