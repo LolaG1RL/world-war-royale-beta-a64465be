@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { useAuth } from '@/context/AuthContext';
 import { allCards, GameCard } from '@/data/cards';
@@ -87,7 +87,14 @@ const RiverRaceScreen = () => {
   const [specialMode, setSpecialMode] = useState(SPECIAL_MODES[0]);
   const [loadingClans, setLoadingClans] = useState(true);
 
-  useEffect(() => { setIsTrainingDay(dayNumber <= 3); }, [dayNumber]);
+  // Calculate day from real time
+  useEffect(() => {
+    const stored = getStoredRiverData();
+    const weekStart = stored?.weekStart || Date.now();
+    const realDay = Math.min(7, Math.floor((Date.now() - weekStart) / (1000 * 60 * 60 * 24)) + 1);
+    setDayNumber(realDay);
+    setIsTrainingDay(realDay <= 3);
+  }, []);
 
   // On mount: load clans + check for completed battle
   useEffect(() => {
@@ -243,6 +250,7 @@ const RiverRaceScreen = () => {
       boats: b,
       warDecks: wd.map(d => ({ ...d, cards: d.cards.map(c => c.id) })),
       dayNumber: day,
+      lastPlayedDay: day,
       weekStart: getStoredRiverData()?.weekStart || Date.now(),
     }));
   };
@@ -310,26 +318,15 @@ const RiverRaceScreen = () => {
     toast.success('Deck randomized!');
   };
 
-  const simulateRivals = useCallback((currentBoats: BoatData[]): BoatData[] => {
-    return currentBoats.map(b => {
-      if (b.isPlayer) return b;
-      const gain = 800 + Math.floor(Math.random() * 1200);
-      const newPos = Math.min(FINISH_LINE, b.position + gain);
-      return { ...b, position: newPos, medals: b.medals + gain, finished: newPos >= FINISH_LINE };
-    });
-  }, []);
-
-  const advanceDay = () => {
-    if (dayNumber >= 7) { toast.info('Race is over!'); return; }
-    const newDay = dayNumber + 1;
-    const newBoats = simulateRivals(boats);
-    const newDecks = warDecks.map(d => ({ ...d, usedToday: false }));
-    setDayNumber(newDay);
-    setBoats(newBoats);
-    setWarDecks(newDecks);
-    saveRaceData(newBoats, newDecks, newDay);
-    toast.success(`Day ${newDay}! ${newDay <= 3 ? '(Training Day)' : '(Battle Day)'}`);
-  };
+  // Reset deck cooldowns if day changed since last save
+  useEffect(() => {
+    const stored = getStoredRiverData();
+    if (stored?.lastPlayedDay && stored.lastPlayedDay !== dayNumber) {
+      const newDecks = warDecks.map(d => ({ ...d, usedToday: false }));
+      setWarDecks(newDecks);
+      saveRaceData(boats, newDecks, dayNumber);
+    }
+  }, [dayNumber]);
 
   // Launch a REAL battle through BattleArena
   const startBattle = (type: BattleType, deckIdx: number) => {
@@ -476,12 +473,8 @@ const RiverRaceScreen = () => {
                     <Shield className="w-3.5 h-3.5" /> Boat Defense
                   </button>
                 </div>
-
-                <button onClick={advanceDay}
-                  className="w-full py-2 bg-secondary border border-border rounded-lg text-[9px] text-muted-foreground font-bold flex items-center justify-center gap-1">
-                  <Clock className="w-3 h-3" /> Advance to Day {dayNumber + 1}
-                </button>
               </div>
+
             </>
           )}
         </div>
