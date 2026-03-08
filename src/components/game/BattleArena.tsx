@@ -3,6 +3,7 @@ import { GameCard } from '@/data/cards';
 import { useGame } from '@/context/GameContext';
 import CardComponent from './CardComponent';
 import { motion, AnimatePresence } from 'framer-motion';
+import { allEmotes, getEquippedEmotes } from '@/data/emotes';
 
 const BattleArena = () => {
   const { deck, setScreen, setBattleResult, setProfile } = useGame();
@@ -18,6 +19,11 @@ const BattleArena = () => {
   const [unitCounter, setUnitCounter] = useState(0);
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
   const [isDoubleElixir, setIsDoubleElixir] = useState(false);
+  const [showEmotes, setShowEmotes] = useState(false);
+  const [activeEmote, setActiveEmote] = useState<{svg: string; side: 'player' | 'enemy'; key: number} | null>(null);
+  const [emoteCounter, setEmoteCounter] = useState(0);
+  const equippedEmoteIds = getEquippedEmotes();
+  const equippedEmotes = equippedEmoteIds.map(id => allEmotes.find(e => e.id === id)).filter(Boolean);
 
   // Deaf Mode event listeners
   useEffect(() => {
