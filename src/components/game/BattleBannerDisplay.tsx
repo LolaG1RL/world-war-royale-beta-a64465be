@@ -5,17 +5,19 @@ import {
   PlayerBanner,
 } from '@/data/banners';
 
-/** Renders a banner card (background + emblem + badges) */
+/** Renders a banner card (background + emblem + badges + optional clan) */
 const BattleBannerDisplay = ({
   banner,
   name,
   trophies,
+  clanName,
   size = 'md',
   className = '',
 }: {
   banner: PlayerBanner;
   name: string;
   trophies: number;
+  clanName?: string;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }) => {
@@ -42,9 +44,12 @@ const BattleBannerDisplay = ({
         <span className={emblem.animated ? 'animate-pulse' : ''}>{emblem.emoji}</span>
       </div>
 
-      {/* Name & Trophies */}
+      {/* Name, Clan & Trophies */}
       <div className="flex-1 min-w-0">
         <div className={`font-display font-bold text-foreground ${textSize} truncate drop-shadow`}>{name}</div>
+        {clanName && (
+          <div className="text-[8px] text-foreground/60 truncate drop-shadow">🏴 {clanName}</div>
+        )}
         <div className="flex items-center gap-1">
           <span className="text-primary text-[10px]">🏆</span>
           <span className="text-[10px] font-bold text-primary drop-shadow">{trophies}</span>
