@@ -264,7 +264,7 @@ const BattleArena = () => {
 
       setDeployedUnits(prevUnits => {
         let units = [...prevUnits];
-        const livingTowers = towers.filter(t => t.hp > 0);
+        const livingTowers = towersRef.current.filter(t => t.hp > 0);
 
         // Process each unit
         units = units.map(unit => {
@@ -471,7 +471,7 @@ const BattleArena = () => {
     }, 100);
 
     return () => clearInterval(interval);
-  }, [towers]);
+  }, []);
 
   const deployCard = useCallback((ax: number, ay: number) => {
     if (selectedCard === null) return;
