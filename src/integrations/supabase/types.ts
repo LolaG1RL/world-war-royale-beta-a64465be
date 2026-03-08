@@ -14,6 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
+      clan_members: {
+        Row: {
+          clan_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          clan_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          clan_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clan_members_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clans: {
+        Row: {
+          banner_color: string
+          banner_shape: string
+          created_at: string
+          created_by: string
+          description: string
+          icon_color: string
+          icon_id: string
+          id: string
+          max_members: number
+          name: string
+          tag: string
+        }
+        Insert: {
+          banner_color?: string
+          banner_shape?: string
+          created_at?: string
+          created_by: string
+          description?: string
+          icon_color?: string
+          icon_id?: string
+          id?: string
+          max_members?: number
+          name: string
+          tag: string
+        }
+        Update: {
+          banner_color?: string
+          banner_shape?: string
+          created_at?: string
+          created_by?: string
+          description?: string
+          icon_color?: string
+          icon_id?: string
+          id?: string
+          max_members?: number
+          name?: string
+          tag?: string
+        }
+        Relationships: []
+      }
+      friends: {
+        Row: {
+          created_at: string
+          friend_user_id: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          friend_user_id: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          friend_user_id?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       player_progress: {
         Row: {
           arena: number
