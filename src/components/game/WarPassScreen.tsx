@@ -122,6 +122,18 @@ const WarPassScreen = () => {
     }
   }, []);
 
+  // Listen for Deaf Mode War Pass+ toggle
+  useEffect(() => {
+    const handler = () => {
+      try {
+        const data = JSON.parse(localStorage.getItem('war_pass_data') || '{}');
+        setHasPaid(!!data.hasPaid);
+      } catch {}
+    };
+    window.addEventListener('war-pass-update', handler);
+    return () => window.removeEventListener('war-pass-update', handler);
+  }, []);
+
   const getDaysLeft = () => {
     const saved = localStorage.getItem('war_pass_data');
     if (saved) {
