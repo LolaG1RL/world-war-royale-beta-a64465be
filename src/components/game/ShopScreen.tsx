@@ -1,19 +1,18 @@
 import { useGame } from '@/context/GameContext';
 import { shopItems, allCards } from '@/data/cards';
-import { ShoppingBag, Swords, Users, Crown, Zap, X, Loader2 } from 'lucide-react';
-import { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { ShoppingBag, Swords, Users, Crown, Zap, X, Loader2, Check } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 // Stripe price IDs for real-money items
 const STRIPE_PRICES: Record<string, string> = {
-  'shop-10': 'price_1T8c8YF8KfKkJquq45NfyNTG',  // 80 Gems - $4.99
-  'shop-11': 'price_1T8c8dF8KfKkJquqIXEugeJM',  // 500 Gems - $14.99
-  'shop-12': 'price_1T8c8eF8KfKkJquqBrjotFic',  // War Pass - $4.99
+  'shop-10': 'price_1T8c8YF8KfKkJquq45NfyNTG',
+  'shop-11': 'price_1T8c8dF8KfKkJquqIXEugeJM',
+  'shop-12': 'price_1T8c8eF8KfKkJquqBrjotFic',
 };
 
-// Daily deal pool - cards scaled by rarity
 const DAILY_DEAL_POOL = [
   { name: 'Roman Legionary', emoji: '🛡️', type: 'card' as const, rarity: 'common' as const, amount: 10, cost: 5, currency: 'gold' as const },
   { name: 'Egyptian Archer', emoji: '🏹', type: 'card' as const, rarity: 'common' as const, amount: 10, cost: 5, currency: 'gold' as const },
@@ -34,10 +33,8 @@ const DAILY_DEAL_POOL = [
 ];
 
 function getDailyDeals() {
-  // Seed based on date so deals change daily but are consistent within a day
   const today = new Date();
   const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-  // Simple seeded shuffle
   const shuffled = [...DAILY_DEAL_POOL];
   let s = seed;
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -46,6 +43,27 @@ function getDailyDeals() {
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled.slice(0, 6);
+}
+
+function getTodayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+function getPurchasedDeals(): Set<number> {
+  try {
+    const stored = localStorage.getItem('daily_deals_purchased');
+    if (!stored) return new Set();
+    const parsed = JSON.parse(stored);
+    if (parsed.date !== getTodayKey()) return new Set();
+    return new Set(parsed.indices as number[]);
+  } catch { return new Set(); }
+}
+
+function savePurchasedDeal(index: number) {
+  const current = getPurchasedDeals();
+  current.add(index);
+  localStorage.setItem('daily_deals_purchased', JSON.stringify({ date: getTodayKey(), indices: Array.from(current) }));
 }
 
 function useCountdownToMidnight() {
@@ -82,10 +100,84 @@ const RARITY_LABELS: Record<string, string> = {
   legendary: 'Legendary',
 };
 
+// Reward item type
+interface RewardItem {
+  emoji: string;
+  name: string;
+  count: number;
+  rarity: string;
+}
+
+// Reward reveal modal
+const RewardReveal = ({ rewards, onClose }: { rewards: RewardItem[]; onClose: () => void }) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+    onClick={onClose}
+  >
+    <motion.div
+      initial={{ scale: 0.7, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.7, opacity: 0 }}
+      transition={{ type: 'spring', stiffness: 200 }}
+      onClick={e => e.stopPropagation()}
+      className="w-[90%] max-w-sm bg-card border border-border rounded-2xl p-5 relative"
+    >
+      {/* Light burst */}
+      <motion.div
+        initial={{ scale: 0, opacity: 1 }}
+        animate={{ scale: 3, opacity: 0 }}
+        transition={{ duration: 1 }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary/20 rounded-full blur-xl pointer-events-none"
+      />
+
+      <h2 className="font-display font-bold text-lg text-primary text-center mb-4">YOU GOT!</h2>
+      <div className="grid grid-cols-3 gap-2 max-h-[40vh] overflow-y-auto">
+        {rewards.map((r, i) => (
+          <motion.div
+            key={i}
+            initial={{ scale: 0, rotateY: 180 }}
+            animate={{ scale: 1, rotateY: 0 }}
+            transition={{ delay: i * 0.12, type: 'spring', stiffness: 200 }}
+            className={`bg-background border rounded-xl p-3 text-center ${
+              r.rarity === 'legendary' ? 'border-primary/50 shadow-[0_0_10px_hsl(38,90%,50%,0.3)]' :
+              r.rarity === 'epic' ? 'border-purple-400/40' :
+              r.rarity === 'rare' ? 'border-blue-400/40' :
+              'border-border'
+            }`}
+          >
+            <span className="text-2xl">{r.emoji}</span>
+            <div className="text-[8px] font-bold text-foreground mt-1">{r.name}</div>
+            <div className={`text-[10px] font-bold mt-0.5 ${
+              r.rarity === 'legendary' ? 'text-primary' :
+              r.rarity === 'epic' ? 'text-purple-400' :
+              r.rarity === 'rare' ? 'text-blue-400' :
+              'text-foreground'
+            }`}>x{r.count}</div>
+          </motion.div>
+        ))}
+      </div>
+      <motion.button
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: rewards.length * 0.12 + 0.3 }}
+        onClick={onClose}
+        className="w-full mt-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold uppercase"
+      >
+        Collect
+      </motion.button>
+    </motion.div>
+  </motion.div>
+);
+
 const ShopScreen = () => {
   const { setScreen, profile, setProfile, setDeck, deck } = useGame();
   const [tab, setTab] = useState<'featured' | 'cards' | 'chests' | 'gems'>('featured');
   const [purchasing, setPurchasing] = useState<string | null>(null);
+  const [rewardPopup, setRewardPopup] = useState<RewardItem[] | null>(null);
+  const [purchasedDeals, setPurchasedDeals] = useState<Set<number>>(() => getPurchasedDeals());
   const countdown = useCountdownToMidnight();
   const dailyDeals = useMemo(() => getDailyDeals(), []);
 
@@ -94,7 +186,15 @@ const ShopScreen = () => {
     tab === 'chests' ? shopItems.filter(i => i.type === 'chest') :
     shopItems.filter(i => i.type === 'gems' || i.type === 'gold');
 
+  const showRewards = useCallback((rewards: RewardItem[]) => {
+    setRewardPopup(rewards);
+  }, []);
+
   const handleDailyDealPurchase = (deal: typeof DAILY_DEAL_POOL[0], index: number) => {
+    if (purchasedDeals.has(index)) {
+      toast.error('Already purchased today!');
+      return;
+    }
     const currency = deal.currency === 'gold' ? profile.gold : profile.gems;
     if (currency < deal.cost) {
       toast.error(`Not enough ${deal.currency}!`);
@@ -104,21 +204,38 @@ const ShopScreen = () => {
     if (deal.currency === 'gold') newProfile.gold -= deal.cost;
     else newProfile.gems -= deal.cost;
 
-    if (deal.type === 'gold') newProfile.gold += deal.amount;
-    else if (deal.type === 'gems') newProfile.gems += deal.amount;
-    else if (deal.type === 'chest') toast.success(`Opened ${deal.name}!`);
-    else toast.success(`Got x${deal.amount} ${deal.name}!`);
+    const rewards: RewardItem[] = [];
 
-    if (deal.type === 'gold') toast.success(`Got ${deal.amount} Gold!`);
-    else if (deal.type === 'gems') toast.success(`Got ${deal.amount} Gems!`);
+    if (deal.type === 'gold') {
+      newProfile.gold += deal.amount;
+      rewards.push({ emoji: '💰', name: 'Gold', count: deal.amount, rarity: 'common' });
+    } else if (deal.type === 'gems') {
+      newProfile.gems += deal.amount;
+      rewards.push({ emoji: '💎', name: 'Gems', count: deal.amount, rarity: 'rare' });
+    } else if (deal.type === 'chest') {
+      const numCards = deal.name.includes('Magical') ? 12 : deal.name.includes('Gold') ? 6 : 3;
+      for (let i = 0; i < numCards; i++) {
+        const card = allCards[Math.floor(Math.random() * allCards.length)];
+        rewards.push({ emoji: card.emoji, name: card.name, count: 1 + Math.floor(Math.random() * 3), rarity: card.rarity });
+      }
+      rewards.push({ emoji: '💰', name: 'Gold', count: 50 + Math.floor(Math.random() * 200), rarity: 'common' });
+      newProfile.gold += rewards[rewards.length - 1].count;
+    } else {
+      // card
+      rewards.push({ emoji: deal.emoji, name: deal.name, count: deal.amount, rarity: deal.rarity });
+    }
 
     setProfile(newProfile);
+    savePurchasedDeal(index);
+    setPurchasedDeals(prev => new Set([...prev, index]));
+    showRewards(rewards);
   };
 
   const handlePurchase = async (itemId: string) => {
     const item = shopItems.find(i => i.id === itemId);
     if (!item) return;
     setPurchasing(itemId);
+
     if (item.currency === 'real') {
       const priceId = STRIPE_PRICES[itemId];
       if (!priceId) { toast.error('Item not available'); setPurchasing(null); return; }
@@ -130,17 +247,41 @@ const ShopScreen = () => {
       setPurchasing(null);
       return;
     }
+
     const currency = item.currency === 'gold' ? profile.gold : profile.gems;
     if (currency < item.cost) { toast.error(`Not enough ${item.currency}!`); setPurchasing(null); return; }
     const newProfile = { ...profile };
     if (item.currency === 'gold') newProfile.gold -= item.cost; else newProfile.gems -= item.cost;
+
+    const rewards: RewardItem[] = [];
+
     switch (item.type) {
-      case 'chest': { const cc = item.name.includes('Legendary') ? 1 : item.name.includes('Magical') ? 12 : item.name.includes('Gold') ? 6 : 3; toast.success(`Opened ${item.name}! Got ${cc} cards`); break; }
-      case 'card': { toast.success(`Got cards for ${item.name}!`); break; }
-      case 'gold': { const g = parseInt(item.description.replace(/[^0-9]/g, '')); newProfile.gold += g; toast.success(`Got ${g.toLocaleString()} Gold!`); break; }
+      case 'chest': {
+        const numCards = item.name.includes('Legendary') ? 1 : item.name.includes('Magical') ? 12 : item.name.includes('Gold') ? 6 : 3;
+        for (let i = 0; i < numCards; i++) {
+          const card = allCards[Math.floor(Math.random() * allCards.length)];
+          rewards.push({ emoji: card.emoji, name: card.name, count: 1 + Math.floor(Math.random() * 5), rarity: card.rarity });
+        }
+        const goldReward = 100 + Math.floor(Math.random() * 500);
+        rewards.push({ emoji: '💰', name: 'Gold', count: goldReward, rarity: 'common' });
+        newProfile.gold += goldReward;
+        break;
+      }
+      case 'card': {
+        rewards.push({ emoji: item.emoji, name: item.name, count: parseInt(item.description.replace(/[^0-9]/g, '')) || 1, rarity: item.rarity || 'common' });
+        break;
+      }
+      case 'gold': {
+        const g = parseInt(item.description.replace(/[^0-9]/g, ''));
+        newProfile.gold += g;
+        rewards.push({ emoji: '💰', name: 'Gold', count: g, rarity: 'common' });
+        break;
+      }
     }
+
     setProfile(newProfile);
     setPurchasing(null);
+    showRewards(rewards);
   };
 
   const handleWarPassPurchase = async () => {
@@ -155,6 +296,11 @@ const ShopScreen = () => {
 
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
+      {/* Reward popup */}
+      <AnimatePresence>
+        {rewardPopup && <RewardReveal rewards={rewardPopup} onClose={() => setRewardPopup(null)} />}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,25%,12%)] border-b border-border">
         <button onClick={() => setScreen('menu')} className="text-muted-foreground"><X className="w-4 h-4" /></button>
@@ -174,9 +320,9 @@ const ShopScreen = () => {
         ))}
       </div>
 
-      {/* Shop items grid */}
+      {/* Shop items */}
       <div className="flex-1 overflow-y-auto p-3">
-        {/* Daily Deals section */}
+        {/* Daily Deals */}
         {tab === 'featured' && (
           <>
             <div className="mb-3 bg-gradient-to-r from-[hsl(38,80%,25%)] to-[hsl(28,90%,20%)] rounded-xl p-3 border border-primary/30">
@@ -185,15 +331,21 @@ const ShopScreen = () => {
             </div>
             <div className="grid grid-cols-3 gap-2 mb-4">
               {dailyDeals.map((deal, i) => {
-                const canAfford = deal.currency === 'gold' ? profile.gold >= deal.cost : profile.gems >= deal.cost;
+                const bought = purchasedDeals.has(i);
+                const canAfford = !bought && (deal.currency === 'gold' ? profile.gold >= deal.cost : profile.gems >= deal.cost);
                 return (
                   <motion.button
                     key={`deal-${i}`}
-                    whileTap={{ scale: 0.95 }}
+                    whileTap={!bought ? { scale: 0.95 } : undefined}
                     onClick={() => handleDailyDealPurchase(deal, i)}
-                    disabled={!canAfford}
-                    className={`bg-card border-2 ${RARITY_COLORS[deal.rarity]} rounded-xl p-2 flex flex-col items-center gap-1 transition-colors ${canAfford ? 'hover:brightness-110' : 'opacity-50'}`}
+                    disabled={bought || !canAfford}
+                    className={`bg-card border-2 ${bought ? 'border-muted-foreground/20 opacity-40' : RARITY_COLORS[deal.rarity]} rounded-xl p-2 flex flex-col items-center gap-1 transition-colors relative ${!bought && canAfford ? 'hover:brightness-110' : ''}`}
                   >
+                    {bought && (
+                      <div className="absolute inset-0 bg-background/60 rounded-xl flex items-center justify-center z-10">
+                        <Check className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                    )}
                     <span className="text-2xl mt-1">{deal.emoji}</span>
                     <span className="text-[9px] font-bold text-foreground text-center leading-tight">{deal.name}</span>
                     <span className="text-[7px] text-muted-foreground">x{deal.amount}</span>
@@ -203,7 +355,7 @@ const ShopScreen = () => {
                     <div className={`mt-auto w-full py-1 rounded-lg text-[9px] font-bold text-center ${
                       deal.currency === 'gold' ? 'bg-primary/20 text-primary' : 'bg-elixir/20 text-elixir'
                     }`}>
-                      {deal.currency === 'gold' ? '💰' : '💎'} {deal.cost}
+                      {bought ? 'SOLD' : `${deal.currency === 'gold' ? '💰' : '💎'} ${deal.cost}`}
                     </div>
                   </motion.button>
                 );
@@ -216,7 +368,6 @@ const ShopScreen = () => {
           {filtered.map(item => {
             const canAfford = item.currency === 'real' ? true :
               item.currency === 'gold' ? profile.gold >= item.cost : profile.gems >= item.cost;
-
             return (
               <motion.button
                 key={item.id}
@@ -244,7 +395,7 @@ const ShopScreen = () => {
           })}
         </div>
 
-        {/* War Pass section */}
+        {/* War Pass */}
         <div className="mt-4 bg-gradient-to-r from-[hsl(340,60%,25%)] to-[hsl(280,50%,22%)] rounded-xl p-4 border border-[hsl(340,60%,40%)]">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🎖️</span>
@@ -255,9 +406,7 @@ const ShopScreen = () => {
           </div>
           <div className="flex gap-2">
             {['👑', '✨', '💎', '🏆'].map((e, i) => (
-              <div key={i} className="flex-1 bg-[hsl(0,0%,0%,0.3)] rounded-lg p-1.5 flex items-center justify-center text-lg">
-                {e}
-              </div>
+              <div key={i} className="flex-1 bg-[hsl(0,0%,0%,0.3)] rounded-lg p-1.5 flex items-center justify-center text-lg">{e}</div>
             ))}
           </div>
           <button
@@ -271,7 +420,6 @@ const ShopScreen = () => {
         </div>
       </div>
 
-      {/* Bottom nav */}
       <BottomNav active="shop" setScreen={setScreen} />
     </div>
   );
