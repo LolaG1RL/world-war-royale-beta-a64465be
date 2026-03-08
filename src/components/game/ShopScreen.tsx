@@ -223,7 +223,18 @@ const ShopScreen = () => {
     setRewardPopup(rewards);
   }, []);
 
-  const handleDailyDealPurchase = (deal: typeof DAILY_DEAL_POOL[0], index: number) => {
+  const claimFreebies = () => {
+    if (freebiesClaimed) return;
+    const rewards = generateDailyFreebies();
+    const goldReward = rewards.find(r => r.name === 'Gold');
+    if (goldReward) {
+      setProfile((prev: typeof profile) => ({ ...prev, gold: prev.gold + goldReward.count }));
+    }
+    setFreebiesClaimedStorage();
+    setFreebiesClaimedState(true);
+    showRewards(rewards);
+  };
+
     if (purchasedDeals.has(index)) {
       toast.error('Already purchased today!');
       return;
