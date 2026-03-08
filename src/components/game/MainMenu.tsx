@@ -18,7 +18,7 @@ import { updateSfxSettings, playCoinCollect } from '@/lib/sfx';
 import { t, tArena } from '@/lib/i18n';
 
 const MainMenu = () => {
-  const { profile, deck, chests, setScreen, setActiveTab, setProfile } = useGame();
+  const { profile, deck, chests, setScreen, setActiveTab, setProfile, clan } = useGame();
   const { signOut, user } = useAuth();
 
   // Play lobby music
