@@ -3,11 +3,12 @@ import { useAuth } from '@/context/AuthContext';
 import { BottomNav } from './ShopScreen';
 import { allCards } from '@/data/cards';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { MessageCircle, UserPlus, Search, Shield, Swords as SwordsIcon, Plus, Trophy, ChevronLeft, ChevronRight, Loader2, X, Check, UserMinus, ArrowUp, Repeat } from 'lucide-react';
+import { MessageCircle, UserPlus, Search, Shield, Swords as SwordsIcon, Plus, Trophy, ChevronLeft, ChevronRight, Loader2, X, Check, UserMinus, ArrowUp, Repeat, Gift } from 'lucide-react';
 import ClanFlag, { CLAN_ICONS, BANNER_SHAPES } from './ClanFlag';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getCardEntry, addCards, removeCards, canRequest, setRequestCooldown, getRequestTimeLeft, DONATION_LIMITS, getDonationsToday, recordDonation } from '@/data/cardInventory';
 
 const BANNER_COLORS = [
   '#b91c1c', '#dc2626', '#ef4444',
@@ -666,15 +667,24 @@ interface ClanMsg {
 }
 
 const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; profile: any; user: any; leaveClan: () => void; setScreen: (s: string) => void }) => {
+  const { setProfile } = useGame();
   const [chatMode, setChatMode] = useState<'info' | 'chat'>('info');
   const [messages, setMessages] = useState<ClanMsg[]>([]);
   const [msgInput, setMsgInput] = useState('');
   const [sending, setSending] = useState(false);
   const [showTrade, setShowTrade] = useState(false);
+  const [showRequest, setShowRequest] = useState(false);
   const [tradeOffer, setTradeOffer] = useState('');
   const [tradeWant, setTradeWant] = useState('');
+  const [requestCardId, setRequestCardId] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [clanId, setClanId] = useState<string | null>(null);
+
+  // Cards the user owns (count > 0)
+  const ownedCards = allCards.filter(c => {
+    const entry = getCardEntry(c.id);
+    return entry.count > 0 && DONATION_LIMITS[c.rarity] > 0;
+  });
 
   // Get clan ID from DB
   useEffect(() => {
@@ -759,6 +769,56 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
     toast.success('Trade request posted!');
   };
 
+  const sendCardRequest = async () => {
+    if (!requestCardId || !clanId || !user) return;
+    if (!canRequest()) {
+      toast.error(`Request on cooldown! ${getRequestTimeLeft()} left`);
+      return;
+    }
+    const card = allCards.find(c => c.id === requestCardId);
+    if (!card) return;
+    const entry = getCardEntry(card.id);
+    if (entry.count <= 0) { toast.error("You don't own this card!"); return; }
+    const limit = DONATION_LIMITS[card.rarity];
+    if (limit <= 0) { toast.error("This card rarity can't be requested!"); return; }
+
+    setSending(true);
+    await supabase.from('clan_messages').insert({
+      clan_id: clanId,
+      user_id: user.id,
+      username: profile.name,
+      message_type: 'card_request',
+      content: `🙏 Requesting: ${card.emoji} ${card.name} (${card.rarity}) — max ${limit}/day`,
+      trade_card_wanted: requestCardId,
+    });
+    setRequestCooldown();
+    setShowRequest(false);
+    setRequestCardId('');
+    setSending(false);
+    toast.success('Card request posted!');
+  };
+
+  const donateCard = (msg: ClanMsg) => {
+    if (!msg.trade_card_wanted) return;
+    if (msg.user_id === user?.id) { toast.error("You can't donate to your own request!"); return; }
+    const card = allCards.find(c => c.id === msg.trade_card_wanted);
+    if (!card) return;
+    const myEntry = getCardEntry(card.id);
+    if (myEntry.count <= 1) { toast.error("You need at least 2 of this card to donate!"); return; }
+    const limit = DONATION_LIMITS[card.rarity];
+    const today = getDonationsToday();
+    if (today.donated >= limit) { toast.error(`Daily donation limit reached (${limit}/day for ${card.rarity})!`); return; }
+
+    // Remove card from donor, add to requester (locally — in a real game this would be server-side)
+    removeCards(card.id, 1);
+    recordDonation(1);
+    // Grant XP/gold for donating
+    const xpReward = card.rarity === 'common' ? 1 : card.rarity === 'rare' ? 10 : 50;
+    const goldReward = card.rarity === 'common' ? 5 : card.rarity === 'rare' ? 50 : 500;
+    setProfile((p: any) => ({ ...p, gold: p.gold + goldReward, xp: p.xp + xpReward, totalDonations: p.totalDonations + 1 }));
+    toast.success(`Donated ${card.emoji} ${card.name}! +${goldReward}💰 +${xpReward}XP`);
+  };
+
   const formatTime = (d: string) => {
     const date = new Date(d);
     return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
@@ -815,8 +875,11 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
             <button onClick={() => setChatMode('info')} className="text-muted-foreground"><ChevronLeft className="w-4 h-4" /></button>
             <MessageCircle className="w-4 h-4 text-primary" />
             <span className="text-xs font-bold text-foreground flex-1">{clan.name} Chat</span>
-            <button onClick={() => setShowTrade(!showTrade)} className="bg-primary/20 text-primary px-2 py-1 rounded text-[9px] font-bold flex items-center gap-1">
+            <button onClick={() => { setShowTrade(!showTrade); setShowRequest(false); }} className="bg-primary/20 text-primary px-2 py-1 rounded text-[9px] font-bold flex items-center gap-1">
               <Repeat className="w-3 h-3" />Trade
+            </button>
+            <button onClick={() => { setShowRequest(!showRequest); setShowTrade(false); }} className="bg-hp-green/20 text-hp-green px-2 py-1 rounded text-[9px] font-bold flex items-center gap-1">
+              <Gift className="w-3 h-3" />Request
             </button>
           </div>
 
@@ -854,6 +917,45 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
             )}
           </AnimatePresence>
 
+          {/* Card request panel */}
+          <AnimatePresence>
+            {showRequest && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                className="bg-[hsl(120,15%,11%)] border-b border-border overflow-hidden">
+                <div className="p-3 space-y-2">
+                  <div className="text-[9px] font-bold text-hp-green uppercase tracking-wider">🙏 Request a Card</div>
+                  {!canRequest() && (
+                    <div className="text-[9px] text-destructive">⏳ Cooldown: {getRequestTimeLeft()}</div>
+                  )}
+                  <div>
+                    <label className="text-[8px] text-muted-foreground">Card you own to request:</label>
+                    <select value={requestCardId} onChange={e => setRequestCardId(e.target.value)}
+                      className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-[9px] text-foreground">
+                      <option value="">Select card...</option>
+                      {ownedCards.map(c => {
+                        const entry = getCardEntry(c.id);
+                        return <option key={c.id} value={c.id}>{c.emoji} {c.name} ({c.rarity}) — x{entry.count}</option>;
+                      })}
+                    </select>
+                  </div>
+                  {requestCardId && (() => {
+                    const card = allCards.find(c => c.id === requestCardId);
+                    if (!card) return null;
+                    return (
+                      <div className="text-[8px] text-muted-foreground">
+                        Max donations/day: <span className="text-foreground font-bold">{DONATION_LIMITS[card.rarity]}</span> • 12h cooldown between requests
+                      </div>
+                    );
+                  })()}
+                  <button onClick={sendCardRequest} disabled={!requestCardId || sending || !canRequest()}
+                    className="w-full py-1.5 bg-hp-green text-foreground rounded-lg text-[10px] font-bold disabled:opacity-50">
+                    Request Card
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Chat messages */}
           <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5">
             {messages.length === 0 && (
@@ -862,10 +964,13 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
             {messages.map(msg => {
               const isMe = msg.user_id === user?.id;
               const isTrade = msg.message_type === 'trade_request';
+              const isRequest = msg.message_type === 'card_request';
               return (
                 <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] rounded-xl px-3 py-1.5 ${
-                    isTrade
+                    isRequest
+                      ? 'bg-[hsl(120,20%,15%)] border border-[hsl(120,25%,25%)]'
+                      : isTrade
                       ? 'bg-[hsl(280,30%,18%)] border border-[hsl(280,30%,30%)]'
                       : isMe
                       ? 'bg-primary/20 border border-primary/30'
@@ -875,6 +980,14 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                       <div className="text-[8px] font-bold text-primary mb-0.5">{msg.username}</div>
                     )}
                     <div className="text-[10px] text-foreground">{msg.content}</div>
+                    {isRequest && !isMe && msg.trade_card_wanted && (
+                      <button
+                        onClick={() => donateCard(msg)}
+                        className="mt-1 px-3 py-1 bg-hp-green/20 text-hp-green rounded-lg text-[9px] font-bold flex items-center gap-1 hover:bg-hp-green/30 transition-colors"
+                      >
+                        <Gift className="w-3 h-3" /> Donate
+                      </button>
+                    )}
                     <div className="text-[7px] text-muted-foreground text-right mt-0.5">{formatTime(msg.created_at)}</div>
                   </div>
                 </div>

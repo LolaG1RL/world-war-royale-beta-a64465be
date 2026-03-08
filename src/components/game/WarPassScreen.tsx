@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Lock, Crown, Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { allCards } from '@/data/cards';
+import { addCards } from '@/data/cardInventory';
 
 interface RewardItem { emoji: string; name: string; count: number; rarity: string; }
 
@@ -168,11 +169,35 @@ const WarPassScreen = () => {
     if (r.type === 'chest') {
       const contents = generateChestContents(r.label);
       setProfile(p => ({ ...p, gold: p.gold + contents.gold, gems: p.gems + contents.gems }));
+      // Add cards to inventory
+      contents.items.forEach(item => {
+        if (item.rarity !== 'common' || !item.name.includes('Gold')) {
+          const card = allCards.find(c => c.name === item.name);
+          if (card) addCards(card.id, item.count);
+        }
+      });
       items = contents.items;
+    } else if (r.type === 'cards') {
+      // Pick specific random cards and show them
+      const label = r.label.toLowerCase();
+      let pool = allCards;
+      if (label.includes('legendary')) pool = allCards.filter(c => c.rarity === 'legendary');
+      else if (label.includes('epic')) pool = allCards.filter(c => c.rarity === 'epic');
+      else if (label.includes('rare')) pool = allCards.filter(c => c.rarity === 'rare');
+      else pool = allCards.filter(c => c.rarity === 'common' || c.rarity === 'rare');
+      
+      for (let i = 0; i < r.amount; i++) {
+        const card = pool[Math.floor(Math.random() * pool.length)];
+        if (card) {
+          const amt = card.rarity === 'common' ? 2 + Math.floor(Math.random() * 4) : card.rarity === 'rare' ? 1 + Math.floor(Math.random() * 2) : 1;
+          addCards(card.id, amt);
+          items.push({ emoji: card.emoji, name: card.name, count: amt, rarity: card.rarity });
+        }
+      }
     } else {
       if (r.type === 'gold') setProfile(p => ({ ...p, gold: p.gold + r.amount }));
       else if (r.type === 'gems') setProfile(p => ({ ...p, gems: p.gems + r.amount }));
-      const rarity = r.type === 'gems' ? 'rare' : r.type === 'emote' ? 'legendary' : r.type === 'cards' ? 'common' : 'common';
+      const rarity = r.type === 'gems' ? 'rare' : r.type === 'emote' ? 'legendary' : 'common';
       items = [{ emoji: r.emoji, name: r.label, count: r.amount, rarity }];
     }
 
