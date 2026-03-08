@@ -526,6 +526,53 @@ const ShopScreen = () => {
           </div>
         )}
 
+        {/* Emotes tab */}
+        {tab === 'emotes' && (
+          <>
+            <div className="mb-3 bg-gradient-to-r from-[hsl(38,60%,20%)] to-[hsl(28,70%,18%)] rounded-xl p-3 border border-primary/30">
+              <div className="text-[10px] text-primary font-bold uppercase tracking-wider">😀 Daily Emote Deals</div>
+              <div className="text-[8px] text-foreground/70 mt-0.5">Refreshes in {countdown}</div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              {emoteDeals.map((deal, i) => {
+                const bought = purchasedEmotes.has(i) || ownedEmoteIds.includes(deal.emote.id);
+                const canAfford = !bought && profile.gems >= deal.cost;
+                return (
+                  <motion.button
+                    key={`emote-deal-${i}`}
+                    whileTap={!bought ? { scale: 0.95 } : undefined}
+                    onClick={() => {
+                      if (bought || !canAfford) return;
+                      setProfile(p => ({ ...p, gems: p.gems - deal.cost }));
+                      addOwnedEmote(deal.emote.id);
+                      setOwnedEmoteIds(prev => [...prev, deal.emote.id]);
+                      saveEmoteDealPurchased(i);
+                      setPurchasedEmotes(prev => new Set([...prev, i]));
+                      showRewards([{ emoji: '😀', name: deal.emote.name, count: 1, rarity: deal.emote.rarity }]);
+                    }}
+                    disabled={bought || !canAfford}
+                    className={`bg-card border-2 ${bought ? 'border-muted-foreground/20 opacity-40' : deal.emote.rarity === 'legendary' ? 'border-primary' : deal.emote.rarity === 'epic' ? 'border-purple-400' : deal.emote.rarity === 'rare' ? 'border-blue-400' : 'border-muted-foreground/40'} rounded-xl p-2 flex flex-col items-center gap-1 relative`}
+                  >
+                    {bought && (
+                      <div className="absolute inset-0 bg-background/60 rounded-xl flex items-center justify-center z-10">
+                        <Check className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div className="w-10 h-10 mt-1" dangerouslySetInnerHTML={{ __html: deal.emote.svg }} />
+                    <span className="text-[9px] font-bold text-foreground text-center leading-tight">{deal.emote.name}</span>
+                    <span className={`text-[7px] font-bold ${deal.emote.rarity === 'legendary' ? 'text-primary' : deal.emote.rarity === 'epic' ? 'text-purple-400' : deal.emote.rarity === 'rare' ? 'text-blue-400' : 'text-muted-foreground'}`}>
+                      {deal.emote.rarity.charAt(0).toUpperCase() + deal.emote.rarity.slice(1)}
+                    </span>
+                    <div className="mt-auto w-full py-1 rounded-lg text-[9px] font-bold text-center bg-elixir/20 text-elixir">
+                      {bought ? 'OWNED' : `💎 ${deal.cost}`}
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </>
+        )}
+
         {/* War Pass */}
         <div className="mt-4 bg-gradient-to-r from-[hsl(340,60%,25%)] to-[hsl(280,50%,22%)] rounded-xl p-4 border border-[hsl(340,60%,40%)]">
           <div className="flex items-center gap-2 mb-2">
