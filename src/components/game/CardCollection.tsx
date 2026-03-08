@@ -22,6 +22,10 @@ const CardCollection = () => {
   const [ownedEmotes] = useState(() => getOwnedEmotes());
   const [equipped, setEquipped] = useState(() => getEquippedEmotes());
   const [, forceUpdate] = useState(0);
+  const [detailTab, setDetailTab] = useState<'overview' | 'matchup'>('overview');
+
+  const allCardIds = useMemo(() => allCards.map(c => c.id), []);
+  const matchupData = useMemo(() => getAllMatchups(allCardIds), [allCardIds]);
 
   const filtered = filter === 'all' ? allCards : allCards.filter(c => c.type === filter);
   const isInDeck = (card: GameCard) => decks[deckSlot].some(d => d.id === card.id);
