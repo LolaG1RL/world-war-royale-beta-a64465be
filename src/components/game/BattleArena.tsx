@@ -780,7 +780,10 @@ const BattleArena = () => {
 
         {/* Units */}
         <AnimatePresence>
-          {deployedUnits.map(u => (
+          {deployedUnits.map(u => {
+            const isBuilding = u.card.type === 'building';
+            const isJoan = u.card.id === 'joan-of-arc' && u.hp > 0;
+            return (
             <motion.div 
               key={u.key} 
               initial={{scale:0}} 
@@ -794,27 +797,38 @@ const BattleArena = () => {
                 {u.card.unitType === 'air' && (
                   <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-1 bg-black/30 rounded-full blur-sm" />
                 )}
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs shadow-lg ${
+                {/* Joan passive aura glow */}
+                {isJoan && (
+                  <div className="absolute -inset-2 rounded-full bg-amber-400/20 animate-pulse blur-sm" />
+                )}
+                <div className={`${isBuilding ? 'w-9 h-9 rounded-lg' : 'w-7 h-7 rounded-full'} flex items-center justify-center text-xs shadow-lg ${
                   u.side==='player'
-                    ? 'bg-blue-700 border-2 border-blue-400'
-                    : 'bg-red-700 border-2 border-red-400'
+                    ? isBuilding ? 'bg-blue-900 border-2 border-blue-300' : 'bg-blue-700 border-2 border-blue-400'
+                    : isBuilding ? 'bg-red-900 border-2 border-red-300' : 'bg-red-700 border-2 border-red-400'
                 } ${u.isCharging ? 'animate-pulse ring-2 ring-primary' : ''}`}>
                   {u.card.emoji}
                 </div>
                 {/* HP bar */}
-                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-1 bg-black/60 rounded-full overflow-hidden">
+                <div className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 ${isBuilding ? 'w-8' : 'w-6'} h-1 bg-black/60 rounded-full overflow-hidden`}>
                   <div 
                     className={`h-full transition-all ${u.hp/u.maxHp > 0.5 ? 'bg-hp-green' : u.hp/u.maxHp > 0.25 ? 'bg-yellow-500' : 'bg-hp-red'}`} 
                     style={{width:`${(u.hp/u.maxHp)*100}%`}} 
                   />
                 </div>
+                {/* Lifetime bar for buildings */}
+                {isBuilding && u.lifetimeRemaining !== undefined && u.card.lifetime && (
+                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-black/40 rounded-full overflow-hidden">
+                    <div className="h-full bg-amber-400/70 transition-all" style={{width:`${(u.lifetimeRemaining / (u.card.lifetime * 1000)) * 100}%`}} />
+                  </div>
+                )}
                 {/* Shield indicator */}
                 {u.shieldHp > 0 && (
                   <div className="absolute -top-1 left-1/2 -translate-x-1/2 text-[8px]">🛡️</div>
                 )}
               </div>
             </motion.div>
-          ))}
+            );
+          })}
         </AnimatePresence>
 
         {/* Damage numbers */}
