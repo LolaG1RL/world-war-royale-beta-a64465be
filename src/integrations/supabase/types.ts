@@ -234,6 +234,7 @@ export type Database = {
           arena_name: string
           challenge_max_wins: number
           clan_cards_collected: number
+          country: string | null
           created_at: string
           deck_ids: string[]
           gems: number
@@ -258,6 +259,7 @@ export type Database = {
           arena_name?: string
           challenge_max_wins?: number
           clan_cards_collected?: number
+          country?: string | null
           created_at?: string
           deck_ids?: string[]
           gems?: number
@@ -282,6 +284,7 @@ export type Database = {
           arena_name?: string
           challenge_max_wins?: number
           clan_cards_collected?: number
+          country?: string | null
           created_at?: string
           deck_ids?: string[]
           gems?: number
