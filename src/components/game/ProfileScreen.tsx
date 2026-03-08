@@ -3,12 +3,10 @@ import { useAuth } from '@/context/AuthContext';
 import { useSettings } from '@/context/SettingsContext';
 import { getArenaForTrophies } from '@/data/cards';
 import { BottomNav } from './BottomNav';
-import { ChevronLeft, Copy, Shield, Award, Target, Crown, Star, LogOut, Check, Settings, Volume2, VolumeX, Music, Zap, Globe, Sparkles, Eye } from 'lucide-react';
+import { ChevronLeft, Copy, Shield, Award, Target, Crown, Star, LogOut, Check, Settings } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { t, tArena } from '@/lib/i18n';
-import { LANGUAGES } from '@/lib/i18n';
-import { playButtonClick } from '@/lib/sfx';
 
 const ProfileScreen = () => {
   const { setScreen, profile, deck } = useGame();
