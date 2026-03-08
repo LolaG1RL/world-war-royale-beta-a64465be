@@ -1,8 +1,12 @@
 import { useGame } from '@/context/GameContext';
+import { useAuth } from '@/context/AuthContext';
 import { BottomNav } from './ShopScreen';
-import { useState } from 'react';
-import { MessageCircle, UserPlus, Search, Shield, Swords as SwordsIcon, Plus, Trophy, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { MessageCircle, UserPlus, Search, Shield, Swords as SwordsIcon, Plus, Trophy, ChevronLeft, ChevronRight, Loader2, X, Check, UserMinus } from 'lucide-react';
 import ClanFlag, { CLAN_ICONS, BANNER_SHAPES } from './ClanFlag';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const BANNER_COLORS = [
   '#b91c1c', '#dc2626', '#ef4444',
@@ -24,8 +28,42 @@ const ICON_COLORS = [
   '#1e293b', '#000000',
 ];
 
+interface LeaderboardEntry {
+  user_id: string;
+  trophies: number;
+  level: number;
+  wins: number;
+  username?: string;
+  player_tag?: string;
+}
+
+interface ClanRow {
+  id: string;
+  name: string;
+  tag: string;
+  description: string;
+  banner_color: string;
+  banner_shape: string;
+  icon_id: string;
+  icon_color: string;
+  max_members: number;
+  created_by: string;
+  member_count?: number;
+}
+
+interface FriendRow {
+  id: string;
+  user_id: string;
+  friend_user_id: string;
+  status: string;
+  friend_username?: string;
+  friend_tag?: string;
+  friend_trophies?: number;
+}
+
 const SocialScreen = () => {
   const { setScreen, clan, profile, setClan, setProfile } = useGame();
+  const { user, playerTag } = useAuth();
   const [tab, setTab] = useState<'clan' | 'friends' | 'global'>('clan');
   const [showCreateClan, setShowCreateClan] = useState(false);
   const [clanName, setClanName] = useState('');
@@ -36,14 +74,151 @@ const SocialScreen = () => {
   const [iconColor, setIconColor] = useState(ICON_COLORS[0]);
   const [customizeStep, setCustomizeStep] = useState<'info' | 'flag'>('info');
 
-  const handleCreateClan = () => {
-    if (!clanName.trim() || clanName.length < 3) return;
+  // Search clans
+  const [searchingClans, setSearchingClans] = useState(false);
+  const [clanSearchQuery, setClanSearchQuery] = useState('');
+  const [clanSearchResults, setClanSearchResults] = useState<ClanRow[]>([]);
+  const [showClanSearch, setShowClanSearch] = useState(false);
+  const [joiningClan, setJoiningClan] = useState<string | null>(null);
+
+  // Friends
+  const [friendTag, setFriendTag] = useState('');
+  const [addingFriend, setAddingFriend] = useState(false);
+  const [friends, setFriends] = useState<FriendRow[]>([]);
+  const [loadingFriends, setLoadingFriends] = useState(false);
+
+  // Global leaderboard
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+
+  // Load user's clan from DB on mount
+  useEffect(() => {
+    if (!user) return;
+    const loadClan = async () => {
+      const { data: membership } = await supabase
+        .from('clan_members')
+        .select('clan_id, role')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (membership) {
+        const { data: clanData } = await supabase
+          .from('clans')
+          .select('*')
+          .eq('id', membership.clan_id)
+          .maybeSingle();
+
+        if (clanData) {
+          // Count members
+          const { count } = await supabase
+            .from('clan_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('clan_id', clanData.id);
+
+          setClan({
+            name: clanData.name,
+            tag: clanData.tag,
+            members: count || 1,
+            maxMembers: clanData.max_members,
+            trophies: profile.trophies,
+            badge: clanData.icon_id,
+            description: clanData.description,
+            donations: 0,
+            bannerColor: clanData.banner_color,
+            bannerShape: clanData.banner_shape,
+            iconId: clanData.icon_id,
+            iconColor: clanData.icon_color,
+          });
+        }
+      }
+    };
+    loadClan();
+  }, [user]);
+
+  // Search clans
+  const searchClans = useCallback(async () => {
+    setSearchingClans(true);
+    let query = supabase.from('clans').select('*');
+    if (clanSearchQuery.trim()) {
+      query = query.ilike('name', `%${clanSearchQuery.trim()}%`);
+    }
+    const { data } = await query.limit(20);
+    setClanSearchResults((data as ClanRow[]) || []);
+    setSearchingClans(false);
+  }, [clanSearchQuery]);
+
+  // Join clan
+  const joinClan = async (clanRow: ClanRow) => {
+    if (!user) return;
+    setJoiningClan(clanRow.id);
+    const { error } = await supabase.from('clan_members').insert({
+      clan_id: clanRow.id,
+      user_id: user.id,
+      role: 'member',
+    });
+    if (error) {
+      if (error.code === '23505') toast.error('You are already in a clan!');
+      else toast.error(error.message);
+    } else {
+      const { count } = await supabase
+        .from('clan_members')
+        .select('*', { count: 'exact', head: true })
+        .eq('clan_id', clanRow.id);
+
+      setClan({
+        name: clanRow.name,
+        tag: clanRow.tag,
+        members: count || 1,
+        maxMembers: clanRow.max_members,
+        trophies: profile.trophies,
+        badge: clanRow.icon_id,
+        description: clanRow.description,
+        donations: 0,
+        bannerColor: clanRow.banner_color,
+        bannerShape: clanRow.banner_shape,
+        iconId: clanRow.icon_id,
+        iconColor: clanRow.icon_color,
+      });
+      setShowClanSearch(false);
+      toast.success(`Joined ${clanRow.name}!`);
+    }
+    setJoiningClan(null);
+  };
+
+  // Create clan (save to DB)
+  const handleCreateClan = async () => {
+    if (!clanName.trim() || clanName.length < 3 || !user) return;
     if (profile.gems < 100) return;
+
+    const tag = `#${clanName.trim().substring(0, 3).toUpperCase()}${Math.floor(Math.random() * 9000 + 1000)}`;
+
+    const { data: newClan, error } = await supabase.from('clans').insert({
+      name: clanName.trim(),
+      tag,
+      description: clanDescription.trim() || 'A new clan ready for war!',
+      banner_color: bannerColor,
+      banner_shape: bannerShape,
+      icon_id: iconId,
+      icon_color: iconColor,
+      created_by: user.id,
+    }).select().single();
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    // Add creator as leader
+    await supabase.from('clan_members').insert({
+      clan_id: newClan.id,
+      user_id: user.id,
+      role: 'leader',
+    });
 
     setProfile(prev => ({ ...prev, gems: prev.gems - 100 }));
     setClan({
       name: clanName.trim(),
-      tag: `#${clanName.trim().substring(0, 3).toUpperCase()}${Math.floor(Math.random() * 9000 + 1000)}`,
+      tag,
       members: 1,
       maxMembers: 50,
       trophies: profile.trophies,
@@ -59,16 +234,149 @@ const SocialScreen = () => {
     setClanName('');
     setClanDescription('');
     setCustomizeStep('info');
+    toast.success('Clan created!');
   };
+
+  // Leave clan
+  const leaveClan = async () => {
+    if (!user) return;
+    await supabase.from('clan_members').delete().eq('user_id', user.id);
+    setClan(null);
+    toast.success('Left clan');
+  };
+
+  // Add friend by tag
+  const addFriend = async () => {
+    if (!user || !friendTag.trim()) return;
+    setAddingFriend(true);
+    const tag = friendTag.trim().startsWith('#') ? friendTag.trim() : `#${friendTag.trim()}`;
+
+    // Find user by player_tag
+    const { data: targetProfile } = await supabase
+      .from('profiles')
+      .select('user_id')
+      .eq('player_tag', tag.toUpperCase())
+      .maybeSingle();
+
+    if (!targetProfile) {
+      toast.error('Player not found!');
+      setAddingFriend(false);
+      return;
+    }
+    if (targetProfile.user_id === user.id) {
+      toast.error("You can't add yourself!");
+      setAddingFriend(false);
+      return;
+    }
+
+    const { error } = await supabase.from('friends').insert({
+      user_id: user.id,
+      friend_user_id: targetProfile.user_id,
+      status: 'accepted', // auto-accept for simplicity
+    });
+
+    if (error) {
+      if (error.code === '23505') toast.error('Already friends!');
+      else toast.error(error.message);
+    } else {
+      toast.success('Friend added!');
+      setFriendTag('');
+      loadFriends();
+    }
+    setAddingFriend(false);
+  };
+
+  // Load friends
+  const loadFriends = useCallback(async () => {
+    if (!user) return;
+    setLoadingFriends(true);
+    const { data } = await supabase
+      .from('friends')
+      .select('*')
+      .or(`user_id.eq.${user.id},friend_user_id.eq.${user.id}`);
+
+    if (data && data.length > 0) {
+      // Get friend user IDs
+      const friendIds = data.map(f => f.user_id === user.id ? f.friend_user_id : f.user_id);
+
+      // Get profiles
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, username, player_tag')
+        .in('user_id', friendIds);
+
+      // Get trophies
+      const { data: progress } = await supabase
+        .from('player_progress')
+        .select('user_id, trophies')
+        .in('user_id', friendIds);
+
+      const enriched: FriendRow[] = data.map(f => {
+        const friendId = f.user_id === user.id ? f.friend_user_id : f.user_id;
+        const prof = profiles?.find(p => p.user_id === friendId);
+        const prog = progress?.find(p => p.user_id === friendId);
+        return {
+          ...f,
+          friend_username: prof?.username || 'Unknown',
+          friend_tag: prof?.player_tag || '',
+          friend_trophies: prog?.trophies || 0,
+        };
+      });
+      setFriends(enriched);
+    } else {
+      setFriends([]);
+    }
+    setLoadingFriends(false);
+  }, [user]);
+
+  // Remove friend
+  const removeFriend = async (friendId: string) => {
+    await supabase.from('friends').delete().eq('id', friendId);
+    setFriends(prev => prev.filter(f => f.id !== friendId));
+    toast.success('Friend removed');
+  };
+
+  // Load leaderboard
+  const loadLeaderboard = useCallback(async () => {
+    setLoadingLeaderboard(true);
+    const { data: progress } = await supabase
+      .from('player_progress')
+      .select('user_id, trophies, level, wins')
+      .order('trophies', { ascending: false })
+      .limit(50);
+
+    if (progress && progress.length > 0) {
+      const userIds = progress.map(p => p.user_id);
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, username, player_tag')
+        .in('user_id', userIds);
+
+      const entries: LeaderboardEntry[] = progress.map(p => {
+        const prof = profiles?.find(pr => pr.user_id === p.user_id);
+        return {
+          ...p,
+          username: prof?.username || 'Unknown',
+          player_tag: prof?.player_tag || '',
+        };
+      });
+      setLeaderboard(entries);
+    }
+    setLoadingLeaderboard(false);
+  }, []);
+
+  // Load data when switching tabs
+  useEffect(() => {
+    if (tab === 'friends') loadFriends();
+    if (tab === 'global') loadLeaderboard();
+  }, [tab]);
 
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,25%,12%)] border-b border-border">
         <h2 className="font-display font-bold text-foreground text-sm uppercase tracking-wider">Social</h2>
-        <button className="bg-primary/20 text-primary px-3 py-1 rounded-full text-[10px] font-bold">
-          <UserPlus className="w-3 h-3 inline mr-1" />Add Friend
-        </button>
+        <div className="text-[9px] text-muted-foreground">{playerTag}</div>
       </div>
 
       {/* Tabs */}
@@ -84,12 +392,53 @@ const SocialScreen = () => {
         <>
           {!clan ? (
             <div className="flex-1 overflow-y-auto flex flex-col items-center justify-start p-4">
-              {showCreateClan ? (
+              {showClanSearch ? (
+                // Search clans UI
+                <div className="w-full space-y-3">
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setShowClanSearch(false)} className="text-muted-foreground"><ChevronLeft className="w-4 h-4" /></button>
+                    <h3 className="text-sm font-display font-bold text-foreground">Search Clans</h3>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      className="flex-1 bg-secondary rounded-lg px-3 py-2 text-xs text-foreground border border-border"
+                      placeholder="Clan name..."
+                      value={clanSearchQuery}
+                      onChange={e => setClanSearchQuery(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && searchClans()}
+                    />
+                    <button onClick={searchClans} disabled={searchingClans} className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-50">
+                      {searchingClans ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
+                    </button>
+                  </div>
+                  {clanSearchResults.length === 0 && !searchingClans && (
+                    <div className="text-center text-xs text-muted-foreground py-6">Search for clans to join</div>
+                  )}
+                  <div className="space-y-2">
+                    {clanSearchResults.map(c => (
+                      <div key={c.id} className="bg-card border border-border rounded-xl p-3 flex items-center gap-3">
+                        <ClanFlag bannerColor={c.banner_color} bannerShape={c.banner_shape} iconId={c.icon_id} iconColor={c.icon_color} size="sm" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-bold text-foreground truncate">{c.name}</div>
+                          <div className="text-[8px] text-muted-foreground">{c.tag}</div>
+                          <div className="text-[8px] text-muted-foreground truncate">{c.description}</div>
+                        </div>
+                        <button
+                          onClick={() => joinClan(c)}
+                          disabled={joiningClan === c.id}
+                          className="bg-primary text-primary-foreground px-3 py-1.5 rounded-lg text-[10px] font-bold disabled:opacity-50"
+                        >
+                          {joiningClan === c.id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Join'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : showCreateClan ? (
                 <div className="w-full max-w-xs space-y-3">
                   <h3 className="text-sm font-display font-bold text-foreground text-center">Create a Clan</h3>
                   <p className="text-[10px] text-muted-foreground text-center">Costs 💎 100 gems</p>
 
-                  {/* Flag preview */}
                   <div className="flex justify-center py-2">
                     <ClanFlag bannerColor={bannerColor} bannerShape={bannerShape} iconId={iconId} iconColor={iconColor} size="lg" />
                   </div>
@@ -127,16 +476,12 @@ const SocialScreen = () => {
 
                   {customizeStep === 'flag' && (
                     <>
-                      {/* Banner shape */}
                       <div>
                         <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Banner Shape</div>
                         <div className="flex gap-2 flex-wrap">
                           {BANNER_SHAPES.map(shape => (
-                            <button
-                              key={shape.id}
-                              onClick={() => setBannerShape(shape.id)}
-                              className={`w-10 h-12 rounded-md border-2 transition-all flex items-center justify-center ${bannerShape === shape.id ? 'border-primary scale-110' : 'border-border'}`}
-                            >
+                            <button key={shape.id} onClick={() => setBannerShape(shape.id)}
+                              className={`w-10 h-12 rounded-md border-2 transition-all flex items-center justify-center ${bannerShape === shape.id ? 'border-primary scale-110' : 'border-border'}`}>
                               <svg viewBox="0 0 56 72" className="w-7 h-9">
                                 <path d={shape.path} fill={bannerColor} stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
                               </svg>
@@ -144,65 +489,44 @@ const SocialScreen = () => {
                           ))}
                         </div>
                       </div>
-
-                      {/* Banner color */}
                       <div>
                         <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Banner Color</div>
                         <div className="flex flex-wrap gap-1.5">
                           {BANNER_COLORS.map(c => (
-                            <button
-                              key={c}
-                              onClick={() => setBannerColor(c)}
+                            <button key={c} onClick={() => setBannerColor(c)}
                               className={`w-6 h-6 rounded-md border-2 transition-all ${bannerColor === c ? 'border-foreground scale-110' : 'border-transparent'}`}
-                              style={{ backgroundColor: c }}
-                            />
+                              style={{ backgroundColor: c }} />
                           ))}
                         </div>
                       </div>
-
-                      {/* Icon */}
                       <div>
                         <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Icon</div>
                         <div className="flex flex-wrap gap-1">
                           {CLAN_ICONS.map(({ id, Icon }) => (
-                            <button
-                              key={id}
-                              onClick={() => setIconId(id)}
-                              className={`w-7 h-7 rounded-md flex items-center justify-center transition-all ${iconId === id ? 'bg-primary/30 border border-primary scale-110' : 'bg-secondary border border-border'}`}
-                            >
+                            <button key={id} onClick={() => setIconId(id)}
+                              className={`w-7 h-7 rounded-md flex items-center justify-center transition-all ${iconId === id ? 'bg-primary/30 border border-primary scale-110' : 'bg-secondary border border-border'}`}>
                               <Icon size={14} color={iconId === id ? iconColor : '#888'} strokeWidth={2} />
                             </button>
                           ))}
                         </div>
                       </div>
-
-                      {/* Icon color */}
                       <div>
                         <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Icon Color</div>
                         <div className="flex flex-wrap gap-1.5">
                           {ICON_COLORS.map(c => (
-                            <button
-                              key={c}
-                              onClick={() => setIconColor(c)}
+                            <button key={c} onClick={() => setIconColor(c)}
                               className={`w-6 h-6 rounded-full border-2 transition-all ${iconColor === c ? 'border-foreground scale-110' : 'border-muted'}`}
-                              style={{ backgroundColor: c }}
-                            />
+                              style={{ backgroundColor: c }} />
                           ))}
                         </div>
                       </div>
-
                       <div className="flex gap-2 pt-1">
-                        <button
-                          onClick={() => setCustomizeStep('info')}
-                          className="flex-1 py-2 bg-secondary text-muted-foreground rounded-lg text-xs font-bold border border-border flex items-center justify-center gap-1"
-                        >
+                        <button onClick={() => setCustomizeStep('info')}
+                          className="flex-1 py-2 bg-secondary text-muted-foreground rounded-lg text-xs font-bold border border-border flex items-center justify-center gap-1">
                           <ChevronLeft className="w-3 h-3" />Back
                         </button>
-                        <button
-                          onClick={handleCreateClan}
-                          disabled={profile.gems < 100 || clanName.trim().length < 3}
-                          className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold disabled:opacity-40"
-                        >
+                        <button onClick={handleCreateClan} disabled={profile.gems < 100 || clanName.trim().length < 3}
+                          className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold disabled:opacity-40">
                           Create (💎 100)
                         </button>
                       </div>
@@ -218,13 +542,12 @@ const SocialScreen = () => {
                   <div className="text-sm font-display font-bold text-foreground">No Clan</div>
                   <div className="text-xs text-muted-foreground text-center mt-1">Join or create a clan to battle together!</div>
                   <div className="flex gap-2 mt-4">
-                    <button className="px-6 py-2 bg-secondary text-muted-foreground rounded-lg text-xs font-bold border border-border flex items-center gap-1">
+                    <button onClick={() => { setShowClanSearch(true); searchClans(); }}
+                      className="px-6 py-2 bg-secondary text-muted-foreground rounded-lg text-xs font-bold border border-border flex items-center gap-1">
                       <Search className="w-3 h-3" />Search Clans
                     </button>
-                    <button
-                      onClick={() => setShowCreateClan(true)}
-                      className="px-6 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold flex items-center gap-1"
-                    >
+                    <button onClick={() => setShowCreateClan(true)}
+                      className="px-6 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold flex items-center gap-1">
                       <Plus className="w-3 h-3" />Create (💎 100)
                     </button>
                   </div>
@@ -236,13 +559,7 @@ const SocialScreen = () => {
               {/* Clan header with flag */}
               <div className="bg-[hsl(220,20%,13%)] p-3 border-b border-border">
                 <div className="flex items-center gap-3">
-                  <ClanFlag
-                    bannerColor={clan.bannerColor}
-                    bannerShape={clan.bannerShape}
-                    iconId={clan.iconId}
-                    iconColor={clan.iconColor}
-                    size="md"
-                  />
+                  <ClanFlag bannerColor={clan.bannerColor} bannerShape={clan.bannerShape} iconId={clan.iconId} iconColor={clan.iconColor} size="md" />
                   <div className="flex-1">
                     <div className="text-sm font-display font-bold text-foreground">{clan.name}</div>
                     <div className="text-[9px] text-muted-foreground">{clan.tag} • {clan.members}/{clan.maxMembers} members</div>
@@ -260,13 +577,13 @@ const SocialScreen = () => {
                   <button className="flex-1 py-1.5 bg-accent/20 text-accent rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
                     <SwordsIcon className="w-3 h-3" />Clan War
                   </button>
-                  <button className="flex-1 py-1.5 bg-secondary text-muted-foreground rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
-                    <Search className="w-3 h-3" />Search
+                  <button onClick={leaveClan} className="flex-1 py-1.5 bg-destructive/20 text-destructive rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
+                    <X className="w-3 h-3" />Leave
                   </button>
                 </div>
               </div>
 
-              {/* Members list - just you */}
+              {/* Members list */}
               <div className="flex-1 overflow-y-auto">
                 <div className="flex items-center gap-3 px-3 py-2 border-b border-border/50">
                   <div className="text-[10px] text-muted-foreground font-bold w-4">1</div>
@@ -277,7 +594,6 @@ const SocialScreen = () => {
                   </div>
                   <div className="text-right">
                     <div className="text-[10px] font-bold text-foreground flex items-center gap-1 justify-end">🏆 {profile.trophies}</div>
-                    <div className="text-[8px] text-muted-foreground">📦 0</div>
                   </div>
                 </div>
               </div>
@@ -287,22 +603,89 @@ const SocialScreen = () => {
       )}
 
       {tab === 'friends' && (
-        <div className="flex-1 flex flex-col items-center justify-center p-6">
-          <UserPlus className="w-12 h-12 text-muted-foreground/30 mb-3" />
-          <div className="text-sm font-display font-bold text-foreground">Add Friends</div>
-          <div className="text-xs text-muted-foreground text-center mt-1">Search by tag or invite friends for quick friendly battles!</div>
-          <div className="flex items-center gap-2 mt-4 w-full max-w-xs">
-            <input className="flex-1 bg-secondary rounded-lg px-3 py-2 text-xs text-foreground border border-border" placeholder="Enter player tag..." />
-            <button className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-xs font-bold">Add</button>
+        <div className="flex-1 overflow-y-auto">
+          {/* Add friend input */}
+          <div className="p-3 border-b border-border bg-[hsl(220,20%,13%)]">
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Add by Player Tag</div>
+            <div className="flex items-center gap-2">
+              <input
+                className="flex-1 bg-secondary rounded-lg px-3 py-2 text-xs text-foreground border border-border"
+                placeholder="#A1B2C3D4"
+                value={friendTag}
+                onChange={e => setFriendTag(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && addFriend()}
+              />
+              <button onClick={addFriend} disabled={addingFriend || !friendTag.trim()}
+                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-50 flex items-center gap-1">
+                {addingFriend ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserPlus className="w-3 h-3" />}
+                Add
+              </button>
+            </div>
           </div>
+
+          {/* Your tag */}
+          <div className="px-3 py-2 border-b border-border/50 bg-[hsl(220,20%,11%)]">
+            <div className="text-[8px] text-muted-foreground">Your tag: <span className="text-primary font-bold">{playerTag}</span></div>
+          </div>
+
+          {/* Friends list */}
+          {loadingFriends ? (
+            <div className="flex items-center justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+          ) : friends.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <UserPlus className="w-10 h-10 text-muted-foreground/30 mb-2" />
+              <div className="text-xs text-muted-foreground">No friends yet. Add someone by their tag!</div>
+            </div>
+          ) : (
+            friends.map((f, i) => (
+              <div key={f.id} className="flex items-center gap-3 px-3 py-2 border-b border-border/50">
+                <div className="text-[10px] text-muted-foreground font-bold w-4">{i + 1}</div>
+                <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
+                <div className="flex-1">
+                  <div className="text-xs font-bold text-foreground">{f.friend_username}</div>
+                  <div className="text-[8px] text-muted-foreground">{f.friend_tag}</div>
+                </div>
+                <div className="text-[10px] font-bold text-foreground mr-2">🏆 {f.friend_trophies}</div>
+                <button onClick={() => removeFriend(f.id)} className="text-muted-foreground hover:text-destructive">
+                  <UserMinus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))
+          )}
         </div>
       )}
 
       {tab === 'global' && (
-        <div className="flex-1 flex flex-col items-center justify-center p-6">
-          <Trophy className="w-12 h-12 text-muted-foreground/30 mb-3" />
-          <div className="text-sm font-display font-bold text-foreground">Global Leaderboard</div>
-          <div className="text-xs text-muted-foreground text-center mt-1">No players yet. Be the first to climb!</div>
+        <div className="flex-1 overflow-y-auto">
+          {loadingLeaderboard ? (
+            <div className="flex items-center justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+          ) : leaderboard.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <Trophy className="w-10 h-10 text-muted-foreground/30 mb-2" />
+              <div className="text-xs text-muted-foreground">No players yet</div>
+            </div>
+          ) : (
+            leaderboard.map((entry, i) => {
+              const isYou = entry.user_id === user?.id;
+              return (
+                <div key={entry.user_id} className={`flex items-center gap-3 px-3 py-2 border-b border-border/50 ${isYou ? 'bg-primary/10' : ''}`}>
+                  <div className={`text-[10px] font-bold w-5 text-center ${i === 0 ? 'text-primary' : i === 1 ? 'text-muted-foreground' : i === 2 ? 'text-[hsl(25,70%,50%)]' : 'text-muted-foreground'}`}>
+                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
+                  </div>
+                  <div className="w-7 h-7 rounded-lg bg-[hsl(210,60%,40%)] border border-[hsl(210,70%,55%)] flex items-center justify-center">
+                    <span className="text-[9px] font-black text-foreground">{entry.level}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-bold text-foreground truncate">
+                      {entry.username} {isYou && <span className="text-[8px] text-primary">(You)</span>}
+                    </div>
+                    <div className="text-[8px] text-muted-foreground">{entry.player_tag} • {entry.wins}W</div>
+                  </div>
+                  <div className="text-[10px] font-bold text-foreground flex items-center gap-1">🏆 {entry.trophies.toLocaleString()}</div>
+                </div>
+              );
+            })
+          )}
         </div>
       )}
 
