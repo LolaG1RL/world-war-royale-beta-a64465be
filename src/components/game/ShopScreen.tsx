@@ -774,6 +774,7 @@ const ShopScreen = () => {
           </>
         )}
 
+        {!isWarPassActive && (
         <div className="mt-4 bg-gradient-to-r from-[hsl(340,60%,25%)] to-[hsl(280,50%,22%)] rounded-xl p-4 border border-[hsl(340,60%,40%)]">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🎖️</span>
@@ -800,6 +801,7 @@ const ShopScreen = () => {
             Buy War Pass+ - $4.99
           </button>
         </div>
+        )}
       </div>
 
       <BottomNav active="shop" setScreen={setScreen} />
