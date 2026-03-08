@@ -6,6 +6,7 @@ interface AuthState {
   user: User | null;
   session: Session | null;
   username: string | null;
+  playerTag: string | null;
   loading: boolean;
   needsUsername: boolean;
   signUp: (email: string, password: string) => Promise<{ error: string | null }>;
@@ -26,41 +27,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [username, setUsernameState] = useState<string | null>(null);
+  const [playerTag, setPlayerTag] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [needsUsername, setNeedsUsername] = useState(false);
 
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('profiles')
-      .select('username')
+      .select('username, player_tag')
       .eq('user_id', userId)
       .maybeSingle();
     
     if (data?.username) {
       setUsernameState(data.username);
+      setPlayerTag(data.player_tag);
       setNeedsUsername(false);
     } else {
       setUsernameState(null);
+      setPlayerTag(null);
       setNeedsUsername(true);
     }
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        // Defer profile fetch to avoid deadlock
         setTimeout(() => fetchProfile(session.user.id), 0);
       } else {
         setUsernameState(null);
+        setPlayerTag(null);
         setNeedsUsername(false);
       }
       setLoading(false);
     });
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -92,6 +94,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setSession(null);
     setUsernameState(null);
+    setPlayerTag(null);
     setNeedsUsername(false);
   };
 
@@ -106,7 +109,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { error: 'Only letters, numbers, and underscores allowed' };
     }
 
-    // Check if username is taken (case-insensitive)
     const { data: existing } = await supabase
       .from('profiles')
       .select('id')
@@ -117,22 +119,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { error: 'Username is already taken forever! Choose another.' };
     }
 
+    // Insert without player_tag - the DB trigger auto-generates it
     const { error } = await supabase
       .from('profiles')
-      .insert({ user_id: user.id, username: trimmed });
+      .insert({ user_id: user.id, username: trimmed } as any);
 
     if (error) {
       if (error.code === '23505') return { error: 'Username is already taken!' };
       return { error: error.message };
     }
 
-    setUsernameState(trimmed);
+    // Fetch the generated player tag
+    await fetchProfile(user.id);
     setNeedsUsername(false);
     return { error: null };
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, username, loading, needsUsername, signUp, signIn, signOut, setUsername }}>
+    <AuthContext.Provider value={{ user, session, username, playerTag, loading, needsUsername, signUp, signIn, signOut, setUsername }}>
       {children}
     </AuthContext.Provider>
   );

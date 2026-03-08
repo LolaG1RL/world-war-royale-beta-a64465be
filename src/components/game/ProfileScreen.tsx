@@ -2,12 +2,24 @@ import { useGame } from '@/context/GameContext';
 import { useAuth } from '@/context/AuthContext';
 import { getArenaForTrophies } from '@/data/cards';
 import { BottomNav } from './ShopScreen';
-import { ChevronLeft, Copy, Shield, Award, Target, Crown, Star, LogOut } from 'lucide-react';
+import { ChevronLeft, Copy, Shield, Award, Target, Crown, Star, LogOut, Check } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 const ProfileScreen = () => {
   const { setScreen, profile, deck } = useGame();
-  const { signOut } = useAuth();
+  const { signOut, playerTag } = useAuth();
   const arena = getArenaForTrophies(profile.trophies);
+  const [copied, setCopied] = useState(false);
+
+  const copyTag = () => {
+    if (playerTag) {
+      navigator.clipboard.writeText(playerTag);
+      setCopied(true);
+      toast.success('Player tag copied!');
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const stats = [
     { label: 'Wins', value: profile.wins, icon: '⚔️' },
@@ -22,11 +34,11 @@ const ProfileScreen = () => {
 
   const badges = [
     { name: 'Grand Champion', emoji: '🏆', earned: false },
-    { name: 'War Hero', emoji: '⚔️', earned: true },
-    { name: 'Card Master', emoji: '🃏', earned: true },
-    { name: 'Generous Donor', emoji: '📦', earned: true },
-    { name: 'Legendary Player', emoji: '🌟', earned: false },
-    { name: 'Speed Demon', emoji: '⚡', earned: false },
+    { name: 'War Hero', emoji: '⚔️', earned: profile.warDayWins > 0 },
+    { name: 'Card Master', emoji: '🃏', earned: profile.clanCardsCollected > 0 },
+    { name: 'Generous Donor', emoji: '📦', earned: profile.totalDonations > 0 },
+    { name: 'Legendary Player', emoji: '🌟', earned: profile.maxTrophies >= 4000 },
+    { name: 'Speed Demon', emoji: '⚡', earned: profile.wins >= 100 },
   ];
 
   return (
@@ -34,7 +46,7 @@ const ProfileScreen = () => {
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,25%,12%)] border-b border-border">
         <button onClick={() => setScreen('menu')} className="text-muted-foreground"><ChevronLeft className="w-5 h-5" /></button>
-        <h2 className="font-display font-bold text-foreground text-sm uppercase tracking-wider">Profile</h2>
+        <h2 className="font-display font-bold text-foreground text-sm uppercase tracking-wider">Deaf ID Profile</h2>
         <button className="text-muted-foreground text-[10px]">⚙️</button>
       </div>
 
@@ -50,10 +62,13 @@ const ProfileScreen = () => {
                 <span className="text-base font-display font-bold text-foreground">{profile.name}</span>
                 <span className="bg-[hsl(210,60%,40%)] px-1.5 py-0.5 rounded text-[8px] font-bold text-foreground">Lvl {profile.level}</span>
               </div>
-              <div className="flex items-center gap-1 mt-0.5 text-[9px] text-muted-foreground">
-                <span>Tag: #WR{Math.random().toString(36).substring(2, 8).toUpperCase()}</span>
-                <Copy className="w-2.5 h-2.5 cursor-pointer hover:text-primary" />
-              </div>
+              <button
+                onClick={copyTag}
+                className="flex items-center gap-1 mt-0.5 text-[10px] text-primary font-bold bg-primary/10 px-2 py-0.5 rounded-full hover:bg-primary/20 transition-colors"
+              >
+                <span>{playerTag || '...'}</span>
+                {copied ? <Check className="w-2.5 h-2.5" /> : <Copy className="w-2.5 h-2.5" />}
+              </button>
               <div className="flex items-center gap-3 mt-1">
                 <span className="text-[10px] font-bold text-primary">🏆 {profile.trophies}</span>
                 <span className="text-[10px] text-muted-foreground">{arena.emoji} {arena.name}</span>
@@ -70,6 +85,7 @@ const ProfileScreen = () => {
               <div className="h-full bg-[hsl(210,60%,50%)] rounded-full" style={{ width: `${(profile.xp / profile.maxXp) * 100}%` }} />
             </div>
           </div>
+          <p className="text-[8px] text-muted-foreground mt-2">Share your player tag so friends can add you!</p>
         </div>
 
         {/* Stats grid */}

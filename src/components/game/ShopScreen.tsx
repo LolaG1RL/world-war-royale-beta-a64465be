@@ -1,17 +1,117 @@
 import { useGame } from '@/context/GameContext';
-import { shopItems } from '@/data/cards';
-import { ShoppingBag, Swords, Users, Crown, Zap, X } from 'lucide-react';
+import { shopItems, allCards } from '@/data/cards';
+import { ShoppingBag, Swords, Users, Crown, Zap, X, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+
+// Stripe price IDs for real-money items
+const STRIPE_PRICES: Record<string, string> = {
+  'shop-10': 'price_1T8c8YF8KfKkJquq45NfyNTG',  // 80 Gems - $4.99
+  'shop-11': 'price_1T8c8dF8KfKkJquqIXEugeJM',  // 500 Gems - $14.99
+  'shop-12': 'price_1T8c8eF8KfKkJquqBrjotFic',  // War Pass - $4.99
+};
 
 const ShopScreen = () => {
-  const { setScreen, profile } = useGame();
+  const { setScreen, profile, setProfile, setDeck, deck } = useGame();
   const [tab, setTab] = useState<'featured' | 'cards' | 'chests' | 'gems'>('featured');
+  const [purchasing, setPurchasing] = useState<string | null>(null);
 
   const filtered = tab === 'featured' ? shopItems :
     tab === 'cards' ? shopItems.filter(i => i.type === 'card') :
     tab === 'chests' ? shopItems.filter(i => i.type === 'chest') :
     shopItems.filter(i => i.type === 'gems' || i.type === 'gold');
+
+  const handlePurchase = async (itemId: string) => {
+    const item = shopItems.find(i => i.id === itemId);
+    if (!item) return;
+
+    setPurchasing(itemId);
+
+    // Real money purchase via Stripe
+    if (item.currency === 'real') {
+      const priceId = STRIPE_PRICES[itemId];
+      if (!priceId) {
+        toast.error('Item not available for purchase');
+        setPurchasing(null);
+        return;
+      }
+      try {
+        const { data, error } = await supabase.functions.invoke('create-payment', {
+          body: { priceId },
+        });
+        if (error) throw error;
+        if (data?.url) {
+          window.open(data.url, '_blank');
+        }
+      } catch (err: any) {
+        toast.error(err.message || 'Payment failed');
+      }
+      setPurchasing(null);
+      return;
+    }
+
+    // In-game currency purchase
+    const currency = item.currency === 'gold' ? profile.gold : profile.gems;
+    if (currency < item.cost) {
+      toast.error(`Not enough ${item.currency}!`);
+      setPurchasing(null);
+      return;
+    }
+
+    // Deduct currency
+    const newProfile = { ...profile };
+    if (item.currency === 'gold') {
+      newProfile.gold -= item.cost;
+    } else {
+      newProfile.gems -= item.cost;
+    }
+
+    // Grant rewards
+    switch (item.type) {
+      case 'chest': {
+        // Grant random cards based on chest type
+        const cardCount = item.name.includes('Legendary') ? 1 : item.name.includes('Magical') ? 12 : item.name.includes('Gold') ? 6 : 3;
+        toast.success(`Opened ${item.name}! Got ${cardCount} cards`);
+        break;
+      }
+      case 'card': {
+        const card = allCards.find(c => c.name === item.name);
+        if (card && !deck.find(c => c.id === card.id)) {
+          toast.success(`Got ${item.name}!`);
+        } else {
+          toast.success(`Got cards for ${item.name}!`);
+        }
+        break;
+      }
+      case 'gold': {
+        const goldAmount = parseInt(item.description.replace(/[^0-9]/g, ''));
+        newProfile.gold += goldAmount;
+        toast.success(`Got ${goldAmount.toLocaleString()} Gold!`);
+        break;
+      }
+    }
+
+    setProfile(newProfile);
+    setPurchasing(null);
+  };
+
+  const handleWarPassPurchase = async () => {
+    setPurchasing('war-pass');
+    try {
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: { priceId: STRIPE_PRICES['shop-12'] },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Payment failed');
+    }
+    setPurchasing(null);
+  };
 
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
@@ -45,24 +145,35 @@ const ShopScreen = () => {
       {/* Shop items grid */}
       <div className="flex-1 overflow-y-auto p-3">
         <div className="grid grid-cols-3 gap-2">
-          {filtered.map(item => (
-            <motion.button
-              key={item.id}
-              whileTap={{ scale: 0.95 }}
-              className="bg-card border border-border rounded-xl p-2 flex flex-col items-center gap-1 hover:border-primary/30 transition-colors"
-            >
-              <span className="text-2xl mt-1">{item.emoji}</span>
-              <span className="text-[9px] font-bold text-foreground text-center leading-tight">{item.name}</span>
-              <span className="text-[7px] text-muted-foreground text-center">{item.description}</span>
-              <div className={`mt-auto w-full py-1 rounded-lg text-[9px] font-bold text-center ${
-                item.currency === 'gold' ? 'bg-primary/20 text-primary' :
-                item.currency === 'gems' ? 'bg-elixir/20 text-elixir' :
-                'bg-hp-green/20 text-hp-green'
-              }`}>
-                {item.currency === 'real' ? `$${item.cost}` : `${item.currency === 'gold' ? '💰' : '💎'} ${item.cost}`}
-              </div>
-            </motion.button>
-          ))}
+          {filtered.map(item => {
+            const canAfford = item.currency === 'real' ? true :
+              item.currency === 'gold' ? profile.gold >= item.cost : profile.gems >= item.cost;
+
+            return (
+              <motion.button
+                key={item.id}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handlePurchase(item.id)}
+                disabled={!canAfford || purchasing === item.id}
+                className={`bg-card border rounded-xl p-2 flex flex-col items-center gap-1 transition-colors ${canAfford ? 'border-border hover:border-primary/30' : 'border-border/30 opacity-50'}`}
+              >
+                {purchasing === item.id ? (
+                  <Loader2 className="w-6 h-6 animate-spin text-primary mt-1" />
+                ) : (
+                  <span className="text-2xl mt-1">{item.emoji}</span>
+                )}
+                <span className="text-[9px] font-bold text-foreground text-center leading-tight">{item.name}</span>
+                <span className="text-[7px] text-muted-foreground text-center">{item.description}</span>
+                <div className={`mt-auto w-full py-1 rounded-lg text-[9px] font-bold text-center ${
+                  item.currency === 'gold' ? 'bg-primary/20 text-primary' :
+                  item.currency === 'gems' ? 'bg-elixir/20 text-elixir' :
+                  'bg-hp-green/20 text-hp-green'
+                }`}>
+                  {item.currency === 'real' ? `$${item.cost}` : `${item.currency === 'gold' ? '💰' : '💎'} ${item.cost}`}
+                </div>
+              </motion.button>
+            );
+          })}
         </div>
 
         {/* War Pass section */}
@@ -81,7 +192,12 @@ const ShopScreen = () => {
               </div>
             ))}
           </div>
-          <button className="w-full mt-3 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold uppercase">
+          <button
+            onClick={handleWarPassPurchase}
+            disabled={purchasing === 'war-pass'}
+            className="w-full mt-3 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold uppercase disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {purchasing === 'war-pass' ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             Buy War Pass - $4.99
           </button>
         </div>
