@@ -11,16 +11,9 @@ import { t, tArena } from '@/lib/i18n';
 const ProfileScreen = () => {
   const { setScreen, profile, deck } = useGame();
   const { signOut, playerTag } = useAuth();
-  const {
-    language, setLanguage,
-    sfxEnabled, musicEnabled, sfxVolume, musicVolume,
-    setSfxEnabled, setMusicEnabled, setSfxVolume, setMusicVolume,
-    visualsEnabled, particlesEnabled, setVisualsEnabled, setParticlesEnabled,
-  } = useSettings();
+  const { language } = useSettings();
   const arena = getArenaForTrophies(profile.trophies);
   const [copied, setCopied] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const T = (key: string) => t(key, language);
 
   const copyTag = () => {
     if (playerTag) {
