@@ -11,8 +11,8 @@ import {
   getOwnedBackgrounds, getOwnedEmblems, getOwnedBadges,
   addOwnedBackground, addOwnedEmblem, addOwnedBadge,
   getUnlockedAchievementBadges,
+} from '@/data/banners';
 import { BottomNav } from './BottomNav';
-
 // Stripe price IDs for real-money items
 const STRIPE_PRICES: Record<string, string> = {
   'shop-10': 'price_1T8c8YF8KfKkJquq45NfyNTG',
