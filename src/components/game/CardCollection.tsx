@@ -8,6 +8,7 @@ import { allEmotes, getOwnedEmotes, getEquippedEmotes, setEquippedEmotes } from 
 import { BottomNav } from './ShopScreen';
 import { getCardEntry, getUpgradeRequirements, canUpgrade, upgradeCard, addCards } from '@/data/cardInventory';
 import { toast } from 'sonner';
+import BannerCustomizer from './BannerCustomizer';
 
 const CardCollection = () => {
   const { deck, setDeck, setScreen, setActiveTab, profile, setProfile } = useGame();
@@ -15,7 +16,8 @@ const CardCollection = () => {
   const [filter, setFilter] = useState<'all' | 'troop' | 'spell' | 'building'>('all');
   const [deckSlot, setDeckSlot] = useState(0);
   const [decks, setDecks] = useState<GameCard[][]>([deck, [], [], [], []]);
-  const [mainTab, setMainTab] = useState<'cards' | 'emotes'>('cards');
+  const [mainTab, setMainTab] = useState<'cards' | 'emotes' | 'banner'>('cards');
+  const [showBanner, setShowBanner] = useState(false);
   const [ownedEmotes] = useState(() => getOwnedEmotes());
   const [equipped, setEquipped] = useState(() => getEquippedEmotes());
   const [, forceUpdate] = useState(0);
@@ -68,7 +70,7 @@ const CardCollection = () => {
         <span className="text-xs font-bold text-primary">{mainTab === 'cards' ? `${currentDeck.length}/8` : `${equipped.length}/8`}</span>
       </div>
 
-      {/* Cards / Emotes tab */}
+      {/* Cards / Emotes / Banner tab */}
       <div className="flex bg-[hsl(220,20%,14%)] border-b border-border">
         <button onClick={() => setMainTab('cards')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${mainTab === 'cards' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
           🃏 Cards
@@ -76,9 +78,14 @@ const CardCollection = () => {
         <button onClick={() => setMainTab('emotes')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${mainTab === 'emotes' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
           😀 Emotes
         </button>
+        <button onClick={() => setMainTab('banner')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${mainTab === 'banner' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
+          🏴 Banner
+        </button>
       </div>
 
-      {mainTab === 'cards' ? (
+      {mainTab === 'banner' ? (
+        <BannerCustomizer onClose={() => setMainTab('cards')} />
+      ) : mainTab === 'cards' ? (
         <>
           {/* Deck slots tabs */}
           <div className="flex bg-[hsl(220,20%,14%)] border-b border-border">

@@ -5,9 +5,15 @@ import CardComponent from './CardComponent';
 import { motion, AnimatePresence } from 'framer-motion';
 import { allEmotes, getEquippedEmotes } from '@/data/emotes';
 
+import BattleIntro from './BattleIntro';
+import BattleBannerDisplay from './BattleBannerDisplay';
+import { getPlayerBanner } from '@/data/banners';
+
 const BattleArena = () => {
-  const { deck, setScreen, setBattleResult, setProfile } = useGame();
+  const { deck, setScreen, setBattleResult, setProfile, profile } = useGame();
   const isRiverRace = !!localStorage.getItem('river_race_battle');
+  const [showIntro, setShowIntro] = useState(true);
+  const playerBanner = getPlayerBanner();
   const [elixir, setElixir] = useState(5);
   const [maxElixir] = useState(10);
   const [timer, setTimer] = useState(180);
@@ -178,6 +184,16 @@ const BattleArena = () => {
 
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col arena-field relative overflow-hidden">
+      {/* Battle Intro */}
+      {showIntro && <BattleIntro onComplete={() => setShowIntro(false)} />}
+
+      {/* Mini banner */}
+      {!showIntro && (
+        <div className="absolute top-10 left-2 right-2 z-30 pointer-events-none">
+          <BattleBannerDisplay banner={playerBanner} name={profile.name} trophies={profile.trophies} size="sm" className="opacity-70" />
+        </div>
+      )}
+
       {/* Top bar */}
       <div className="flex items-center justify-between px-3 py-1.5 bg-[hsl(220,20%,10%,0.95)] z-20 border-b border-border">
         <div className="flex items-center gap-1.5">
