@@ -933,11 +933,14 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                       <select value={tradeWant} onChange={e => setTradeWant(e.target.value)}
                         className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-[9px] text-foreground">
                         <option value="">Select card...</option>
-                        {allCards.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
+                        {allCards.filter(c => c.id !== tradeOffer).map(c => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
                       </select>
                     </div>
                   </div>
-                  <button onClick={sendTradeRequest} disabled={!tradeOffer || !tradeWant || sending}
+                  {tradeOffer === tradeWant && tradeOffer && (
+                    <div className="text-[9px] text-destructive">⚠️ Can't trade a card for itself!</div>
+                  )}
+                  <button onClick={sendTradeRequest} disabled={!tradeOffer || !tradeWant || tradeOffer === tradeWant || sending}
                     className="w-full py-1.5 bg-primary text-primary-foreground rounded-lg text-[10px] font-bold disabled:opacity-50">
                     Post Trade Request
                   </button>
