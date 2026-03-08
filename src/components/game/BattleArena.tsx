@@ -18,6 +18,40 @@ const BattleArena = () => {
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
   const [isDoubleElixir, setIsDoubleElixir] = useState(false);
 
+  // Deaf Mode event listeners
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { action } = (e as CustomEvent).detail;
+      switch (action) {
+        case 'insta-elixir':
+          setElixir(10);
+          break;
+        case 'insta-win':
+          setBattleResult('win');
+          setProfile(prev => ({ ...prev, trophies: prev.trophies + 30, wins: prev.wins + 1 }));
+          setScreen('result');
+          break;
+        case 'insta-lose':
+          setBattleResult('lose');
+          setProfile(prev => ({ ...prev, losses: prev.losses + 1, trophies: Math.max(0, prev.trophies - 15) }));
+          setScreen('result');
+          break;
+        case 'spawn-unit': {
+          const troops = deck.filter(c => c.type === 'troop');
+          if (!troops.length) break;
+          const card = troops[Math.floor(Math.random() * troops.length)];
+          setUnitCounter(prev => {
+            setDeployedUnits(u => [...u, { id: `p-mod-${prev}`, card, x: 30 + Math.random() * 40, y: 60 + Math.random() * 15, side: 'player', key: prev + 10000 }]);
+            return prev + 1;
+          });
+          break;
+        }
+      }
+    };
+    window.addEventListener('deaf-mod', handler);
+    return () => window.removeEventListener('deaf-mod', handler);
+  }, [deck, setBattleResult, setProfile, setScreen]);
+
   useEffect(() => {
     const shuffled = [...deck].sort(() => Math.random() - 0.5);
     setHand(shuffled.slice(0, 4));
