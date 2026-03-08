@@ -914,6 +914,7 @@ const BattleArena = () => {
                 <div className="text-[5px] text-amber-300/80 text-center leading-tight">{championCard.passive.name}</div>
               </div>
             )}
+          </div>
         )}
 
         {selectedCard !== null && (
