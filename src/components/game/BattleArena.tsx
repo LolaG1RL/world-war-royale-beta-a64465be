@@ -91,6 +91,8 @@ const BattleArena = () => {
   const enemyTowerHP = getEnemyTowerHP();
 
   // Deaf Mode event listeners
+  const spawnUnitRef = useRef<(card: GameCard, x: number, y: number, side: 'player' | 'enemy') => void>(() => {});
+
   useEffect(() => {
     const handler = (e: Event) => {
       const { action } = (e as CustomEvent).detail;
@@ -132,14 +134,14 @@ const BattleArena = () => {
           const troops = deck.filter(c => c.type === 'troop');
           if (!troops.length) break;
           const card = troops[Math.floor(Math.random() * troops.length)];
-          spawnUnit(card, 30 + Math.random() * 40, 60 + Math.random() * 15, 'player');
+          spawnUnitRef.current(card, 30 + Math.random() * 40, 60 + Math.random() * 15, 'player');
           break;
         }
       }
     };
     window.addEventListener('deaf-mod', handler);
     return () => window.removeEventListener('deaf-mod', handler);
-  }, [deck, setBattleResult, setProfile, setScreen, getEnemyTowerHP, getPlayerTowerHP, spawnUnit, isRiverRace]);
+  }, [deck, setBattleResult, setProfile, setScreen, getEnemyTowerHP, getPlayerTowerHP, isRiverRace]);
 
   useEffect(() => {
     const shuffled = [...deck].sort(() => Math.random() - 0.5);
@@ -178,6 +180,9 @@ const BattleArena = () => {
     });
   }, []);
 
+  // Keep ref updated
+  spawnUnitRef.current = spawnUnit;
+
   // Elixir regen
   useEffect(() => {
     const rate = isDoubleElixir ? 0.5 : 1;
@@ -188,14 +193,19 @@ const BattleArena = () => {
     return () => clearInterval(interval);
   }, [maxElixir, isDoubleElixir]);
 
-  // Timer
+  // Timer - use refs to avoid restarting interval
+  const isDoubleElixirRef = useRef(isDoubleElixir);
+  isDoubleElixirRef.current = isDoubleElixir;
+
   useEffect(() => {
     const interval = setInterval(() => {
       setTimer(prev => {
-        if (prev <= 60 && !isDoubleElixir) setIsDoubleElixir(true);
+        if (prev <= 60 && !isDoubleElixirRef.current) setIsDoubleElixir(true);
         if (prev <= 0) {
-          const pCrowns = (enemyTowerHP.left <= 0 ? 1 : 0) + (enemyTowerHP.right <= 0 ? 1 : 0) + (enemyTowerHP.king <= 0 ? 1 : 0);
-          const eCrowns = (playerTowerHP.left <= 0 ? 1 : 0) + (playerTowerHP.right <= 0 ? 1 : 0) + (playerTowerHP.king <= 0 ? 1 : 0);
+          const eth = getEnemyTowerHP();
+          const pth = getPlayerTowerHP();
+          const pCrowns = (eth.left <= 0 ? 1 : 0) + (eth.right <= 0 ? 1 : 0) + (eth.king <= 0 ? 1 : 0);
+          const eCrowns = (pth.left <= 0 ? 1 : 0) + (pth.right <= 0 ? 1 : 0) + (pth.king <= 0 ? 1 : 0);
           const netCrowns = pCrowns - eCrowns;
           const saved = JSON.parse(localStorage.getItem('war_pass_data') || '{"crowns":0}');
           saved.crowns = Math.max(0, (saved.crowns || 0) + netCrowns);
@@ -215,39 +225,36 @@ const BattleArena = () => {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [enemyTowerHP, playerTowerHP, isDoubleElixir, setBattleResult, setScreen, setProfile, isRiverRace]);
+  }, [setBattleResult, setScreen, setProfile, isRiverRace, getEnemyTowerHP, getPlayerTowerHP]);
 
-  // Enemy AI - smarter deployment
+  // Enemy AI - smarter deployment (use refs to avoid restarting)
   useEffect(() => {
     const interval = setInterval(() => {
       const troops = deck.filter(c => c.type === 'troop');
       if (!troops.length) return;
       
-      // Pick card based on elixir cost
       const affordable = troops.filter(c => c.elixir <= enemyElixir.current);
       if (affordable.length === 0) return;
       
       const card = affordable[Math.floor(Math.random() * affordable.length)];
       enemyElixir.current -= card.elixir;
       
-      // Smart placement: counter player's lane or push empty lane
-      const playerUnits = deployedUnits.filter(u => u.side === 'player');
+      const playerUnits = deployedUnitsRef.current.filter(u => u.side === 'player');
       const leftLane = playerUnits.filter(u => u.x < 50).length;
       const rightLane = playerUnits.filter(u => u.x >= 50).length;
       
       let deployX = 50;
-      if (leftLane > rightLane) deployX = 25 + Math.random() * 15; // Counter left
-      else if (rightLane > leftLane) deployX = 60 + Math.random() * 15; // Counter right
+      if (leftLane > rightLane) deployX = 25 + Math.random() * 15;
+      else if (rightLane > leftLane) deployX = 60 + Math.random() * 15;
       else deployX = Math.random() > 0.5 ? (25 + Math.random() * 15) : (60 + Math.random() * 15);
       
-      // Deploy behind king tower for tanks, at bridge for fast units
       const speed = getSpeedValue(card.speed);
       const deployY = speed >= SPEED_VALUES.fast ? 25 : 10 + Math.random() * 10;
       
       spawnUnit(card, deployX, deployY, 'enemy');
-    }, 3000 + Math.random() * 2000);
+    }, 3500);
     return () => clearInterval(interval);
-  }, [deck, deployedUnits, spawnUnit]);
+  }, [deck, spawnUnit]);
 
   // Main combat simulation loop
   useEffect(() => {
