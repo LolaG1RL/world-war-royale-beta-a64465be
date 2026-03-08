@@ -258,6 +258,7 @@ const RiverRaceScreen = () => {
 
   const saveRaceData = (b: BoatData[], wd: WarDeck[], day: number) => {
     localStorage.setItem('river_race_data', JSON.stringify({
+      version: RIVER_RACE_VERSION,
       boats: b,
       warDecks: wd.map(d => ({ ...d, cards: d.cards.map(c => c.id) })),
       dayNumber: day,
