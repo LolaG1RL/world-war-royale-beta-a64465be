@@ -512,20 +512,13 @@ const translations: TranslationMap = {
   'cards.matchup_tab': { en: 'Matchup', es: 'Matchup', fr: 'Matchup', de: 'Matchup', pt: 'Matchup', ja: 'マッチアップ', ko: '상성', zh: '对局', ar: 'المواجهة', ru: 'Матчап' },
   'cards.cards_count': { en: 'cards', es: 'cartas', fr: 'cartes', de: 'Karten', pt: 'cartas', ja: 'カード', ko: '카드', zh: '卡牌', ar: 'بطاقات', ru: 'карт' },
 
-  // ═══ Battle ═══
-  'battle.next': { en: 'Next', es: 'Siguiente', fr: 'Suivant', de: 'Nächste', pt: 'Próximo', ja: '次', ko: '다음', zh: '下一张', ar: 'التالي', ru: 'Следующая' },
-
-  // ═══ River Race ═══
-  'river.title': { en: 'River Race', es: 'Carrera del Río', fr: 'Course de Rivière', de: 'Flussrennen', pt: 'Corrida do Rio', ja: 'リバーレース', ko: '리버 레이스', zh: '河流竞赛', ar: 'سباق النهر', ru: 'Речная гонка' },
+  // ═══ River Race extra ═══
   'river.join_clan_first': { en: 'Join a Clan First!', es: '¡Únete a un Clan Primero!', fr: "Rejoignez d'abord un Clan!", de: 'Tritt zuerst einem Clan bei!', pt: 'Entre em um Clã Primeiro!', ja: 'まずクランに参加！', ko: '먼저 클랜에 가입하세요!', zh: '先加入一个部落！', ar: 'انضم لعشيرة أولاً!', ru: 'Сначала вступите в клан!' },
-  'river.need_clan': { en: 'You need to be in a clan to participate in River Race.', es: 'Necesitas estar en un clan para participar.', fr: 'Vous devez être dans un clan pour participer.', de: 'Du musst in einem Clan sein, um teilzunehmen.', pt: 'Você precisa estar em um clã para participar.', ja: 'リバーレースに参加するにはクランが必要です。', ko: '리버 레이스에 참가하려면 클랜이 필요합니다.', zh: '你需要加入部落才能参加河流竞赛。', ar: 'تحتاج للانضمام لعشيرة للمشاركة.', ru: 'Вы должны быть в клане для участия.' },
   'river.go_to_social': { en: 'Go to Social', es: 'Ir a Social', fr: 'Aller au Social', de: 'Zu Sozial', pt: 'Ir para Social', ja: 'ソーシャルへ', ko: '소셜로 이동', zh: '前往社交', ar: 'اذهب للاجتماعي', ru: 'К соцсетям' },
   'river.your_boat': { en: '⛵ Your Boat Part', es: '⛵ Tu Parte del Barco', fr: '⛵ Votre Partie du Bateau', de: '⛵ Dein Bootsteil', pt: '⛵ Sua Parte do Barco', ja: '⛵ あなたのボートパーツ', ko: '⛵ 내 보트 파트', zh: '⛵ 你的船部分', ar: '⛵ جزء قاربك', ru: '⛵ Ваша часть лодки' },
-  'river.defense_info': { en: 'Each clan member has 3 defense towers with max 4 cards each (12 total). Use cards you own, and each card can only be used in one tower.', es: 'Cada miembro tiene 3 torres de defensa con máx 4 cartas cada una. Usa cartas que poseas.', fr: 'Chaque membre a 3 tours de défense avec max 4 cartes chacune. Utilisez vos cartes.', de: 'Jedes Mitglied hat 3 Verteidigungstürme mit max 4 Karten. Nutze eigene Karten.', pt: 'Cada membro tem 3 torres de defesa com máx 4 cartas cada. Use cartas que possua.', ja: '各メンバーは最大4枚のカードを持つ防御タワー3基を所有。', ko: '각 멤버는 최대 4장의 카드를 가진 방어 타워 3개를 보유합니다.', zh: '每位成员有3座防御塔，每座最多4张卡。', ar: 'كل عضو لديه 3 أبراج دفاع بحد أقصى 4 بطاقات.', ru: 'У каждого члена 3 башни защиты с макс. 4 картами.' },
+  'river.defense_info': { en: 'Each clan member has 3 defense towers with max 4 cards each (12 total). Use cards you own, and each card can only be used in one tower.', es: 'Cada miembro tiene 3 torres de defensa con máx 4 cartas cada una.', fr: 'Chaque membre a 3 tours de défense avec max 4 cartes chacune.', de: 'Jedes Mitglied hat 3 Verteidigungstürme mit max 4 Karten.', pt: 'Cada membro tem 3 torres de defesa com máx 4 cartas cada.', ja: '各メンバーは最大4枚のカードを持つ防御タワー3基を所有。', ko: '각 멤버는 최대 4장의 카드를 가진 방어 타워 3개를 보유합니다.', zh: '每位成员有3座防御塔，每座最多4张卡。', ar: 'كل عضو لديه 3 أبراج دفاع بحد أقصى 4 بطاقات.', ru: 'У каждого члена 3 башни защиты с макс. 4 картами.' },
   'river.defense_tower': { en: 'Defense Tower', es: 'Torre de Defensa', fr: 'Tour de Défense', de: 'Verteidigungsturm', pt: 'Torre de Defesa', ja: '防御タワー', ko: '방어 타워', zh: '防御塔', ar: 'برج الدفاع', ru: 'Башня защиты' },
   'river.destroyed': { en: 'DESTROYED', es: 'DESTRUIDA', fr: 'DÉTRUIT', de: 'ZERSTÖRT', pt: 'DESTRUÍDA', ja: '破壊済み', ko: '파괴됨', zh: '已摧毁', ar: 'مدمر', ru: 'УНИЧТОЖЕН' },
-  'river.edit': { en: 'Edit', es: 'Editar', fr: 'Modifier', de: 'Bearbeiten', pt: 'Editar', ja: '編集', ko: '편집', zh: '编辑', ar: 'تعديل', ru: 'Редактировать' },
-  'river.lvl_slots': { en: 'Lvl 1-10: 0 hero slots', es: 'Nvl 1-10: 0 ranuras', fr: 'Niv 1-10: 0 emplacement', de: 'Lvl 1-10: 0 Slots', pt: 'Nvl 1-10: 0 slots', ja: 'Lv 1-10: 0スロット', ko: 'Lv 1-10: 0슬롯', zh: '等级1-10: 0槽位', ar: 'مستوى 1-10: 0 فتحات', ru: 'Ур 1-10: 0 слотов' },
 };
 
 // Get a translation by key
