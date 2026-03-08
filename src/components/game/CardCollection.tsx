@@ -29,7 +29,7 @@ const RARITY_BORDER: Record<string, string> = {
 
 type BannerSubTab = 'backgrounds' | 'emblems' | 'badges';
 
-const BannerInline = ({ profile, clanName }: { profile: PlayerProfile; clanName?: string }) => {
+const BannerInline = ({ profile, clanName, clanBanner }: { profile: PlayerProfile; clanName?: string; clanBanner?: { bannerColor: string; bannerShape: string; iconId: string; iconColor: string } }) => {
   const [banner, setBanner] = useState<PlayerBanner>(getPlayerBanner());
   const [subTab, setSubTab] = useState<BannerSubTab>('backgrounds');
   const [ownedBgs] = useState(() => getOwnedBackgrounds());
@@ -66,14 +66,14 @@ const BannerInline = ({ profile, clanName }: { profile: PlayerProfile; clanName?
     <>
       {/* Preview */}
       <div className="px-4 py-3 bg-[hsl(220,20%,11%)] border-b border-border">
-        <BattleBannerDisplay banner={banner} name={profile.name} trophies={profile.trophies} clanName={clanName} size="lg" />
+        <BattleBannerDisplay banner={banner} name={profile.name} trophies={profile.trophies} clanName={clanName} clanBanner={clanBanner} size="lg" />
       </div>
 
       {/* Sub tabs */}
       <div className="flex bg-[hsl(220,20%,14%)] border-b border-border">
-        {(['backgrounds', 'emblems', 'badges'] as BannerSubTab[]).map(t => (
-          <button key={t} onClick={() => setSubTab(t)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${subTab === t ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
-            {t === 'backgrounds' ? '🖼️ BG' : t === 'emblems' ? '🎭 Emblem' : '🏅 Badges'}
+        {(['backgrounds', 'emblems', 'badges'] as BannerSubTab[]).map(tab => (
+          <button key={tab} onClick={() => setSubTab(tab)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${subTab === tab ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
+            {tab === 'backgrounds' ? '🖼️ BG' : tab === 'emblems' ? '🎭 Emblem' : '🏅 Badges'}
           </button>
         ))}
       </div>
@@ -917,7 +917,7 @@ const CardCollection = () => {
         </>
       ) : (
         /* Banner tab - inline */
-        <BannerInline profile={profile} clanName={clan?.name} />
+        <BannerInline profile={profile} clanName={clan?.name} clanBanner={clan ? { bannerColor: clan.bannerColor, bannerShape: clan.bannerShape, iconId: clan.iconId, iconColor: clan.iconColor } : undefined} />
       )}
 
       <BottomNav active="cards" setScreen={setScreen} />

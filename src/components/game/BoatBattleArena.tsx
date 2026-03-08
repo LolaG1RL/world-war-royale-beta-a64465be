@@ -374,7 +374,7 @@ const BoatBattleArena = () => {
       <div className="px-1.5 py-2 bg-[hsl(220,20%,9%)] border-t border-border flex items-end justify-center gap-1">
         {nextCard && (
           <div className="mr-1.5">
-            <div className="text-[6px] text-muted-foreground text-center mb-0.5 uppercase tracking-wider">Next</div>
+            <div className="text-[6px] text-muted-foreground text-center mb-0.5 uppercase tracking-wider">{t('battle.next', language)}</div>
             <CardComponent card={nextCard} size="xs" showElixir={false} />
           </div>
         )}

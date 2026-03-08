@@ -1040,7 +1040,7 @@ const BattleArena = () => {
         </button>
         {nextCard && (
           <div className="mr-1.5">
-            <div className="text-[6px] text-muted-foreground text-center mb-0.5 uppercase tracking-wider">Next</div>
+            <div className="text-[6px] text-muted-foreground text-center mb-0.5 uppercase tracking-wider">{t('battle.next', language)}</div>
             <CardComponent card={nextCard} size="xs" showElixir={false} />
           </div>
         )}
