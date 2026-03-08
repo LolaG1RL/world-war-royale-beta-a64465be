@@ -95,6 +95,7 @@ const WarPassScreen = () => {
   const [claimedPaid, setClaimedPaid] = useState<Set<number>>(new Set());
   const [purchasing, setPurchasing] = useState(false);
   const [revealItems, setRevealItems] = useState<RewardItem[] | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ label: string; cost: string; onConfirm: () => void } | null>(null);
   useEffect(() => {
     const saved = localStorage.getItem('war_pass_data');
     if (saved) {
