@@ -13,6 +13,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getCardEntry, addCards, removeCards, canRequest, setRequestCooldown, getRequestTimeLeft, getSkipCooldownCost, skipRequestCooldown, DONATION_LIMITS, getDonationsToday, recordDonation } from '@/data/cardInventory';
 import { allEmotes, getEquippedEmotes } from '@/data/emotes';
 import { countryCodeToFlag } from '@/lib/countryFlags';
+import { allEmblems, getPlayerBanner } from '@/data/banners';
+import RevealScreen, { RevealItem } from './RevealScreen';
 
 const BANNER_COLORS = [
   '#b91c1c', '#dc2626', '#ef4444',
@@ -42,6 +44,7 @@ interface LeaderboardEntry {
   username?: string;
   player_tag?: string;
   country?: string;
+  equipped_emblem?: string;
 }
 
 // Top 100 worldwide rewards (rank 1 = best)
@@ -101,6 +104,7 @@ const SocialScreen = () => {
   const { setScreen, clan, profile, setClan, setProfile } = useGame();
   const { language } = useSettings();
   const { user, playerTag } = useAuth();
+  const T = (key: string) => t(key, language);
   const [tab, setTab] = useState<'clan' | 'friends' | 'leaderboard'>('clan');
   const [showCreateClan, setShowCreateClan] = useState(false);
   const [clanName, setClanName] = useState('');
@@ -134,6 +138,58 @@ const SocialScreen = () => {
   const [myWorldRank, setMyWorldRank] = useState<number | null>(null);
   const [myLocalRank, setMyLocalRank] = useState<number | null>(null);
   const [showRewardsPanel, setShowRewardsPanel] = useState(false);
+  const [seasonEndReveal, setSeasonEndReveal] = useState<RevealItem[] | null>(null);
+
+  // Helper: get emblem emoji by id
+  const getEmblemEmoji = (id?: string) => {
+    const emb = allEmblems.find(e => e.id === (id || 'emb-shield'));
+    return emb?.emoji || '🛡️';
+  };
+
+  // Check & distribute season-end rewards once
+  useEffect(() => {
+    if (!user) return;
+    const seasonKey = 'season_rewards_claimed_v1';
+    if (localStorage.getItem(seasonKey)) return;
+
+    const worldRank = parseInt(localStorage.getItem('my_world_rank') || '0');
+    const localRank = parseInt(localStorage.getItem('my_local_rank') || '0');
+
+    const items: RevealItem[] = [];
+    let goldTotal = 0;
+    let gemsTotal = 0;
+
+    // World rank rewards
+    if (worldRank > 0 && worldRank <= 100) {
+      const reward = TOP_100_REWARDS.find(r => r.rank === worldRank);
+      if (reward) {
+        goldTotal += reward.gold;
+        gemsTotal += reward.gems;
+        items.push({ emoji: '🌍', name: `${T('social.worldwide')} #${worldRank}`, count: 1, rarity: worldRank <= 3 ? 'legendary' : worldRank <= 10 ? 'epic' : 'rare' });
+        if (reward.exclusiveBanner) items.push({ emoji: '🏴', name: reward.exclusiveBanner, count: 1, rarity: 'legendary' });
+        if (reward.exclusiveEmote) items.push({ emoji: '😀', name: reward.exclusiveEmote, count: 1, rarity: 'epic' });
+      }
+    }
+
+    // Local rank rewards
+    if (localRank > 0 && localRank <= 10) {
+      const reward = TOP_10_LOCAL_REWARDS.find(r => r.rank === localRank);
+      if (reward) {
+        goldTotal += reward.gold;
+        gemsTotal += reward.gems;
+        items.push({ emoji: '🏠', name: `${T('social.local')} #${localRank}`, count: 1, rarity: localRank <= 3 ? 'legendary' : 'epic' });
+        if (reward.exclusiveBanner) items.push({ emoji: '🏴', name: reward.exclusiveBanner, count: 1, rarity: 'legendary' });
+      }
+    }
+
+    if (items.length > 0) {
+      if (goldTotal > 0) items.push({ emoji: '💰', name: T('shop.gold'), count: goldTotal, rarity: 'common' });
+      if (gemsTotal > 0) items.push({ emoji: '💎', name: T('shop.gems'), count: gemsTotal, rarity: 'rare' });
+      setProfile(prev => ({ ...prev, gold: prev.gold + goldTotal, gems: prev.gems + gemsTotal }));
+      setSeasonEndReveal(items);
+      localStorage.setItem(seasonKey, 'true');
+    }
+  }, [user]);
 
   // Load user's clan from DB on mount
   useEffect(() => {
@@ -201,7 +257,7 @@ const SocialScreen = () => {
       role: 'member',
     });
     if (error) {
-      if (error.code === '23505') toast.error('You are already in a clan!');
+      if (error.code === '23505') toast.error(T('social.toast_already_in_clan'));
       else toast.error(error.message);
     } else {
       const { count } = await supabase
@@ -224,7 +280,7 @@ const SocialScreen = () => {
         iconColor: clanRow.icon_color,
       });
       setShowClanSearch(false);
-      toast.success(`Joined ${clanRow.name}!`);
+      toast.success(`${T('social.toast_joined')} ${clanRow.name}!`);
     }
     setJoiningClan(null);
   };
@@ -278,7 +334,7 @@ const SocialScreen = () => {
     setClanName('');
     setClanDescription('');
     setCustomizeStep('info');
-    toast.success('Clan created!');
+    toast.success(T('social.toast_clan_created'));
   };
 
   // Leave clan
@@ -286,7 +342,7 @@ const SocialScreen = () => {
     if (!user) return;
     await supabase.from('clan_members').delete().eq('user_id', user.id);
     setClan(null);
-    toast.success('Left clan');
+    toast.success(T('social.toast_left_clan'));
   };
 
   // Add friend by tag
@@ -303,12 +359,12 @@ const SocialScreen = () => {
       .maybeSingle();
 
     if (!targetProfile) {
-      toast.error('Player not found!');
+      toast.error(T('social.toast_player_not_found'));
       setAddingFriend(false);
       return;
     }
     if (targetProfile.user_id === user.id) {
-      toast.error("You can't add yourself!");
+      toast.error(T('social.toast_cant_add_self'));
       setAddingFriend(false);
       return;
     }
@@ -320,10 +376,10 @@ const SocialScreen = () => {
     });
 
     if (error) {
-      if (error.code === '23505') toast.error('Already friends!');
+      if (error.code === '23505') toast.error(T('social.toast_already_friends'));
       else toast.error(error.message);
     } else {
-      toast.success('Friend added!');
+      toast.success(T('social.toast_friend_added'));
       setFriendTag('');
       loadFriends();
     }
@@ -411,7 +467,7 @@ const SocialScreen = () => {
     // Worldwide
     const { data: progress } = await supabase
       .from('player_progress')
-      .select('user_id, trophies, level, wins, country')
+      .select('user_id, trophies, level, wins, country, equipped_emblem')
       .order('trophies', { ascending: false })
       .limit(200);
 
@@ -429,6 +485,7 @@ const SocialScreen = () => {
           username: prof?.username || 'Unknown',
           player_tag: prof?.player_tag || '',
           country: (p as any).country || null,
+          equipped_emblem: (p as any).equipped_emblem || 'emb-shield',
         };
       });
       setLeaderboard(entries);
@@ -794,8 +851,9 @@ const SocialScreen = () => {
                     <div className={`text-[10px] font-bold w-6 text-center ${rank === 1 ? 'text-primary' : rank === 2 ? 'text-muted-foreground' : rank === 3 ? 'text-[hsl(25,70%,50%)]' : 'text-muted-foreground'}`}>
                       {rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}
                     </div>
-                    <div className="w-7 h-7 rounded-lg bg-[hsl(210,60%,40%)] border border-[hsl(210,70%,55%)] flex items-center justify-center">
-                      <span className="text-[9px] font-black text-foreground">{entry.level}</span>
+                    {/* Equipped emblem instead of level square */}
+                    <div className="w-7 h-7 rounded-lg bg-[hsl(220,20%,18%)] border border-border flex items-center justify-center">
+                      <span className="text-base">{getEmblemEmoji(isYou ? getPlayerBanner().emblemId : entry.equipped_emblem)}</span>
                     </div>
                     {/* Country flag */}
                     {entry.country && (
@@ -806,7 +864,7 @@ const SocialScreen = () => {
                         {entry.username} {isYou && <span className="text-[8px] text-primary">({t('common.you', language)})</span>}
                       </div>
                       <div className="text-[8px] text-muted-foreground">
-                        {entry.player_tag} • {entry.wins}W
+                        {entry.player_tag} • {t('menu.lvl', language)} {entry.level} • {entry.wins}W
                       </div>
                       {reward && (
                         <div className="flex gap-1 mt-0.5 flex-wrap">
@@ -824,6 +882,19 @@ const SocialScreen = () => {
           </div>
         </div>
       )}
+
+      {/* Season-end reward reveal */}
+      <AnimatePresence>
+        {seasonEndReveal && (
+          <RevealScreen
+            items={seasonEndReveal}
+            title={`🏆 ${T('social.season_end_rewards')}`}
+            subtitle={T('social.season_end_desc')}
+            onClose={() => setSeasonEndReveal(null)}
+            lang={language}
+          />
+        )}
+      </AnimatePresence>
 
       <BottomNav active="social" setScreen={setScreen} />
     </div>
@@ -845,6 +916,7 @@ interface ClanMsg {
 const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; profile: any; user: any; leaveClan: () => void; setScreen: (s: string) => void }) => {
   const { setProfile } = useGame();
   const { language } = useSettings();
+  const T = (key: string) => t(key, language);
   const [chatMode, setChatMode] = useState<'info' | 'chat'>('info');
   const [messages, setMessages] = useState<ClanMsg[]>([]);
   const [msgInput, setMsgInput] = useState('');
@@ -947,12 +1019,12 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
 
   const sendTradeRequest = async () => {
     if (!tradeOffer || !tradeWant || !clanId || !user) return;
-    if (tradeOffer === tradeWant) { toast.error("Can't trade a card for itself!"); return; }
+    if (tradeOffer === tradeWant) { toast.error(T('social.cant_trade_self')); return; }
     const offered = allCards.find(c => c.id === tradeOffer);
     const wanted = allCards.find(c => c.id === tradeWant);
     if (!offered || !wanted) return;
     const offerEntry = getCardEntry(tradeOffer);
-    if (offerEntry.count <= 1) { toast.error("You need at least 2 of this card to trade!"); return; }
+    if (offerEntry.count <= 1) { toast.error(T('social.toast_need_2_to_trade')); return; }
     setSending(true);
     await supabase.from('clan_messages').insert({
       clan_id: clanId,
@@ -967,19 +1039,19 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
     setTradeOffer('');
     setTradeWant('');
     setSending(false);
-    toast.success('Trade request posted!');
+    toast.success(T('social.toast_trade_posted'));
   };
   
   const acceptTrade = (msg: ClanMsg) => {
     if (!msg.trade_card_offered || !msg.trade_card_wanted) return;
-    if (msg.user_id === user?.id) { toast.error("Can't accept your own trade!"); return; }
+    if (msg.user_id === user?.id) { toast.error(T('social.toast_cant_accept_own')); return; }
     const offeredCard = allCards.find(c => c.id === msg.trade_card_offered);
     const wantedCard = allCards.find(c => c.id === msg.trade_card_wanted);
     if (!offeredCard || !wantedCard) return;
     
     // The acceptor needs to have the "wanted" card (what the poster wants)
     const myWantedEntry = getCardEntry(msg.trade_card_wanted);
-    if (myWantedEntry.count <= 1) { toast.error(`You need at least 2 ${wantedCard.name} to trade!`); return; }
+    if (myWantedEntry.count <= 1) { toast.error(T('social.toast_need_2_to_trade')); return; }
     
     // Execute trade: acceptor gives wanted card, receives offered card
     removeCards(msg.trade_card_wanted, 1);
@@ -987,20 +1059,20 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
     
     // Grant XP for trading
     setProfile((p: any) => ({ ...p, xp: p.xp + 10 }));
-    toast.success(`Trade complete! Got ${offeredCard.emoji} ${offeredCard.name}, gave ${wantedCard.emoji} ${wantedCard.name}`);
+    toast.success(T('social.toast_trade_complete'));
   };
 
   const sendCardRequest = async () => {
     if (!requestCardId || !clanId || !user) return;
     if (!canRequest()) {
-      toast.error(`Request on cooldown! ${getRequestTimeLeft()} left`);
+      toast.error(`${T('social.toast_request_cooldown')} ${getRequestTimeLeft()}`);
       return;
     }
     const card = allCards.find(c => c.id === requestCardId);
     if (!card) return;
     const entry = getCardEntry(card.id);
     const limit = DONATION_LIMITS[card.rarity];
-    if (limit <= 0) { toast.error("This card rarity can't be requested!"); return; }
+    if (limit <= 0) { toast.error(T('social.toast_cant_request_rarity')); return; }
 
     setSending(true);
     await supabase.from('clan_messages').insert({
@@ -1015,19 +1087,19 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
     setShowRequest(false);
     setRequestCardId('');
     setSending(false);
-    toast.success('Card request posted!');
+    toast.success(T('social.toast_request_posted'));
   };
 
   const donateCard = (msg: ClanMsg) => {
     if (!msg.trade_card_wanted) return;
-    if (msg.user_id === user?.id) { toast.error("You can't donate to your own request!"); return; }
+    if (msg.user_id === user?.id) { toast.error(T('social.toast_cant_donate_self')); return; }
     const card = allCards.find(c => c.id === msg.trade_card_wanted);
     if (!card) return;
     const myEntry = getCardEntry(card.id);
-    if (myEntry.count <= 1) { toast.error("You need at least 2 of this card to donate!"); return; }
+    if (myEntry.count <= 1) { toast.error(T('social.toast_need_2_to_donate')); return; }
     const limit = DONATION_LIMITS[card.rarity];
     const today = getDonationsToday();
-    if (today.donated >= limit) { toast.error(`Daily donation limit reached (${limit}/day for ${card.rarity})!`); return; }
+    if (today.donated >= limit) { toast.error(T('social.toast_donation_limit')); return; }
 
     // Remove card from donor, add to requester (locally — in a real game this would be server-side)
     removeCards(card.id, 1);
@@ -1036,7 +1108,7 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
     const xpReward = card.rarity === 'common' ? 1 : card.rarity === 'rare' ? 10 : 50;
     const goldReward = card.rarity === 'common' ? 5 : card.rarity === 'rare' ? 50 : 500;
     setProfile((p: any) => ({ ...p, gold: p.gold + goldReward, xp: p.xp + xpReward, totalDonations: p.totalDonations + 1 }));
-    toast.success(`Donated ${card.emoji} ${card.name}! +${goldReward}💰 +${xpReward}XP`);
+    toast.success(`${T('social.toast_donated')} ${card.emoji} ${card.name}! +${goldReward}💰 +${xpReward}XP`);
   };
 
   const formatTime = (d: string) => {
@@ -1152,16 +1224,16 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                   <div className="text-[9px] font-bold text-hp-green uppercase tracking-wider">{t('social.request_card', language)}</div>
                   {!canRequest() && (
                     <div className="flex items-center gap-2">
-                      <div className="text-[9px] text-destructive">⏳ Cooldown: {getRequestTimeLeft()}</div>
+                      <div className="text-[9px] text-destructive">⏳ {T('river.cooldown')}: {getRequestTimeLeft()}</div>
                       <button onClick={() => {
                         const cost = getSkipCooldownCost();
                         if (profile.gems < cost) {
-                          toast.error(`Not enough gems! Need ${cost} 💎`);
+                          toast.error(`${T('social.not_enough_gems')} ${cost} 💎`);
                           return;
                         }
                         setProfile({ ...profile, gems: profile.gems - cost });
                         skipRequestCooldown();
-                        toast.success(`Skipped cooldown for ${cost} 💎`);
+                        toast.success(`${T('social.skip_cost')} ${cost} 💎`);
                       }} className="px-2 py-0.5 bg-primary text-primary-foreground rounded text-[8px] font-bold">
                         {t('social.skip_cost', language)} ({getSkipCooldownCost()} 💎)
                       </button>

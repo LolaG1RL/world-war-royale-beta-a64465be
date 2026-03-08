@@ -258,6 +258,7 @@ export type Database = {
           country: string | null
           created_at: string
           deck_ids: string[]
+          equipped_emblem: string
           gems: number
           gold: number
           id: string
@@ -283,6 +284,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           deck_ids?: string[]
+          equipped_emblem?: string
           gems?: number
           gold?: number
           id?: string
@@ -308,6 +310,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           deck_ids?: string[]
+          equipped_emblem?: string
           gems?: number
           gold?: number
           id?: string
