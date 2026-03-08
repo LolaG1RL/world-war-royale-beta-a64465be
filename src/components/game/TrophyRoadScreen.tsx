@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { BottomNav } from './BottomNav';
-import { trophyRoadRewards, arenas, getArenaForTrophies, allCards } from '@/data/cards';
+import { trophyRoadRewards, arenas, getArenaForTrophies, allCards, GameCard } from '@/data/cards';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Lock, Check, Trophy, Gift } from 'lucide-react';
-import { addCards } from '@/data/cardInventory';
+import { ChevronLeft, Lock, Check, Trophy, Gift, Swords } from 'lucide-react';
+import { addCards, isCardOwned } from '@/data/cardInventory';
 import RevealScreen, { RevealItem } from './RevealScreen';
+import { useState as useStateReact } from 'react';
 
 const TrophyRoadScreen = () => {
   const { setScreen, profile, setProfile } = useGame();
