@@ -88,6 +88,27 @@ function getDailyDeals() {
   return shuffled.slice(0, 6);
 }
 
+function getDailyBannerDeals(type: 'bg' | 'emb' | 'badge') {
+  const today = new Date();
+  const seed = (today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()) * (type === 'bg' ? 17 : type === 'emb' ? 23 : 31);
+  const pool = type === 'bg' ? allBackgrounds.filter(b => b.cost > 0) :
+               type === 'emb' ? allEmblems.filter(e => e.cost > 0) :
+               allBadges.filter(b => b.type === 'cosmetic');
+  const shuffled = [...pool];
+  let s = seed;
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const j = s % (i + 1);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  const count = type === 'bg' ? 4 : type === 'emb' ? 4 : 4;
+  return shuffled.slice(0, count).map((item, i) => {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const discountPct = s % 100 < 30 ? (s % 3 + 1) * 10 : 0; // 30% chance of 10-30% discount
+    return { item, discountPct };
+  });
+}
+
 function getTodayKey() {
   const d = new Date();
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;

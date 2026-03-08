@@ -1,32 +1,604 @@
 import { useGame } from '@/context/GameContext';
 import { BottomNav } from './ShopScreen';
-import { useState } from 'react';
-import { Swords, Trophy, Clock, Star, Gift, Zap, ChevronRight } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Clock, ChevronRight, Trophy, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
+import { allCards } from '@/data/cards';
+import { allEmotes, addOwnedEmote, getOwnedEmotes } from '@/data/emotes';
+import { allBackgrounds, allEmblems, addOwnedBackground, addOwnedEmblem, getOwnedBackgrounds, getOwnedEmblems } from '@/data/banners';
+import { addCards, markCardsOwned } from '@/data/cardInventory';
 
-const challenges = [
-  { id: 1, name: 'Grand Challenge', emoji: '🏆', description: '12 wins for ultimate reward', entry: '100 gems', active: true, wins: 0, losses: 0, maxWins: 12, maxLosses: 3 },
-  { id: 2, name: 'Classic Challenge', emoji: '⚔️', description: '12 wins for great loot', entry: '10 gems', active: true, wins: 0, losses: 0, maxWins: 12, maxLosses: 3 },
-  { id: 3, name: 'Global Tournament', emoji: '🌍', description: 'Compete against the world!', entry: 'Free', active: true, wins: 0, losses: 0, maxWins: 20, maxLosses: 0 },
-  { id: 4, name: 'Sudden Death', emoji: '💀', description: 'One tower down = game over', entry: '10 gems', active: true, wins: 0, losses: 0, maxWins: 9, maxLosses: 3 },
-  { id: 5, name: 'Double Elixir', emoji: '⚡', description: 'Twice the elixir, twice the chaos', entry: 'Free', active: true, wins: 0, losses: 0, maxWins: 6, maxLosses: 3 },
-  { id: 6, name: 'Draft Challenge', emoji: '🎲', description: 'Pick cards for your opponent!', entry: '100 gems', active: false, wins: 0, losses: 0, maxWins: 12, maxLosses: 3 },
+// ── Seeded random ──
+function seededRng(seed: number) {
+  let s = seed;
+  return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
+}
+
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+  const r = seededRng(seed);
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(r() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getDaySeed() {
+  const d = new Date();
+  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+}
+
+function getTodayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+// ── Reward types ──
+interface RewardItem {
+  emoji: string;
+  name: string;
+  count: number;
+  rarity: string;
+}
+
+type RewardDef = {
+  type: 'gold' | 'gems' | 'cards' | 'emote' | 'banner-bg' | 'banner-emb';
+  amount?: number;
+  rarity?: string;
+};
+
+// ── Generate timed events ──
+interface EventData {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  hoursLeft: number;
+  rewards: RewardDef[];
+  type: 'event' | 'challenge' | 'tournament';
+  entryFee?: { amount: number; currency: 'gold' | 'gems' };
+  maxWins?: number;
+  maxLosses?: number;
+  milestones?: { wins: number; reward: RewardDef }[];
+}
+
+function generateEvents(): EventData[] {
+  const seed = getDaySeed();
+  const r = seededRng(seed * 3);
+
+  const eventNames = [
+    { name: 'Pharaoh\'s Challenge', emoji: '🏛️', desc: 'Ancient Egyptian battle royale! Only Egyptian-era troops are boosted.' },
+    { name: 'Viking Raid', emoji: '⛵', desc: 'Pillage and plunder! Extra gold rewards for every win.' },
+    { name: 'Dragon Festival', emoji: '🐲', desc: 'Dragons deal double damage this event!' },
+    { name: 'Moonlit Siege', emoji: '🌙', desc: 'Night battle with limited vision. Spells cost 1 less elixir.' },
+    { name: 'Iron Gauntlet', emoji: '🛡️', desc: 'Buildings have triple HP. Siege decks rule!' },
+    { name: 'Mystic Mayhem', emoji: '🔮', desc: 'All troops get random buffs each deploy!' },
+    { name: 'Samurai Showdown', emoji: '⚔️', desc: 'Honor duel! Only melee troops allowed.' },
+    { name: 'Thunder Dome', emoji: '⚡', desc: 'Lightning strikes random enemies every 15 seconds!' },
+  ];
+
+  const picked = seededShuffle(eventNames, seed * 3).slice(0, 3);
+  return picked.map((e, i) => {
+    const hours = Math.floor(r() * 48) + 12;
+    const rewardPool: RewardDef[] = [];
+    // Always some gold/gems
+    rewardPool.push({ type: 'gold', amount: Math.floor(r() * 500) + 200 });
+    if (r() > 0.5) rewardPool.push({ type: 'gems', amount: Math.floor(r() * 20) + 5 });
+    // Exclusive rewards
+    if (r() > 0.4) {
+      const unownedEmotes = allEmotes.filter(em => !getOwnedEmotes().includes(em.id));
+      if (unownedEmotes.length > 0) rewardPool.push({ type: 'emote' });
+    }
+    if (r() > 0.6) rewardPool.push({ type: 'banner-bg' });
+    if (r() > 0.7) rewardPool.push({ type: 'banner-emb' });
+    rewardPool.push({ type: 'cards', amount: Math.floor(r() * 8) + 3, rarity: r() > 0.7 ? 'epic' : r() > 0.4 ? 'rare' : 'common' });
+
+    return {
+      id: `event-${getDaySeed()}-${i}`,
+      name: e.name,
+      emoji: e.emoji,
+      description: e.desc,
+      hoursLeft: hours,
+      rewards: rewardPool,
+      type: 'event' as const,
+    };
+  });
+}
+
+function generateChallenges(): EventData[] {
+  const seed = getDaySeed();
+  const r = seededRng(seed * 7);
+
+  const challengeTemplates = [
+    { name: 'Grand Challenge', emoji: '🏆', desc: '12 wins for ultimate rewards!', maxWins: 12, maxLosses: 3, fee: { amount: 100, currency: 'gems' as const } },
+    { name: 'Classic Challenge', emoji: '⚔️', desc: '12 wins for great loot', maxWins: 12, maxLosses: 3, fee: { amount: 10, currency: 'gems' as const } },
+    { name: 'Sudden Death', emoji: '💀', desc: 'One tower down = game over', maxWins: 9, maxLosses: 3, fee: { amount: 10, currency: 'gems' as const } },
+    { name: 'Double Elixir Frenzy', emoji: '⚡', desc: 'Twice the elixir, twice the fun!', maxWins: 6, maxLosses: 3, fee: undefined },
+    { name: 'Draft Royale', emoji: '🎲', desc: 'Pick cards from a random selection', maxWins: 12, maxLosses: 3, fee: { amount: 100, currency: 'gems' as const } },
+    { name: 'Rage Mode', emoji: '😡', desc: 'Permanent rage spell! Everything is faster!', maxWins: 8, maxLosses: 3, fee: { amount: 5, currency: 'gems' as const } },
+    { name: 'Mirror Match', emoji: '🪞', desc: 'Both players use the same deck!', maxWins: 6, maxLosses: 3, fee: undefined },
+    { name: 'Triple Draft', emoji: '🎯', desc: 'Choose 3 picks from 3 pairs', maxWins: 9, maxLosses: 3, fee: { amount: 50, currency: 'gems' as const } },
+  ];
+
+  const picked = seededShuffle(challengeTemplates, seed * 7).slice(0, 4);
+  return picked.map((c, i) => {
+    const hours = Math.floor(r() * 72) + 24;
+    const milestones: { wins: number; reward: RewardDef }[] = [];
+    const mw = c.maxWins;
+    milestones.push({ wins: Math.ceil(mw * 0.25), reward: { type: 'gold', amount: Math.floor(r() * 300) + 100 } });
+    milestones.push({ wins: Math.ceil(mw * 0.5), reward: { type: 'cards', amount: Math.floor(r() * 5) + 2, rarity: 'rare' } });
+    milestones.push({ wins: Math.ceil(mw * 0.75), reward: { type: 'gems', amount: Math.floor(r() * 15) + 5 } });
+    // Final reward - exclusive
+    const finalReward: RewardDef = r() > 0.5 ? { type: 'emote' } : r() > 0.5 ? { type: 'banner-bg' } : { type: 'banner-emb' };
+    milestones.push({ wins: mw, reward: finalReward });
+
+    return {
+      id: `challenge-${getDaySeed()}-${i}`,
+      name: c.name,
+      emoji: c.emoji,
+      description: c.desc,
+      hoursLeft: hours,
+      rewards: milestones.map(m => m.reward),
+      type: 'challenge' as const,
+      entryFee: c.fee,
+      maxWins: c.maxWins,
+      maxLosses: c.maxLosses,
+      milestones,
+    };
+  });
+}
+
+function generateTournaments(): EventData[] {
+  const seed = getDaySeed();
+  const r = seededRng(seed * 11);
+
+  const tourneyNames = [
+    { name: 'Warlord Cup', emoji: '🏅', desc: 'Compete for the Warlord title! Top rewards for top warriors.' },
+    { name: 'Legends League', emoji: '👑', desc: 'Only the strongest survive. Exclusive legendary rewards!' },
+    { name: 'Arena Clash', emoji: '🏟️', desc: 'Battle through the arenas for glory and loot!' },
+    { name: 'Conqueror\'s Trial', emoji: '⚔️', desc: 'Prove your worth in endless battles!' },
+  ];
+
+  const picked = seededShuffle(tourneyNames, seed * 11).slice(0, 2);
+  return picked.map((t, i) => {
+    const hours = Math.floor(r() * 96) + 48;
+    const milestones: { wins: number; reward: RewardDef }[] = [
+      { wins: 3, reward: { type: 'gold', amount: Math.floor(r() * 500) + 300 } },
+      { wins: 6, reward: { type: 'cards', amount: Math.floor(r() * 4) + 2, rarity: 'epic' } },
+      { wins: 10, reward: { type: 'gems', amount: Math.floor(r() * 30) + 15 } },
+      { wins: 15, reward: { type: 'emote' } },
+      { wins: 20, reward: { type: 'banner-bg' } },
+    ];
+
+    return {
+      id: `tourney-${getDaySeed()}-${i}`,
+      name: t.name,
+      emoji: t.emoji,
+      description: t.desc,
+      hoursLeft: hours,
+      rewards: milestones.map(m => m.reward),
+      type: 'tournament' as const,
+      maxWins: 20,
+      maxLosses: 0,
+      milestones,
+    };
+  });
+}
+
+// ── Persistence ──
+function getEventProgress(eventId: string): { wins: number; losses: number; claimed: number[]; completed: boolean } {
+  try {
+    const stored = localStorage.getItem(`event_progress_${eventId}`);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return { wins: 0, losses: 0, claimed: [], completed: false };
+}
+
+function setEventProgress(eventId: string, progress: { wins: number; losses: number; claimed: number[]; completed: boolean }) {
+  localStorage.setItem(`event_progress_${eventId}`, JSON.stringify(progress));
+}
+
+// Daily quest persistence
+function getDailyQuestProgress(): { date: string; quests: { progress: number; claimed: boolean }[] } {
+  try {
+    const stored = localStorage.getItem('daily_quest_progress');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed.date === getTodayKey()) return parsed;
+    }
+  } catch {}
+  return { date: getTodayKey(), quests: [{ progress: 0, claimed: false }, { progress: 0, claimed: false }, { progress: 0, claimed: false }] };
+}
+
+function saveDailyQuestProgress(quests: { progress: number; claimed: boolean }[]) {
+  localStorage.setItem('daily_quest_progress', JSON.stringify({ date: getTodayKey(), quests }));
+}
+
+// ── Reward Reveal ──
+const RewardReveal = ({ rewards, onClose }: { rewards: RewardItem[]; onClose: () => void }) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+    onClick={onClose}
+  >
+    <motion.div
+      initial={{ scale: 0.7, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.7, opacity: 0 }}
+      transition={{ type: 'spring', stiffness: 200 }}
+      onClick={e => e.stopPropagation()}
+      className="w-[90%] max-w-sm bg-card border border-border rounded-2xl p-5 relative"
+    >
+      <motion.div
+        initial={{ scale: 0, opacity: 1 }}
+        animate={{ scale: 3, opacity: 0 }}
+        transition={{ duration: 1 }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary/20 rounded-full blur-xl pointer-events-none"
+      />
+      <h2 className="font-display font-bold text-lg text-primary text-center mb-4">YOU GOT!</h2>
+      <div className="grid grid-cols-3 gap-2 max-h-[40vh] overflow-y-auto">
+        {rewards.map((r, i) => (
+          <motion.div
+            key={i}
+            initial={{ scale: 0, rotateY: 180 }}
+            animate={{ scale: 1, rotateY: 0 }}
+            transition={{ delay: i * 0.12, type: 'spring', stiffness: 200 }}
+            className={`bg-background border rounded-xl p-3 text-center ${
+              r.rarity === 'legendary' ? 'border-primary/50 shadow-[0_0_10px_hsl(38,90%,50%,0.3)]' :
+              r.rarity === 'epic' ? 'border-purple-400/40' :
+              r.rarity === 'rare' ? 'border-blue-400/40' : 'border-border'
+            }`}
+          >
+            <span className="text-2xl">{r.emoji}</span>
+            <div className="text-[8px] font-bold text-foreground mt-1">{r.name}</div>
+            <div className={`text-[10px] font-bold mt-0.5 ${
+              r.rarity === 'legendary' ? 'text-primary' :
+              r.rarity === 'epic' ? 'text-purple-400' :
+              r.rarity === 'rare' ? 'text-blue-400' : 'text-foreground'
+            }`}>x{r.count}</div>
+          </motion.div>
+        ))}
+      </div>
+      <motion.button
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: rewards.length * 0.12 + 0.3 }}
+        onClick={onClose}
+        className="w-full mt-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold uppercase"
+      >
+        Collect
+      </motion.button>
+    </motion.div>
+  </motion.div>
+);
+
+// ── Format time ──
+function fmtHours(h: number) {
+  if (h >= 24) return `${Math.floor(h / 24)}d ${h % 24}h`;
+  return `${h}h`;
+}
+
+function resolveReward(rewardDef: RewardDef, rng: () => number): RewardItem[] {
+  const items: RewardItem[] = [];
+  switch (rewardDef.type) {
+    case 'gold':
+      items.push({ emoji: '💰', name: 'Gold', count: rewardDef.amount || 200, rarity: 'common' });
+      break;
+    case 'gems':
+      items.push({ emoji: '💎', name: 'Gems', count: rewardDef.amount || 10, rarity: 'rare' });
+      break;
+    case 'cards': {
+      const pool = allCards.filter(c => c.rarity === (rewardDef.rarity || 'common'));
+      const amt = rewardDef.amount || 3;
+      for (let i = 0; i < amt; i++) {
+        const card = pool[Math.floor(rng() * pool.length)];
+        items.push({ emoji: card.emoji, name: card.name, count: 1, rarity: card.rarity });
+      }
+      break;
+    }
+    case 'emote': {
+      const unowned = allEmotes.filter(e => !getOwnedEmotes().includes(e.id));
+      if (unowned.length > 0) {
+        const emote = unowned[Math.floor(rng() * unowned.length)];
+        addOwnedEmote(emote.id);
+        items.push({ emoji: '😀', name: emote.name, count: 1, rarity: emote.rarity });
+      } else {
+        items.push({ emoji: '💎', name: 'Gems (no emotes left)', count: 20, rarity: 'rare' });
+      }
+      break;
+    }
+    case 'banner-bg': {
+      const unowned = allBackgrounds.filter(b => !getOwnedBackgrounds().has(b.id));
+      if (unowned.length > 0) {
+        const bg = unowned[Math.floor(rng() * unowned.length)];
+        addOwnedBackground(bg.id);
+        items.push({ emoji: '🖼️', name: bg.name, count: 1, rarity: bg.rarity });
+      } else {
+        items.push({ emoji: '💎', name: 'Gems (all BGs owned)', count: 30, rarity: 'rare' });
+      }
+      break;
+    }
+    case 'banner-emb': {
+      const unowned = allEmblems.filter(e => !getOwnedEmblems().has(e.id));
+      if (unowned.length > 0) {
+        const emb = unowned[Math.floor(rng() * unowned.length)];
+        addOwnedEmblem(emb.id);
+        items.push({ emoji: '🎭', name: emb.name, count: 1, rarity: emb.rarity });
+      } else {
+        items.push({ emoji: '💎', name: 'Gems (all emblems owned)', count: 20, rarity: 'rare' });
+      }
+      break;
+    }
+  }
+  return items;
+}
+
+// ── Countdown hook ──
+function useCountdownToMidnight() {
+  const [timeLeft, setTimeLeft] = useState('');
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0);
+      const diff = midnight.getTime() - now.getTime();
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const sec = Math.floor((diff % 60000) / 1000);
+      setTimeLeft(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+  return timeLeft;
+}
+
+// ── Daily quests config ──
+const DAILY_QUESTS = [
+  { name: 'Win 3 Battles', max: 3, reward: { type: 'gold' as const, amount: 200 }, rewardLabel: '💰 200' },
+  { name: 'Play 5 Cards', max: 5, reward: { type: 'gold' as const, amount: 100 }, rewardLabel: '💰 100' },
+  { name: 'Destroy 10 Towers', max: 10, reward: { type: 'gems' as const, amount: 5 }, rewardLabel: '💎 5' },
 ];
 
-const specialEvents = [
-  { name: 'Season Challenge', emoji: '🏅', timeLeft: '12d', description: 'Complete challenges for season rewards', type: 'season' },
-];
-
+// ── Main Component ──
 const EventsScreen = () => {
-  const { setScreen } = useGame();
+  const { setScreen, profile, setProfile } = useGame();
   const [tab, setTab] = useState<'events' | 'challenges' | 'tournaments'>('events');
+  const [rewardPopup, setRewardPopup] = useState<RewardItem[] | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
+  const countdown = useCountdownToMidnight();
+
+  const events = useMemo(() => generateEvents(), []);
+  const challenges = useMemo(() => generateChallenges(), []);
+  const tournaments = useMemo(() => generateTournaments(), []);
+
+  const [questProgress, setQuestProgress] = useState(() => getDailyQuestProgress());
+  const [, forceUpdate] = useState(0);
+
+  const simulateWin = useCallback((event: EventData) => {
+    const prog = getEventProgress(event.id);
+    if (prog.completed) { toast.info('Already completed!'); return; }
+    if (event.maxLosses && event.maxLosses > 0 && prog.losses >= event.maxLosses) { toast.error('Too many losses!'); return; }
+
+    const won = Math.random() > 0.4;
+    if (won) {
+      prog.wins += 1;
+      toast.success(`Victory! (${prog.wins} wins)`);
+    } else {
+      prog.losses += 1;
+      toast.error(`Defeat! (${prog.losses} losses)`);
+    }
+
+    if (event.maxWins && prog.wins >= event.maxWins) prog.completed = true;
+    if (event.maxLosses && event.maxLosses > 0 && prog.losses >= event.maxLosses) prog.completed = true;
+
+    setEventProgress(event.id, prog);
+    forceUpdate(n => n + 1);
+  }, []);
+
+  const claimMilestone = useCallback((event: EventData, milestoneIdx: number) => {
+    const prog = getEventProgress(event.id);
+    const ms = event.milestones?.[milestoneIdx];
+    if (!ms || prog.claimed.includes(milestoneIdx)) return;
+    if (prog.wins < ms.wins) { toast.error(`Need ${ms.wins} wins!`); return; }
+
+    prog.claimed.push(milestoneIdx);
+    setEventProgress(event.id, prog);
+
+    const rng = () => Math.random();
+    const resolved = resolveReward(ms.reward, rng);
+
+    // Apply rewards
+    resolved.forEach(r => {
+      if (r.name === 'Gold' || r.name.includes('Gold')) setProfile(p => ({ ...p, gold: p.gold + r.count }));
+      if (r.name === 'Gems' || r.name.includes('Gems')) setProfile(p => ({ ...p, gems: p.gems + r.count }));
+      // Cards are handled by addCards via resolveReward
+    });
+
+    setRewardPopup(resolved);
+    forceUpdate(n => n + 1);
+  }, [setProfile]);
+
+  const claimEventReward = useCallback((event: EventData) => {
+    const prog = getEventProgress(event.id);
+    if (prog.claimed.includes(-1)) { toast.info('Already claimed!'); return; }
+    if (prog.wins < 1) { toast.error('Win at least 1 battle first!'); return; }
+
+    prog.claimed.push(-1);
+    setEventProgress(event.id, prog);
+
+    const rng = () => Math.random();
+    const allRewards: RewardItem[] = [];
+    event.rewards.forEach(rd => allRewards.push(...resolveReward(rd, rng)));
+
+    allRewards.forEach(r => {
+      if (r.name === 'Gold' || r.name.includes('Gold')) setProfile(p => ({ ...p, gold: p.gold + r.count }));
+      if (r.name === 'Gems' || r.name.includes('Gems')) setProfile(p => ({ ...p, gems: p.gems + r.count }));
+    });
+
+    setRewardPopup(allRewards);
+    forceUpdate(n => n + 1);
+  }, [setProfile]);
+
+  const claimQuest = useCallback((idx: number) => {
+    const quests = [...questProgress.quests];
+    if (quests[idx].claimed || quests[idx].progress < DAILY_QUESTS[idx].max) return;
+    quests[idx].claimed = true;
+    setQuestProgress({ ...questProgress, quests });
+    saveDailyQuestProgress(quests);
+
+    const q = DAILY_QUESTS[idx];
+    const rng = () => Math.random();
+    const resolved = resolveReward(q.reward, rng);
+    resolved.forEach(r => {
+      if (r.name === 'Gold') setProfile(p => ({ ...p, gold: p.gold + r.count }));
+      if (r.name === 'Gems') setProfile(p => ({ ...p, gems: p.gems + r.count }));
+    });
+    setRewardPopup(resolved);
+  }, [questProgress, setProfile]);
+
+  // Simulate quest progress (auto-increment for testing)
+  const addQuestProgress = useCallback((idx: number) => {
+    const quests = [...questProgress.quests];
+    if (quests[idx].progress < DAILY_QUESTS[idx].max) {
+      quests[idx].progress += 1;
+      setQuestProgress({ ...questProgress, quests });
+      saveDailyQuestProgress(quests);
+    }
+  }, [questProgress]);
+
+  const joinChallenge = useCallback((event: EventData) => {
+    if (event.entryFee) {
+      const currency = event.entryFee.currency === 'gold' ? profile.gold : profile.gems;
+      if (currency < event.entryFee.amount) {
+        toast.error(`Not enough ${event.entryFee.currency}!`);
+        return;
+      }
+      setProfile(p => event.entryFee!.currency === 'gold'
+        ? { ...p, gold: p.gold - event.entryFee!.amount }
+        : { ...p, gems: p.gems - event.entryFee!.amount }
+      );
+    }
+    const prog = getEventProgress(event.id);
+    if (!prog.completed) {
+      setSelectedEvent(event);
+    }
+  }, [profile, setProfile]);
+
+  const rewardLabel = (rd: RewardDef) => {
+    switch (rd.type) {
+      case 'gold': return `💰 ${rd.amount}`;
+      case 'gems': return `💎 ${rd.amount}`;
+      case 'cards': return `🃏 ${rd.amount} ${rd.rarity}`;
+      case 'emote': return '😀 Exclusive Emote';
+      case 'banner-bg': return '🖼️ Exclusive BG';
+      case 'banner-emb': return '🎭 Exclusive Emblem';
+    }
+  };
 
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
+      {/* Reward popup */}
+      <AnimatePresence>
+        {rewardPopup && <RewardReveal rewards={rewardPopup} onClose={() => setRewardPopup(null)} />}
+      </AnimatePresence>
+
+      {/* Event detail modal */}
+      <AnimatePresence>
+        {selectedEvent && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/85 flex items-end justify-center" onClick={() => setSelectedEvent(null)}>
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 20 }} onClick={e => e.stopPropagation()} className="w-full max-w-md bg-card border-t border-border rounded-t-2xl p-4 max-h-[80vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{selectedEvent.emoji}</span>
+                  <div>
+                    <h3 className="font-display font-bold text-foreground text-sm">{selectedEvent.name}</h3>
+                    <p className="text-[9px] text-muted-foreground">{selectedEvent.description}</p>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedEvent(null)}><X className="w-4 h-4 text-muted-foreground" /></button>
+              </div>
+
+              <div className="flex items-center gap-3 mb-3">
+                <div className="bg-muted rounded-lg px-2 py-1 text-center">
+                  <div className="text-[8px] text-muted-foreground">TIME LEFT</div>
+                  <div className="text-xs font-bold text-primary">{fmtHours(selectedEvent.hoursLeft)}</div>
+                </div>
+                {(() => {
+                  const prog = getEventProgress(selectedEvent.id);
+                  return (
+                    <>
+                      <div className="bg-muted rounded-lg px-2 py-1 text-center">
+                        <div className="text-[8px] text-muted-foreground">WINS</div>
+                        <div className="text-xs font-bold text-hp-green">{prog.wins}</div>
+                      </div>
+                      {selectedEvent.maxLosses && selectedEvent.maxLosses > 0 && (
+                        <div className="bg-muted rounded-lg px-2 py-1 text-center">
+                          <div className="text-[8px] text-muted-foreground">LOSSES</div>
+                          <div className="text-xs font-bold text-accent">{prog.losses}/{selectedEvent.maxLosses}</div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+
+              {/* Milestones */}
+              {selectedEvent.milestones && (
+                <div className="space-y-1.5 mb-3">
+                  <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold">Milestones</div>
+                  {selectedEvent.milestones.map((ms, idx) => {
+                    const prog = getEventProgress(selectedEvent.id);
+                    const reached = prog.wins >= ms.wins;
+                    const claimed = prog.claimed.includes(idx);
+                    return (
+                      <div key={idx} className={`flex items-center gap-2 p-2 rounded-lg border ${reached ? 'border-primary/30 bg-primary/5' : 'border-border bg-muted/5'}`}>
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${reached ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                          {ms.wins}
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-[10px] font-bold text-foreground">{ms.wins} Win{ms.wins > 1 ? 's' : ''}</div>
+                          <div className="text-[8px] text-muted-foreground">{rewardLabel(ms.reward)}</div>
+                        </div>
+                        {claimed ? (
+                          <span className="text-[8px] text-hp-green font-bold">✓ Claimed</span>
+                        ) : reached ? (
+                          <button onClick={() => claimMilestone(selectedEvent, idx)} className="px-2 py-1 bg-primary text-primary-foreground rounded-lg text-[9px] font-bold">Claim</button>
+                        ) : (
+                          <span className="text-[8px] text-muted-foreground">🔒</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Battle button */}
+              {(() => {
+                const prog = getEventProgress(selectedEvent.id);
+                return !prog.completed ? (
+                  <button onClick={() => simulateWin(selectedEvent)} className="w-full py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold uppercase">
+                    ⚔️ Battle!
+                  </button>
+                ) : (
+                  <div className="text-center py-2 text-[10px] text-muted-foreground font-bold">COMPLETED</div>
+                );
+              })()}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,25%,12%)] border-b border-border">
         <h2 className="font-display font-bold text-foreground text-sm uppercase tracking-wider">Events</h2>
         <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-          <Clock className="w-3 h-3" />Season ends: 12d
+          <Clock className="w-3 h-3" />Resets: {countdown}
         </div>
       </div>
 
@@ -42,67 +614,141 @@ const EventsScreen = () => {
       <div className="flex-1 overflow-y-auto">
         {tab === 'events' && (
           <div className="p-3 space-y-2">
-            {/* Special events */}
-            {specialEvents.map((event, i) => (
-              <button key={i} className="w-full bg-card border border-border rounded-xl p-3 flex items-center gap-3 hover:border-primary/30 transition-colors">
-                <span className="text-2xl">{event.emoji}</span>
-                <div className="flex-1 text-left">
-                  <div className="text-xs font-bold text-foreground">{event.name}</div>
-                  <div className="text-[9px] text-muted-foreground">{event.description}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[8px] text-primary font-bold">{event.timeLeft}</div>
-                  <ChevronRight className="w-3 h-3 text-muted-foreground" />
-                </div>
-              </button>
-            ))}
-
-            {/* Quests */}
+            {/* Daily Quests */}
             <div className="bg-card border border-border rounded-xl p-3">
-              <div className="text-xs font-display font-bold text-foreground mb-2">Daily Quests</div>
-              {[
-                { name: 'Win 3 Battles', progress: 0, max: 3, reward: '💰 200' },
-                { name: 'Play 5 Cards', progress: 0, max: 5, reward: '💰 100' },
-                { name: 'Destroy 10 Towers', progress: 0, max: 10, reward: '💎 5' },
-              ].map((q, i) => (
-                <div key={i} className="flex items-center gap-2 py-1.5 border-t border-border/30">
-                  <div className="flex-1">
-                    <div className="text-[10px] font-bold text-foreground">{q.name}</div>
-                    <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-0.5">
-                      <div className="h-full rounded-full bg-primary" style={{ width: `${(q.progress / q.max) * 100}%` }} />
+              <div className="text-xs font-display font-bold text-foreground mb-2">📋 Daily Quests</div>
+              {DAILY_QUESTS.map((q, i) => {
+                const qp = questProgress.quests[i];
+                const done = qp.progress >= q.max;
+                return (
+                  <div key={i} className="flex items-center gap-2 py-1.5 border-t border-border/30">
+                    <div className="flex-1">
+                      <div className="text-[10px] font-bold text-foreground">{q.name}</div>
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-0.5">
+                        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(qp.progress / q.max) * 100}%` }} />
+                      </div>
+                    </div>
+                    <span className="text-[9px] text-muted-foreground">{qp.progress}/{q.max}</span>
+                    {qp.claimed ? (
+                      <span className="text-[8px] text-hp-green font-bold">✓</span>
+                    ) : done ? (
+                      <button onClick={() => claimQuest(i)} className="px-2 py-0.5 bg-primary text-primary-foreground rounded text-[8px] font-bold animate-pulse">Claim</button>
+                    ) : (
+                      <button onClick={() => addQuestProgress(i)} className="px-2 py-0.5 bg-muted text-muted-foreground rounded text-[8px] font-bold">+1</button>
+                    )}
+                    <span className="text-[9px] font-bold text-primary">{q.rewardLabel}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Timed events */}
+            {events.map(event => {
+              const prog = getEventProgress(event.id);
+              const claimed = prog.claimed.includes(-1);
+              return (
+                <motion.button key={event.id} whileTap={{ scale: 0.98 }} onClick={() => setSelectedEvent(event)} className="w-full bg-card border border-border rounded-xl p-3 flex items-center gap-3 hover:border-primary/30 transition-colors">
+                  <span className="text-2xl">{event.emoji}</span>
+                  <div className="flex-1 text-left">
+                    <div className="text-xs font-bold text-foreground">{event.name}</div>
+                    <div className="text-[9px] text-muted-foreground">{event.description}</div>
+                    <div className="flex gap-1 mt-1 flex-wrap">
+                      {event.rewards.slice(0, 3).map((r, ri) => (
+                        <span key={ri} className="text-[7px] bg-muted px-1 py-0.5 rounded text-muted-foreground">{rewardLabel(r)}</span>
+                      ))}
                     </div>
                   </div>
-                  <span className="text-[9px] text-muted-foreground">{q.progress}/{q.max}</span>
-                  <span className="text-[9px] font-bold text-primary">{q.reward}</span>
-                </div>
-              ))}
-            </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="text-[8px] text-primary font-bold">{fmtHours(event.hoursLeft)}</div>
+                    {prog.wins > 0 && <div className="text-[8px] text-hp-green">{prog.wins}W</div>}
+                    {claimed && <div className="text-[7px] text-hp-green font-bold">✓</div>}
+                    <ChevronRight className="w-3 h-3 text-muted-foreground mt-0.5" />
+                  </div>
+                </motion.button>
+              );
+            })}
+
+            {/* Claim all event rewards */}
+            {events.some(e => { const p = getEventProgress(e.id); return p.wins >= 1 && !p.claimed.includes(-1); }) && (
+              <button onClick={() => {
+                events.forEach(e => {
+                  const p = getEventProgress(e.id);
+                  if (p.wins >= 1 && !p.claimed.includes(-1)) claimEventReward(e);
+                });
+              }} className="w-full py-2 bg-hp-green/20 text-hp-green rounded-xl text-[10px] font-bold border border-hp-green/30">
+                Claim Available Event Rewards
+              </button>
+            )}
           </div>
         )}
 
         {tab === 'challenges' && (
           <div className="p-3 space-y-2">
-            {challenges.map(c => (
-              <button key={c.id} className={`w-full bg-card border rounded-xl p-3 flex items-center gap-3 transition-colors ${c.active ? 'border-border hover:border-primary/30' : 'border-border/30 opacity-50'}`}>
-                <span className="text-2xl">{c.emoji}</span>
-                <div className="flex-1 text-left">
-                  <div className="text-xs font-bold text-foreground">{c.name}</div>
-                  <div className="text-[9px] text-muted-foreground">{c.description}</div>
-                </div>
-                <div className="text-right">
-                  <div className={`text-[9px] font-bold ${c.entry === 'Free' ? 'text-hp-green' : 'text-primary'}`}>{c.entry}</div>
-                  <ChevronRight className="w-3 h-3 text-muted-foreground mt-1" />
-                </div>
-              </button>
-            ))}
+            {challenges.map(c => {
+              const prog = getEventProgress(c.id);
+              return (
+                <motion.button key={c.id} whileTap={{ scale: 0.98 }} onClick={() => {
+                  if (!prog.completed && !prog.wins && !prog.losses) {
+                    joinChallenge(c);
+                  } else {
+                    setSelectedEvent(c);
+                  }
+                }} className={`w-full bg-card border rounded-xl p-3 flex items-center gap-3 transition-colors ${prog.completed ? 'border-hp-green/30' : 'border-border hover:border-primary/30'}`}>
+                  <span className="text-2xl">{c.emoji}</span>
+                  <div className="flex-1 text-left">
+                    <div className="text-xs font-bold text-foreground">{c.name}</div>
+                    <div className="text-[9px] text-muted-foreground">{c.description}</div>
+                    {(prog.wins > 0 || prog.losses > 0) && (
+                      <div className="text-[8px] mt-0.5">
+                        <span className="text-hp-green">{prog.wins}W</span>
+                        <span className="text-muted-foreground mx-1">-</span>
+                        <span className="text-accent">{prog.losses}L</span>
+                        {prog.completed && <span className="text-hp-green ml-1 font-bold">DONE</span>}
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="text-[8px] text-muted-foreground">{fmtHours(c.hoursLeft)}</div>
+                    <div className={`text-[9px] font-bold mt-0.5 ${!c.entryFee ? 'text-hp-green' : 'text-primary'}`}>
+                      {!c.entryFee ? 'Free' : `💎 ${c.entryFee.amount}`}
+                    </div>
+                    <ChevronRight className="w-3 h-3 text-muted-foreground mt-0.5" />
+                  </div>
+                </motion.button>
+              );
+            })}
           </div>
         )}
 
         {tab === 'tournaments' && (
-          <div className="flex-1 flex flex-col items-center justify-center p-6">
-            <Trophy className="w-12 h-12 text-muted-foreground/30 mb-3" />
-            <div className="text-sm font-display font-bold text-foreground">No Active Tournament</div>
-            <div className="text-xs text-muted-foreground text-center mt-1">Check back soon for the next tournament!</div>
+          <div className="p-3 space-y-2">
+            {tournaments.map(t => {
+              const prog = getEventProgress(t.id);
+              return (
+                <motion.button key={t.id} whileTap={{ scale: 0.98 }} onClick={() => setSelectedEvent(t)} className={`w-full bg-gradient-to-r from-card to-[hsl(220,20%,14%)] border rounded-xl p-3 flex items-center gap-3 transition-colors ${prog.completed ? 'border-hp-green/30' : 'border-primary/30 hover:border-primary/50'}`}>
+                  <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
+                    <span className="text-xl">{t.emoji}</span>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="text-xs font-bold text-foreground">{t.name}</div>
+                    <div className="text-[9px] text-muted-foreground">{t.description}</div>
+                    {prog.wins > 0 && (
+                      <div className="text-[8px] text-hp-green mt-0.5">{prog.wins} wins</div>
+                    )}
+                    <div className="flex gap-1 mt-1 flex-wrap">
+                      {t.milestones?.slice(0, 3).map((ms, mi) => (
+                        <span key={mi} className="text-[7px] bg-primary/10 border border-primary/20 px-1 py-0.5 rounded text-primary">{ms.wins}W: {rewardLabel(ms.reward)}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="text-[8px] text-primary font-bold">{fmtHours(t.hoursLeft)}</div>
+                    <div className="text-[9px] text-hp-green font-bold mt-0.5">Free</div>
+                    <ChevronRight className="w-3 h-3 text-muted-foreground mt-0.5" />
+                  </div>
+                </motion.button>
+              );
+            })}
           </div>
         )}
       </div>
