@@ -705,30 +705,42 @@ const BattleArena = () => {
     if (card.type === 'spell') {
       const splash = (card.splashRadius || 2) * 5;
       
-      // Damage enemies in radius
-      setDeployedUnits(units => units.map(u => {
-        if (u.side === 'player') return u;
-        const dist = Math.sqrt((ax - u.x) ** 2 + (ay - u.y) ** 2);
-        if (dist <= splash) {
-          return { ...u, hp: u.hp - card.damage };
-        }
-        return u;
-      }));
-      
-      // Damage towers
-      setTowers(t => t.map(tower => {
-        if (tower.side === 'player') return tower;
-        const dist = Math.sqrt((ax - tower.x) ** 2 + (ay - tower.y) ** 2);
-        if (dist <= splash) {
-          return { ...tower, hp: Math.max(0, tower.hp - card.damage) };
-        }
-        return tower;
-      }));
+      // Spell projectile visual — animate from card hand to target
+      projectileCounter.current++;
+      const projId = projectileCounter.current;
+      setSpellProjectiles(prev => [...prev, { id: projId, x: 50, y: 95, emoji: card.emoji, targetX: ax, targetY: ay }]);
+      playCardSfx('spell', card.rarity);
 
-      // Show damage indicator
-      damageCounter.current++;
-      setDamageNumbers(prev => [...prev, { id: damageCounter.current, x: ax, y: ay, damage: card.damage }]);
+      // After projectile reaches target, apply damage
+      setTimeout(() => {
+        setSpellProjectiles(prev => prev.filter(p => p.id !== projId));
+        
+        // Damage enemies in radius
+        setDeployedUnits(units => units.map(u => {
+          if (u.side === 'player') return u;
+          const dist = Math.sqrt((ax - u.x) ** 2 + (ay - u.y) ** 2);
+          if (dist <= splash) {
+            return { ...u, hp: u.hp - card.damage };
+          }
+          return u;
+        }));
+        
+        // Damage towers
+        setTowers(t => t.map(tower => {
+          if (tower.side === 'player') return tower;
+          const dist = Math.sqrt((ax - tower.x) ** 2 + (ay - tower.y) ** 2);
+          if (dist <= splash) {
+            return { ...tower, hp: Math.max(0, tower.hp - card.damage) };
+          }
+          return tower;
+        }));
+
+        // Show damage indicator
+        damageCounter.current++;
+        setDamageNumbers(prev => [...prev, { id: damageCounter.current, x: ax, y: ay, damage: card.damage }]);
+      }, 400);
     } else {
+      playCardSfx(card.type, card.rarity);
       spawnUnit(card, ax, ay, 'player');
     }
     
