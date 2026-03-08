@@ -250,6 +250,7 @@ const RiverRaceScreen = () => {
       boats: b,
       warDecks: wd.map(d => ({ ...d, cards: d.cards.map(c => c.id) })),
       dayNumber: day,
+      lastPlayedDay: day,
       weekStart: getStoredRiverData()?.weekStart || Date.now(),
     }));
   };
