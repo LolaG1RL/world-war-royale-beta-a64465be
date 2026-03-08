@@ -61,6 +61,11 @@ const CardCollection = () => {
   const currentDeck = decks[deckSlot];
   const avgElixir = currentDeck.length > 0 ? (currentDeck.reduce((a, c) => a + c.elixir, 0) / currentDeck.length).toFixed(1) : '0.0';
 
+  // If banner tab selected, render full-screen BannerCustomizer
+  if (mainTab === 'banner') {
+    return <BannerCustomizer />;
+  }
+
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
       {/* Header */}
@@ -78,14 +83,12 @@ const CardCollection = () => {
         <button onClick={() => setMainTab('emotes')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${mainTab === 'emotes' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
           😀 Emotes
         </button>
-        <button onClick={() => setMainTab('banner')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${mainTab === 'banner' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
+        <button onClick={() => setMainTab('banner')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors text-muted-foreground`}>
           🏴 Banner
         </button>
       </div>
 
-      {mainTab === 'banner' ? (
-        <BannerCustomizer onClose={() => setMainTab('cards')} />
-      ) : mainTab === 'cards' ? (
+      {mainTab === 'cards' ? (
         <>
           {/* Deck slots tabs */}
           <div className="flex bg-[hsl(220,20%,14%)] border-b border-border">

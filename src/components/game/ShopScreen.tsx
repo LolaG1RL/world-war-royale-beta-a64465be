@@ -776,42 +776,6 @@ const ShopScreen = () => {
               })}
             </div>
 
-            <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🏅 Today's Badges</div>
-            <div className="grid grid-cols-4 gap-2">
-              {getDailyBadgeDeals().map(({ item: badge, discountPct }) => {
-                const owned = ownedBadgesSet.has(badge.id);
-                const discountCost = Math.round(badge.cost * (1 - discountPct / 100));
-                return (
-                  <button
-                    key={badge.id}
-                    onClick={() => {
-                      if (owned) { toast.info('Already owned!'); return; }
-                      const currency = badge.currency === 'gold' ? profile.gold : profile.gems;
-                      if (currency < discountCost) { toast.error(`Not enough ${badge.currency}!`); return; }
-                      setConfirmAction({
-                        label: badge.name,
-                        cost: `${badge.currency === 'gold' ? '💰' : '💎'} ${discountCost}`,
-                        onConfirm: () => {
-                          setProfile(p => badge.currency === 'gold' ? { ...p, gold: p.gold - discountCost } : { ...p, gems: p.gems - discountCost });
-                          addOwnedBadge(badge.id);
-                          setOwnedBadgesSet(getOwnedBadges());
-                          toast.success(`${badge.name} badge unlocked!`);
-                          setConfirmAction(null);
-                        },
-                      });
-                    }}
-                    className={`relative aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 border-2 ${owned ? 'border-hp-green/50 bg-card' : 'border-border bg-muted/10'}`}
-                  >
-                    {discountPct > 0 && !owned && (
-                      <div className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-[6px] font-black px-1 rounded z-10">-{discountPct}%</div>
-                    )}
-                    <span className="text-lg">{(badge as any).emoji}</span>
-                    <span className="text-[7px] font-bold text-foreground">{badge.name}</span>
-                    <span className="text-[7px] text-muted-foreground">{owned ? '✓' : `${badge.currency === 'gold' ? '💰' : '💎'} ${discountCost}`}</span>
-                  </button>
-                );
-              })}
-            </div>
           </>
         )}
 
