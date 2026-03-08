@@ -875,8 +875,11 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
             <button onClick={() => setChatMode('info')} className="text-muted-foreground"><ChevronLeft className="w-4 h-4" /></button>
             <MessageCircle className="w-4 h-4 text-primary" />
             <span className="text-xs font-bold text-foreground flex-1">{clan.name} Chat</span>
-            <button onClick={() => setShowTrade(!showTrade)} className="bg-primary/20 text-primary px-2 py-1 rounded text-[9px] font-bold flex items-center gap-1">
+            <button onClick={() => { setShowTrade(!showTrade); setShowRequest(false); }} className="bg-primary/20 text-primary px-2 py-1 rounded text-[9px] font-bold flex items-center gap-1">
               <Repeat className="w-3 h-3" />Trade
+            </button>
+            <button onClick={() => { setShowRequest(!showRequest); setShowTrade(false); }} className="bg-hp-green/20 text-hp-green px-2 py-1 rounded text-[9px] font-bold flex items-center gap-1">
+              <Gift className="w-3 h-3" />Request
             </button>
           </div>
 
