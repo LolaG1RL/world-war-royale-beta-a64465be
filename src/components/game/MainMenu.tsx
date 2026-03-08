@@ -84,11 +84,11 @@ const MainMenu = () => {
               <div className="text-[7px] text-muted-foreground">Special Challenge</div>
             </div>
           </button>
-          <button className="bg-[hsl(220,15%,16%)] border border-border rounded-lg py-2 px-2 flex items-center gap-2 hover:bg-[hsl(220,15%,20%)] transition-colors">
-            <Gift className="w-4 h-4 text-epic" />
+          <button onClick={() => setScreen('mailbox')} className="bg-[hsl(220,15%,16%)] border border-border rounded-lg py-2 px-2 flex items-center gap-2 hover:bg-[hsl(220,15%,20%)] transition-colors relative">
+            <Mail className="w-4 h-4 text-primary" />
             <div className="text-left">
-              <div className="text-[9px] font-bold text-foreground">Pass</div>
-              <div className="text-[7px] text-muted-foreground">War Pass</div>
+              <div className="text-[9px] font-bold text-foreground">Mailbox</div>
+              <div className="text-[7px] text-muted-foreground">Messages</div>
             </div>
           </button>
         </div>
