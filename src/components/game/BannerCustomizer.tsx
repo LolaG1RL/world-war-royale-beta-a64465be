@@ -82,8 +82,8 @@ const BannerCustomizer = () => {
 
       {/* Sub tabs */}
       <div className="flex bg-[hsl(220,20%,14%)] border-b border-border">
-        {(['backgrounds', 'emblems', 'badges'] as SubTab[]).map(t => (
-          <button key={t} onClick={() => setSubTab(t)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${subTab === t ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
+        {(['backgrounds', 'emblems', 'badges'] as SubTab[]).map(tab => (
+          <button key={tab} onClick={() => setSubTab(tab)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${subTab === tab ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
             {tab === 'backgrounds' ? T('banner.bg') : tab === 'emblems' ? T('banner.emblem') : T('banner.badges_tab')}
           </button>
         ))}
