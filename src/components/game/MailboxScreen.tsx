@@ -96,18 +96,18 @@ const MailboxScreen = () => {
     const date = new Date(d);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
-    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+    if (diff < 3600000) return `${Math.floor(diff / 60000)} ${t('mail.m_ago', language)}`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)} ${t('mail.h_ago', language)}`;
     return date.toLocaleDateString();
   };
 
   const senderLabel = (type: string) => {
     switch (type) {
-      case 'system': return '⚙️ System';
-      case 'admin': return '🔧 Dev Team';
-      case 'friend_request': return '👋 Friend Request';
-      case 'dev_gift': return '🎁 Dev Gift';
-      default: return '📬 Mail';
+      case 'system': return t('mail.system', language);
+      case 'admin': return t('mail.dev_team', language);
+      case 'friend_request': return t('mail.friend_request', language);
+      case 'dev_gift': return t('mail.dev_gift', language);
+      default: return t('mail.default', language);
     }
   };
 
@@ -122,7 +122,7 @@ const MailboxScreen = () => {
         <h1 className="font-display font-bold text-sm text-foreground flex-1">{t('mail.title', language)}</h1>
         {unreadCount > 0 && (
           <span className="bg-accent text-accent-foreground text-[9px] font-bold px-2 py-0.5 rounded-full">
-            {unreadCount} new
+            {unreadCount} {t('mail.new', language)}
           </span>
         )}
       </div>
@@ -159,7 +159,7 @@ const MailboxScreen = () => {
 
               {hasRewards(selectedMsg) && (
                 <div className="bg-[hsl(40,30%,12%)] border border-[hsl(40,40%,25%)] rounded-xl p-3 mb-4">
-                  <div className="text-[9px] font-bold text-primary uppercase tracking-wider mb-2">Rewards</div>
+                  <div className="text-[9px] font-bold text-primary uppercase tracking-wider mb-2">{t('mail.rewards', language)}</div>
                   <div className="flex gap-3">
                     {selectedMsg.reward_gold > 0 && (
                       <div className="flex items-center gap-1">
@@ -180,12 +180,12 @@ const MailboxScreen = () => {
               {/* Friend request actions - direct to social tab */}
               {selectedMsg.sender_type === 'friend_request' && (
                 <div className="bg-[hsl(120,20%,12%)] border border-[hsl(120,30%,25%)] rounded-xl p-3 mb-4">
-                  <p className="text-[10px] text-muted-foreground mb-2">Accept or deny this request in the Social tab → Friends section</p>
+                  <p className="text-[10px] text-muted-foreground mb-2">{t('mail.accept_social', language)}</p>
                   <button
                     onClick={() => { setSelectedMsg(null); setScreen('social'); }}
                     className="w-full py-2 rounded-lg bg-[hsl(120,40%,25%)] border border-[hsl(120,40%,35%)] text-[10px] font-bold text-foreground hover:bg-[hsl(120,40%,30%)] transition-colors"
                   >
-                    Go to Social Tab →
+                    {t('mail.go_social', language)}
                   </button>
                 </div>
               )}
@@ -201,7 +201,7 @@ const MailboxScreen = () => {
                       : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg'
                   }`}
                 >
-                  {selectedMsg.is_claimed ? '✅ Claimed' : '🎁 Claim Rewards'}
+                  {selectedMsg.is_claimed ? t('mail.claimed', language) : t('mail.claim_rewards', language)}
                 </button>
               )}
             </div>
@@ -213,12 +213,12 @@ const MailboxScreen = () => {
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center h-32">
-            <div className="text-xs text-muted-foreground animate-pulse">Loading mail...</div>
+            <div className="text-xs text-muted-foreground animate-pulse">{t('mail.loading', language)}</div>
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-48 gap-2">
             <Mail className="w-10 h-10 text-muted-foreground/30" />
-            <p className="text-xs text-muted-foreground">No messages yet</p>
+            <p className="text-xs text-muted-foreground">{t('mail.no_messages', language)}</p>
           </div>
         ) : (
           <div className="divide-y divide-border">
