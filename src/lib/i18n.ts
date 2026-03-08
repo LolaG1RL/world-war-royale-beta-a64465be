@@ -449,6 +449,17 @@ const translations: TranslationMap = {
   'mail.dev_gift': { en: '🎁 Dev Gift', es: '🎁 Regalo Dev', fr: '🎁 Cadeau Dev', de: '🎁 Dev-Geschenk', pt: '🎁 Presente Dev', ja: '🎁 開発チームギフト', ko: '🎁 개발팀 선물', zh: '🎁 开发团队礼物', ar: '🎁 هدية المطورين', ru: '🎁 Подарок от разработчиков' },
   'mail.default': { en: '📬 Mail', es: '📬 Correo', fr: '📬 Courrier', de: '📬 Post', pt: '📬 Correio', ja: '📬 メール', ko: '📬 메일', zh: '📬 邮件', ar: '📬 بريد', ru: '📬 Почта' },
   'mail.accept_social': { en: 'Accept or deny this request in the Social tab → Friends section', es: 'Acepta o rechaza en Social → Amigos', fr: 'Acceptez ou refusez dans Social → Amis', de: 'Akzeptiere oder ablehne im Social Tab → Freunde', pt: 'Aceite ou recuse em Social → Amigos', ja: 'ソーシャルタブ→フレンドで承認/拒否', ko: '소셜 탭 → 친구에서 수락/거부하세요', zh: '在社交→好友中接受或拒绝', ar: 'اقبل أو ارفض في الاجتماعي → الأصدقاء', ru: 'Примите или отклоните в Соцсети → Друзья' },
+  'mail.m_ago': { en: 'm ago', es: 'min', fr: 'min', de: 'Min.', pt: 'min atrás', ja: '分前', ko: '분 전', zh: '分钟前', ar: 'دقيقة', ru: 'мин. назад' },
+  'mail.h_ago': { en: 'h ago', es: 'h', fr: 'h', de: 'Std.', pt: 'h atrás', ja: '時間前', ko: '시간 전', zh: '小时前', ar: 'ساعة', ru: 'ч. назад' },
+
+  // ═══ Additional unique keys ═══
+  'shop.confirm_title': { en: 'Confirm Purchase', es: 'Confirmar Compra', fr: "Confirmer l'Achat", de: 'Kauf bestätigen', pt: 'Confirmar Compra', ja: '購入確認', ko: '구매 확인', zh: '确认购买', ar: 'تأكيد الشراء', ru: 'Подтвердить покупку' },
+  'shop.buy_label': { en: 'Buy', es: 'Comprar', fr: 'Acheter', de: 'Kaufen', pt: 'Comprar', ja: '購入', ko: '구매', zh: '购买', ar: 'شراء', ru: 'Купить' },
+  'shop.cancel_label': { en: 'Cancel', es: 'Cancelar', fr: 'Annuler', de: 'Abbrechen', pt: 'Cancelar', ja: 'キャンセル', ko: '취소', zh: '取消', ar: 'إلغاء', ru: 'Отмена' },
+  'shop.badges_equip': { en: 'Check Cards → Banner to equip your earned badges.', es: 'Revisa Cartas → Estandarte para equipar.', fr: 'Allez dans Cartes → Bannière pour équiper.', de: 'Karten → Banner zum Ausrüsten.', pt: 'Cartas → Bandeira para equipar.', ja: 'カード→バナーでバッジを装備', ko: '카드 → 배너에서 장착', zh: '卡牌→旗帜装备', ar: 'البطاقات → اللافتة لتجهيز', ru: 'Карты → Баннер для экипировки.' },
+  'events.claim_btn': { en: 'Claim', es: 'Reclamar', fr: 'Récupérer', de: 'Abholen', pt: 'Resgatar', ja: '受取', ko: '수령', zh: '领取', ar: 'مطالبة', ru: 'Забрать' },
+  'trophy.arena_label': { en: 'Arena', es: 'Arena', fr: 'Arène', de: 'Arena', pt: 'Arena', ja: 'アリーナ', ko: '아레나', zh: '竞技场', ar: 'الحلبة', ru: 'Арена' },
+  'trophy.never_drop': { en: 'never', es: 'nunca', fr: 'jamais', de: 'nie', pt: 'nunca', ja: '決して', ko: '절대', zh: '永远不会', ar: 'أبداً', ru: 'никогда' },
 };
 
 // Get a translation by key
