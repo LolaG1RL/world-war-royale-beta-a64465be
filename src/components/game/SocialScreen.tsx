@@ -2,26 +2,19 @@ import { useGame } from '@/context/GameContext';
 import { BottomNav } from './ShopScreen';
 import { useState } from 'react';
 import { MessageCircle, UserPlus, Search, Shield, Swords as SwordsIcon, Plus, Trophy, ChevronLeft, ChevronRight } from 'lucide-react';
-import ClanFlag from './ClanFlag';
+import ClanFlag, { CLAN_ICONS, BANNER_SHAPES } from './ClanFlag';
 
 const BANNER_COLORS = [
-  '#b91c1c', '#dc2626', '#ef4444', // reds
-  '#c2410c', '#ea580c', '#f97316', // oranges
-  '#a16207', '#ca8a04', '#eab308', // yellows
-  '#15803d', '#16a34a', '#22c55e', // greens
-  '#0e7490', '#0891b2', '#06b6d4', // cyans
-  '#1d4ed8', '#2563eb', '#3b82f6', // blues
-  '#7c3aed', '#8b5cf6', '#a78bfa', // purples
-  '#be185d', '#db2777', '#ec4899', // pinks
-  '#1e293b', '#334155', '#475569', // slates
-  '#18181b', '#fafaf9', '#78716c', // neutrals
-];
-
-const ICON_EMOJIS = [
-  '⚔️', '🛡️', '🗡️', '🏹', '🔥', '💀', '👑', '🦅',
-  '🐉', '🦁', '🐺', '🐍', '🦂', '🐙', '🐗', '🦇',
-  '⚡', '💎', '🌟', '☠️', '🔱', '⭐', '🎯', '🪓',
-  '🏰', '⛰️', '🌋', '🌊', '🎖️', '🏆', '💣', '🪖',
+  '#b91c1c', '#dc2626', '#ef4444',
+  '#c2410c', '#ea580c', '#f97316',
+  '#a16207', '#ca8a04', '#eab308',
+  '#15803d', '#16a34a', '#22c55e',
+  '#0e7490', '#0891b2', '#06b6d4',
+  '#1d4ed8', '#2563eb', '#3b82f6',
+  '#7c3aed', '#8b5cf6', '#a78bfa',
+  '#be185d', '#db2777', '#ec4899',
+  '#1e293b', '#334155', '#475569',
+  '#18181b', '#fafaf9', '#78716c',
 ];
 
 const ICON_COLORS = [
@@ -38,7 +31,8 @@ const SocialScreen = () => {
   const [clanName, setClanName] = useState('');
   const [clanDescription, setClanDescription] = useState('');
   const [bannerColor, setBannerColor] = useState(BANNER_COLORS[5]);
-  const [iconEmoji, setIconEmoji] = useState(ICON_EMOJIS[0]);
+  const [bannerShape, setBannerShape] = useState(BANNER_SHAPES[0].id);
+  const [iconId, setIconId] = useState(CLAN_ICONS[0].id);
   const [iconColor, setIconColor] = useState(ICON_COLORS[0]);
   const [customizeStep, setCustomizeStep] = useState<'info' | 'flag'>('info');
 
@@ -53,11 +47,12 @@ const SocialScreen = () => {
       members: 1,
       maxMembers: 50,
       trophies: profile.trophies,
-      badge: iconEmoji,
+      badge: iconId,
       description: clanDescription.trim() || 'A new clan ready for war!',
       donations: 0,
       bannerColor,
-      iconEmoji,
+      bannerShape,
+      iconId,
       iconColor,
     });
     setShowCreateClan(false);
@@ -96,7 +91,7 @@ const SocialScreen = () => {
 
                   {/* Flag preview */}
                   <div className="flex justify-center py-2">
-                    <ClanFlag bannerColor={bannerColor} iconEmoji={iconEmoji} iconColor={iconColor} size="lg" />
+                    <ClanFlag bannerColor={bannerColor} bannerShape={bannerShape} iconId={iconId} iconColor={iconColor} size="lg" />
                   </div>
 
                   {customizeStep === 'info' && (
@@ -132,6 +127,24 @@ const SocialScreen = () => {
 
                   {customizeStep === 'flag' && (
                     <>
+                      {/* Banner shape */}
+                      <div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Banner Shape</div>
+                        <div className="flex gap-2 flex-wrap">
+                          {BANNER_SHAPES.map(shape => (
+                            <button
+                              key={shape.id}
+                              onClick={() => setBannerShape(shape.id)}
+                              className={`w-10 h-12 rounded-md border-2 transition-all flex items-center justify-center ${bannerShape === shape.id ? 'border-primary scale-110' : 'border-border'}`}
+                            >
+                              <svg viewBox="0 0 56 72" className="w-7 h-9">
+                                <path d={shape.path} fill={bannerColor} stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+                              </svg>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
                       {/* Banner color */}
                       <div>
                         <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Banner Color</div>
@@ -151,13 +164,13 @@ const SocialScreen = () => {
                       <div>
                         <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Icon</div>
                         <div className="flex flex-wrap gap-1">
-                          {ICON_EMOJIS.map(e => (
+                          {CLAN_ICONS.map(({ id, Icon }) => (
                             <button
-                              key={e}
-                              onClick={() => setIconEmoji(e)}
-                              className={`w-7 h-7 rounded-md flex items-center justify-center text-sm transition-all ${iconEmoji === e ? 'bg-primary/30 border border-primary scale-110' : 'bg-secondary border border-border'}`}
+                              key={id}
+                              onClick={() => setIconId(id)}
+                              className={`w-7 h-7 rounded-md flex items-center justify-center transition-all ${iconId === id ? 'bg-primary/30 border border-primary scale-110' : 'bg-secondary border border-border'}`}
                             >
-                              {e}
+                              <Icon size={14} color={iconId === id ? iconColor : '#888'} strokeWidth={2} />
                             </button>
                           ))}
                         </div>
@@ -225,7 +238,8 @@ const SocialScreen = () => {
                 <div className="flex items-center gap-3">
                   <ClanFlag
                     bannerColor={clan.bannerColor}
-                    iconEmoji={clan.iconEmoji}
+                    bannerShape={clan.bannerShape}
+                    iconId={clan.iconId}
                     iconColor={clan.iconColor}
                     size="md"
                   />
