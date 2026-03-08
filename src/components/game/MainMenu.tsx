@@ -162,12 +162,17 @@ const MainMenu = () => {
               </div>
             )}
           </button>
-          <button onClick={() => setScreen('war-pass')} className="flex-1 bg-gradient-to-r from-[hsl(280,30%,16%)] to-[hsl(320,30%,16%)] border border-[hsl(280,20%,25%)] rounded-lg py-2 px-2 flex items-center gap-2 hover:from-[hsl(280,30%,20%)] hover:to-[hsl(320,30%,20%)] transition-colors">
+          <button onClick={() => setScreen('war-pass')} className="flex-1 bg-gradient-to-r from-[hsl(280,30%,16%)] to-[hsl(320,30%,16%)] border border-[hsl(280,20%,25%)] rounded-lg py-2 px-2 flex items-center gap-2 hover:from-[hsl(280,30%,20%)] hover:to-[hsl(320,30%,20%)] transition-colors relative">
             <Crown className="w-4 h-4 text-[hsl(280,60%,65%)]" />
             <div className="text-left">
               <div className="text-[9px] font-bold text-foreground">War Pass</div>
               <div className="text-[7px] text-muted-foreground">Earn Crowns</div>
             </div>
+            {unclaimedWarPass > 0 && (
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full flex items-center justify-center">
+                <span className="text-[7px] font-black text-accent-foreground">{unclaimedWarPass > 9 ? '9+' : unclaimedWarPass}</span>
+              </div>
+            )}
           </button>
         </div>
 
