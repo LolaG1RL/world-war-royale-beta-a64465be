@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useGame } from '@/context/GameContext';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { useSettings } from '@/context/SettingsContext';
 import {
   allBackgrounds, allEmblems, allBadges,
@@ -37,9 +39,15 @@ const BannerCustomizer = () => {
     if (changed) setOwnedBadgesState(getOwnedBadges());
   }, [profile]);
 
+  const { user } = useAuth();
+
   const save = (b: PlayerBanner) => {
     setBanner(b);
     setPlayerBanner(b);
+    // Sync equipped emblem to DB for leaderboard display
+    if (user && b.emblemId) {
+      supabase.from('player_progress').update({ equipped_emblem: b.emblemId } as any).eq('user_id', user.id).then(() => {});
+    }
   };
 
   const selectBg = (id: string) => { if (ownedBgs.has(id)) save({ ...banner, backgroundId: id }); };
