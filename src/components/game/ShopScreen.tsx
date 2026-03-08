@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { allEmotes, getOwnedEmotes, addOwnedEmote } from '@/data/emotes';
 
 // Stripe price IDs for real-money items
 const STRIPE_PRICES: Record<string, string> = {
@@ -31,6 +32,42 @@ const DAILY_DEAL_POOL = [
   { name: '1500 Gold', emoji: '💰', type: 'gold' as const, rarity: 'rare' as const, amount: 1500, cost: 60, currency: 'gems' as const },
   { name: '10 Gems', emoji: '💎', type: 'gems' as const, rarity: 'common' as const, amount: 10, cost: 200, currency: 'gold' as const },
 ];
+
+// Emote daily deals
+function getDailyEmoteDeals() {
+  const today = new Date();
+  const seed = (today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()) * 13;
+  const owned = getOwnedEmotes();
+  const unowned = allEmotes.filter(e => !owned.includes(e.id));
+  const shuffled = [...unowned];
+  let s = seed;
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const j = s % (i + 1);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, 6).map(e => ({
+    emote: e,
+    cost: e.rarity === 'legendary' ? 250 : e.rarity === 'epic' ? 100 : e.rarity === 'rare' ? 50 : 25,
+    currency: 'gems' as const,
+  }));
+}
+
+function getEmoteDealsPurchased(): Set<number> {
+  try {
+    const stored = localStorage.getItem('emote_deals_purchased');
+    if (!stored) return new Set();
+    const parsed = JSON.parse(stored);
+    if (parsed.date !== getTodayKey()) return new Set();
+    return new Set(parsed.indices as number[]);
+  } catch { return new Set(); }
+}
+
+function saveEmoteDealPurchased(index: number) {
+  const current = getEmoteDealsPurchased();
+  current.add(index);
+  localStorage.setItem('emote_deals_purchased', JSON.stringify({ date: getTodayKey(), indices: Array.from(current) }));
+}
 
 function getDailyDeals() {
   const today = new Date();
@@ -212,7 +249,7 @@ const RewardReveal = ({ rewards, onClose }: { rewards: RewardItem[]; onClose: ()
 
 const ShopScreen = () => {
   const { setScreen, profile, setProfile, setDeck, deck } = useGame();
-  const [tab, setTab] = useState<'featured' | 'cards' | 'chests' | 'gems'>('featured');
+  const [tab, setTab] = useState<'featured' | 'cards' | 'chests' | 'gems' | 'emotes'>('featured');
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [rewardPopup, setRewardPopup] = useState<RewardItem[] | null>(null);
   const [purchasedDeals, setPurchasedDeals] = useState<Set<number>>(() => getPurchasedDeals());
@@ -220,11 +257,15 @@ const ShopScreen = () => {
   const countdown = useCountdownToMidnight();
   const dailyDeals = useMemo(() => getDailyDeals(), []);
   const dailyFreebies = useMemo(() => getDailyFreebieCards(), []);
+  const emoteDeals = useMemo(() => getDailyEmoteDeals(), []);
+  const [purchasedEmotes, setPurchasedEmotes] = useState<Set<number>>(() => getEmoteDealsPurchased());
+  const [ownedEmoteIds, setOwnedEmoteIds] = useState(() => getOwnedEmotes());
 
   const filtered = tab === 'featured' ? shopItems :
     tab === 'cards' ? shopItems.filter(i => i.type === 'card') :
     tab === 'chests' ? shopItems.filter(i => i.type === 'chest') :
-    shopItems.filter(i => i.type === 'gems' || i.type === 'gold');
+    tab === 'gems' ? shopItems.filter(i => i.type === 'gems' || i.type === 'gold') :
+    [];
 
   const showRewards = useCallback((rewards: RewardItem[]) => {
     setRewardPopup(rewards);
@@ -360,10 +401,10 @@ const ShopScreen = () => {
       </div>
 
       {/* Shop tabs */}
-      <div className="flex bg-[hsl(220,20%,14%)] border-b border-border">
-        {(['featured', 'cards', 'chests', 'gems'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider ${tab === t ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
-            {t}
+      <div className="flex bg-[hsl(220,20%,14%)] border-b border-border overflow-x-auto">
+        {(['featured', 'cards', 'chests', 'gems', 'emotes'] as const).map(t => (
+          <button key={t} onClick={() => setTab(t)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap px-2 ${tab === t ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
+            {t === 'emotes' ? '😀' : t}
           </button>
         ))}
       </div>
@@ -485,12 +526,59 @@ const ShopScreen = () => {
           </div>
         )}
 
+        {/* Emotes tab */}
+        {tab === 'emotes' && (
+          <>
+            <div className="mb-3 bg-gradient-to-r from-[hsl(38,60%,20%)] to-[hsl(28,70%,18%)] rounded-xl p-3 border border-primary/30">
+              <div className="text-[10px] text-primary font-bold uppercase tracking-wider">😀 Daily Emote Deals</div>
+              <div className="text-[8px] text-foreground/70 mt-0.5">Refreshes in {countdown}</div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              {emoteDeals.map((deal, i) => {
+                const bought = purchasedEmotes.has(i) || ownedEmoteIds.includes(deal.emote.id);
+                const canAfford = !bought && profile.gems >= deal.cost;
+                return (
+                  <motion.button
+                    key={`emote-deal-${i}`}
+                    whileTap={!bought ? { scale: 0.95 } : undefined}
+                    onClick={() => {
+                      if (bought || !canAfford) return;
+                      setProfile(p => ({ ...p, gems: p.gems - deal.cost }));
+                      addOwnedEmote(deal.emote.id);
+                      setOwnedEmoteIds(prev => [...prev, deal.emote.id]);
+                      saveEmoteDealPurchased(i);
+                      setPurchasedEmotes(prev => new Set([...prev, i]));
+                      showRewards([{ emoji: '😀', name: deal.emote.name, count: 1, rarity: deal.emote.rarity }]);
+                    }}
+                    disabled={bought || !canAfford}
+                    className={`bg-card border-2 ${bought ? 'border-muted-foreground/20 opacity-40' : deal.emote.rarity === 'legendary' ? 'border-primary' : deal.emote.rarity === 'epic' ? 'border-purple-400' : deal.emote.rarity === 'rare' ? 'border-blue-400' : 'border-muted-foreground/40'} rounded-xl p-2 flex flex-col items-center gap-1 relative`}
+                  >
+                    {bought && (
+                      <div className="absolute inset-0 bg-background/60 rounded-xl flex items-center justify-center z-10">
+                        <Check className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div className="w-10 h-10 mt-1" dangerouslySetInnerHTML={{ __html: deal.emote.svg }} />
+                    <span className="text-[9px] font-bold text-foreground text-center leading-tight">{deal.emote.name}</span>
+                    <span className={`text-[7px] font-bold ${deal.emote.rarity === 'legendary' ? 'text-primary' : deal.emote.rarity === 'epic' ? 'text-purple-400' : deal.emote.rarity === 'rare' ? 'text-blue-400' : 'text-muted-foreground'}`}>
+                      {deal.emote.rarity.charAt(0).toUpperCase() + deal.emote.rarity.slice(1)}
+                    </span>
+                    <div className="mt-auto w-full py-1 rounded-lg text-[9px] font-bold text-center bg-elixir/20 text-elixir">
+                      {bought ? 'OWNED' : `💎 ${deal.cost}`}
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </>
+        )}
+
         {/* War Pass */}
         <div className="mt-4 bg-gradient-to-r from-[hsl(340,60%,25%)] to-[hsl(280,50%,22%)] rounded-xl p-4 border border-[hsl(340,60%,40%)]">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🎖️</span>
             <div>
-              <div className="text-xs font-display font-bold text-foreground">WAR PASS</div>
+              <div className="text-xs font-display font-bold text-foreground">WAR PASS+</div>
               <div className="text-[8px] text-muted-foreground">Unlock premium rewards all season</div>
             </div>
           </div>
@@ -505,7 +593,7 @@ const ShopScreen = () => {
             className="w-full mt-3 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold uppercase disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {purchasing === 'war-pass' ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            Buy War Pass - $4.99
+            Buy War Pass+ - $4.99
           </button>
         </div>
       </div>

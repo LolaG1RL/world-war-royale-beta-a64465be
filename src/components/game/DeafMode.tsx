@@ -4,6 +4,7 @@ import { useGame } from '@/context/GameContext';
 import { allCards } from '@/data/cards';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 const DEAF_MODE_EMAIL = 'tuasfait@gmail.com';
 
@@ -201,6 +202,22 @@ const DeafMode = () => {
               <div className="grid grid-cols-2 gap-1 mb-2">
                 <ModBtn label="Max Level" onClick={modActions.maxCards} />
                 <ModBtn label="Reset Deck" onClick={() => setDeck(allCards.slice(0, 8))} />
+              </div>
+
+              <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">War Pass+</div>
+              <div className="grid grid-cols-2 gap-1 mb-2">
+                <ModBtn label="⭐ Enable Pass+" onClick={() => {
+                  const saved = JSON.parse(localStorage.getItem('war_pass_data') || '{"crowns":0}');
+                  saved.hasPaid = true;
+                  localStorage.setItem('war_pass_data', JSON.stringify(saved));
+                  toast?.('✅ War Pass+ enabled!');
+                }} variant="win" />
+                <ModBtn label="🔒 Disable Pass+" onClick={() => {
+                  const saved = JSON.parse(localStorage.getItem('war_pass_data') || '{"crowns":0}');
+                  saved.hasPaid = false;
+                  localStorage.setItem('war_pass_data', JSON.stringify(saved));
+                  toast?.('❌ War Pass+ disabled!');
+                }} variant="danger" />
               </div>
 
               {inBattle && (

@@ -25,7 +25,11 @@ const BattleResult = () => {
   }, [isWin]);
 
   const isRiverRace = !!riverBattle;
-  const trophyChange = isRiverRace ? 0 : (isWin ? 30 : -15);
+  const [trophyChange] = useState(() => {
+    if (isRiverRace) return 0;
+    if (isWin) return 20 + Math.floor(Math.random() * 21); // +20 to +40
+    return -(10 + Math.floor(Math.random() * 21)); // -10 to -30
+  });
 
   const handleContinue = () => {
     if (isRiverRace) {
@@ -109,7 +113,7 @@ const BattleResult = () => {
             >
               <Crown className={`w-4 h-4 ${netCrowns >= 0 ? 'text-primary' : 'text-accent'}`} />
               <span className={`text-sm font-bold ${netCrowns >= 0 ? 'text-primary' : 'text-accent'}`}>
-                {netCrowns >= 0 ? '+' : ''}{netCrowns} War Pass Crowns
+               {netCrowns >= 0 ? '+' : ''}{netCrowns} War Pass Crowns
               </span>
             </motion.div>
           </>

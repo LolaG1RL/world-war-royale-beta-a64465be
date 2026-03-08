@@ -3,6 +3,7 @@ import { GameCard } from '@/data/cards';
 import { useGame } from '@/context/GameContext';
 import CardComponent from './CardComponent';
 import { motion, AnimatePresence } from 'framer-motion';
+import { allEmotes, getEquippedEmotes } from '@/data/emotes';
 
 const BattleArena = () => {
   const { deck, setScreen, setBattleResult, setProfile } = useGame();
@@ -18,6 +19,11 @@ const BattleArena = () => {
   const [unitCounter, setUnitCounter] = useState(0);
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
   const [isDoubleElixir, setIsDoubleElixir] = useState(false);
+  const [showEmotes, setShowEmotes] = useState(false);
+  const [activeEmote, setActiveEmote] = useState<{svg: string; side: 'player' | 'enemy'; key: number} | null>(null);
+  const [emoteCounter, setEmoteCounter] = useState(0);
+  const equippedEmoteIds = getEquippedEmotes();
+  const equippedEmotes = equippedEmoteIds.map(id => allEmotes.find(e => e.id === id)).filter(Boolean);
 
   // Deaf Mode event listeners
   useEffect(() => {
@@ -37,7 +43,7 @@ const BattleArena = () => {
           localStorage.setItem('war_pass_data', JSON.stringify(s1));
           localStorage.setItem('last_battle_crowns', String(net));
           setBattleResult('win');
-          if (!isRiverRace) setProfile(prev => ({ ...prev, trophies: prev.trophies + 30, wins: prev.wins + 1 }));
+          if (!isRiverRace) { const gain = 20 + Math.floor(Math.random() * 21); setProfile(prev => ({ ...prev, trophies: prev.trophies + gain, wins: prev.wins + 1 })); }
           setScreen('result');
           break;
         }
@@ -50,7 +56,7 @@ const BattleArena = () => {
           localStorage.setItem('war_pass_data', JSON.stringify(s2));
           localStorage.setItem('last_battle_crowns', String(net2));
           setBattleResult('lose');
-          if (!isRiverRace) setProfile(prev => ({ ...prev, losses: prev.losses + 1, trophies: Math.max(0, prev.trophies - 15) }));
+          if (!isRiverRace) { const loss = 10 + Math.floor(Math.random() * 21); setProfile(prev => ({ ...prev, losses: prev.losses + 1, trophies: Math.max(0, prev.trophies - loss) })); }
           setScreen('result');
           break;
         }
@@ -102,7 +108,7 @@ const BattleArena = () => {
           localStorage.setItem('last_battle_crowns', String(netCrowns));
           const result = pCrowns >= eCrowns ? 'win' : 'lose';
           setBattleResult(result);
-          if (!isRiverRace) setProfile(prev => ({ ...prev, trophies: result === 'win' ? prev.trophies + 30 : Math.max(0, prev.trophies - 15), wins: result === 'win' ? prev.wins + 1 : prev.wins, losses: result === 'lose' ? prev.losses + 1 : prev.losses }));
+          if (!isRiverRace) { const change = result === 'win' ? (20 + Math.floor(Math.random() * 21)) : -(10 + Math.floor(Math.random() * 21)); setProfile(prev => ({ ...prev, trophies: Math.max(0, prev.trophies + change), wins: result === 'win' ? prev.wins + 1 : prev.wins, losses: result === 'lose' ? prev.losses + 1 : prev.losses })); }
           setScreen('result');
           return 0;
         }
@@ -234,6 +240,23 @@ const BattleArena = () => {
           ))}
         </AnimatePresence>
 
+        {/* Emote display */}
+        <AnimatePresence>
+          {activeEmote && (
+            <motion.div
+              key={activeEmote.key}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+              className="absolute z-30"
+              style={{ left: activeEmote.side === 'player' ? '70%' : '30%', top: activeEmote.side === 'player' ? '70%' : '20%', transform: 'translate(-50%,-50%)' }}
+            >
+              <div className="w-14 h-14 rounded-full bg-[hsl(220,20%,15%,0.9)] border-2 border-primary/50 p-1 shadow-xl" dangerouslySetInnerHTML={{ __html: activeEmote.svg }} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {selectedCard !== null && (
           <div className="absolute bottom-0 left-0 right-0 top-1/2 border-t-2 border-dashed border-primary/20 bg-primary/5 pointer-events-none" />
         )}
@@ -255,8 +278,39 @@ const BattleArena = () => {
         </div>
       </div>
 
+      {/* Emote panel */}
+      <AnimatePresence>
+        {showEmotes && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="bg-[hsl(220,20%,9%)] border-t border-border overflow-hidden">
+            <div className="flex gap-1 p-1.5 justify-center flex-wrap">
+              {equippedEmotes.map(emote => emote && (
+                <button key={emote.id} onClick={() => {
+                  setEmoteCounter(p => p + 1);
+                  setActiveEmote({ svg: emote.svg, side: 'player', key: emoteCounter });
+                  setTimeout(() => setActiveEmote(null), 2500);
+                  setShowEmotes(false);
+                  // Enemy responds randomly
+                  setTimeout(() => {
+                    const rnd = allEmotes[Math.floor(Math.random() * allEmotes.length)];
+                    setEmoteCounter(p => p + 1);
+                    setActiveEmote({ svg: rnd.svg, side: 'enemy', key: emoteCounter + 1000 });
+                    setTimeout(() => setActiveEmote(null), 2500);
+                  }, 1500 + Math.random() * 2000);
+                }} className="w-9 h-9 rounded-full bg-[hsl(220,15%,16%)] border border-border p-1 hover:border-primary/50 transition-colors">
+                  <div dangerouslySetInnerHTML={{ __html: emote.svg }} />
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Card hand */}
       <div className="px-1.5 py-2 bg-[hsl(220,20%,9%)] border-t border-border flex items-end justify-center gap-1">
+        {/* Emote button */}
+        <button onClick={() => setShowEmotes(!showEmotes)} className={`w-8 h-8 rounded-full flex items-center justify-center text-sm mr-1 transition-colors ${showEmotes ? 'bg-primary/20 border border-primary/40' : 'bg-[hsl(220,15%,16%)] border border-border'}`}>
+          😀
+        </button>
         {nextCard && (
           <div className="mr-1.5">
             <div className="text-[6px] text-muted-foreground text-center mb-0.5 uppercase tracking-wider">Next</div>
