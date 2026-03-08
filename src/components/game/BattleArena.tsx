@@ -821,6 +821,45 @@ const BattleArena = () => {
           )}
         </AnimatePresence>
 
+        {/* Champion Ability Button */}
+        {championCard?.ability && (
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 z-40">
+            <motion.button
+              whileTap={abilityCooldown <= 0 ? { scale: 0.9 } : {}}
+              onClick={(e) => { e.stopPropagation(); activateAbility(); }}
+              disabled={abilityCooldown > 0}
+              className={`relative w-14 h-14 rounded-full border-2 flex flex-col items-center justify-center shadow-xl transition-all ${
+                abilityActive
+                  ? 'bg-primary/30 border-primary ring-2 ring-primary/50 animate-pulse'
+                  : abilityCooldown > 0
+                  ? 'bg-muted/60 border-muted-foreground/30 opacity-60'
+                  : 'bg-[hsl(340,40%,20%)] border-[hsl(340,60%,50%)] hover:border-[hsl(340,70%,60%)]'
+              }`}
+            >
+              <span className="text-lg">{championCard.emoji}</span>
+              {abilityCooldown > 0 && (
+                <>
+                  <div
+                    className="absolute inset-0 rounded-full border-2 border-transparent"
+                    style={{
+                      background: `conic-gradient(transparent ${((championCard.ability.cooldown! - abilityCooldown) / championCard.ability.cooldown!) * 100}%, hsl(0,0%,0%,0.6) 0%)`,
+                      mask: 'radial-gradient(circle, transparent 55%, black 56%)',
+                      WebkitMask: 'radial-gradient(circle, transparent 55%, black 56%)',
+                    }}
+                  />
+                  <span className="text-[9px] font-black text-foreground">{abilityCooldown}s</span>
+                </>
+              )}
+              {abilityCooldown <= 0 && !abilityActive && (
+                <span className="text-[6px] font-bold text-[hsl(340,60%,65%)] uppercase">Ready</span>
+              )}
+            </motion.button>
+            <div className="text-[7px] font-bold text-center text-foreground/70 mt-1 max-w-14 leading-tight">
+              {championCard.ability.name}
+            </div>
+          </div>
+        )}
+
         {selectedCard !== null && (
           <div className="absolute bottom-0 left-0 right-0 top-1/2 border-t-2 border-dashed border-primary/20 bg-primary/5 pointer-events-none">
             <div className="absolute top-0 left-0 right-0 text-center text-[8px] text-primary/60 uppercase tracking-wider py-1">
