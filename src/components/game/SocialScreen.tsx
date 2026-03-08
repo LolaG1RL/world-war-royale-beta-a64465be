@@ -1224,16 +1224,16 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                   <div className="text-[9px] font-bold text-hp-green uppercase tracking-wider">{t('social.request_card', language)}</div>
                   {!canRequest() && (
                     <div className="flex items-center gap-2">
-                      <div className="text-[9px] text-destructive">⏳ Cooldown: {getRequestTimeLeft()}</div>
+                      <div className="text-[9px] text-destructive">⏳ {T('river.cooldown')}: {getRequestTimeLeft()}</div>
                       <button onClick={() => {
                         const cost = getSkipCooldownCost();
                         if (profile.gems < cost) {
-                          toast.error(`Not enough gems! Need ${cost} 💎`);
+                          toast.error(`${T('social.not_enough_gems')} ${cost} 💎`);
                           return;
                         }
                         setProfile({ ...profile, gems: profile.gems - cost });
                         skipRequestCooldown();
-                        toast.success(`Skipped cooldown for ${cost} 💎`);
+                        toast.success(`${T('social.skip_cost')} ${cost} 💎`);
                       }} className="px-2 py-0.5 bg-primary text-primary-foreground rounded text-[8px] font-bold">
                         {t('social.skip_cost', language)} ({getSkipCooldownCost()} 💎)
                       </button>
