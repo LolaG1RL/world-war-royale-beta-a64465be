@@ -295,28 +295,35 @@ const BattleArena = () => {
   // Enemy AI - smarter deployment (use refs to avoid restarting)
   useEffect(() => {
     const interval = setInterval(() => {
-      const troops = deck.filter(c => c.type === 'troop');
-      if (!troops.length) return;
+      const deployable = deck.filter(c => c.type === 'troop' || c.type === 'building');
+      if (!deployable.length) return;
       
-      const affordable = troops.filter(c => c.elixir <= enemyElixir.current);
+      const affordable = deployable.filter(c => c.elixir <= enemyElixir.current);
       if (affordable.length === 0) return;
       
       const card = affordable[Math.floor(Math.random() * affordable.length)];
       enemyElixir.current -= card.elixir;
       
-      const playerUnits = deployedUnitsRef.current.filter(u => u.side === 'player');
-      const leftLane = playerUnits.filter(u => u.x < 50).length;
-      const rightLane = playerUnits.filter(u => u.x >= 50).length;
-      
-      let deployX = 50;
-      if (leftLane > rightLane) deployX = 25 + Math.random() * 15;
-      else if (rightLane > leftLane) deployX = 60 + Math.random() * 15;
-      else deployX = Math.random() > 0.5 ? (25 + Math.random() * 15) : (60 + Math.random() * 15);
-      
-      const speed = getSpeedValue(card.speed);
-      const deployY = speed >= SPEED_VALUES.fast ? 25 : 10 + Math.random() * 10;
-      
-      spawnUnit(card, deployX, deployY, 'enemy');
+      if (card.type === 'building') {
+        // Enemy deploys buildings on their side
+        const deployX = 30 + Math.random() * 40;
+        const deployY = 10 + Math.random() * 15;
+        spawnUnit(card, deployX, deployY, 'enemy');
+      } else {
+        const playerUnits = deployedUnitsRef.current.filter(u => u.side === 'player');
+        const leftLane = playerUnits.filter(u => u.x < 50).length;
+        const rightLane = playerUnits.filter(u => u.x >= 50).length;
+        
+        let deployX = 50;
+        if (leftLane > rightLane) deployX = 25 + Math.random() * 15;
+        else if (rightLane > leftLane) deployX = 60 + Math.random() * 15;
+        else deployX = Math.random() > 0.5 ? (25 + Math.random() * 15) : (60 + Math.random() * 15);
+        
+        const speed = getSpeedValue(card.speed);
+        const deployY = speed >= SPEED_VALUES.fast ? 25 : 10 + Math.random() * 10;
+        
+        spawnUnit(card, deployX, deployY, 'enemy');
+      }
     }, 3500);
     return () => clearInterval(interval);
   }, [deck, spawnUnit]);
