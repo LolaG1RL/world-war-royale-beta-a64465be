@@ -1,5 +1,5 @@
 import { useGame } from '@/context/GameContext';
-import { BottomNav } from './ShopScreen';
+import { BottomNav } from './BottomNav';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Clock, ChevronRight, Trophy, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

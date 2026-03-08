@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { GameCard } from '@/data/cards';
 import { allEmotes, getOwnedEmotes, getEquippedEmotes, setEquippedEmotes } from '@/data/emotes';
-import { BottomNav } from './ShopScreen';
+import { BottomNav } from './BottomNav';
 import { getCardEntry, getUpgradeRequirements, canUpgrade, upgradeCard, addCards } from '@/data/cardInventory';
 import { toast } from 'sonner';
 import BannerCustomizer from './BannerCustomizer';

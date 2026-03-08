@@ -3,7 +3,7 @@ import { useGame } from '@/context/GameContext';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Lock, Crown, Check, Loader2 } from 'lucide-react';
-import { BottomNav } from './ShopScreen';
+import { BottomNav } from './BottomNav';
 import { toast } from 'sonner';
 import { allCards } from '@/data/cards';
 import { addCards } from '@/data/cardInventory';
