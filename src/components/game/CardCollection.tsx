@@ -196,6 +196,7 @@ const isHeroUnlocked = (cardId: string): boolean => {
 
 const CardCollection = () => {
   const { deck, setDeck, setScreen, setActiveTab, profile, setProfile, clan } = useGame();
+  const { language } = useSettings();
   const [selectedCard, setSelectedCard] = useState<GameCard | null>(null);
   const [filter, setFilter] = useState<'all' | 'troop' | 'spell' | 'building'>('all');
   const [deckSlot, setDeckSlot] = useState(0);
