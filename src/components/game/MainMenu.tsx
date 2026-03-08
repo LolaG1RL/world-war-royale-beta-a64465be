@@ -116,27 +116,27 @@ const MainMenu = () => {
 
       {/* Trophy/Arena + Level display */}
       <div className="relative z-10 flex items-center justify-between px-3 py-2 bg-[hsl(220,20%,11%,0.8)]">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <div className="trophy-badge">
             <Trophy className="w-3.5 h-3.5" />
             <span>{profile.trophies.toLocaleString()}</span>
           </div>
-          <div className="text-[10px] text-muted-foreground">
-            <span className="text-foreground font-semibold">{arena.emoji} {arena.name}</span>
-          </div>
-        </div>
-        {/* Level badge - interactive */}
-        <button onClick={() => setShowLevelModal(true)} className="flex items-center gap-1.5 bg-[hsl(220,15%,16%)] border border-primary/30 rounded-full pl-1 pr-2.5 py-1 hover:border-primary/60 transition-colors">
-          <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
-            <span className="text-[9px] font-black text-primary">{profile.level}</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[8px] font-bold text-foreground leading-none">LVL {profile.level}</span>
-            <div className="w-10 h-1 rounded-full bg-muted mt-0.5 overflow-hidden">
-              <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${xpProgress}%` }} />
+          {/* Level badge - right of trophies */}
+          <button onClick={() => setShowLevelModal(true)} className="flex items-center gap-1 bg-[hsl(220,15%,16%)] border border-primary/30 rounded-full pl-1 pr-2 py-0.5 hover:border-primary/60 transition-colors">
+            <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center">
+              <span className="text-[8px] font-black text-primary">{profile.level}</span>
             </div>
-          </div>
-        </button>
+            <div className="flex flex-col">
+              <span className="text-[7px] font-bold text-foreground leading-none">LVL</span>
+              <div className="w-8 h-1 rounded-full bg-muted mt-0.5 overflow-hidden">
+                <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${xpProgress}%` }} />
+              </div>
+            </div>
+          </button>
+        </div>
+        <div className="text-[10px] text-muted-foreground">
+          <span className="text-foreground font-semibold">{arena.emoji} {arena.name}</span>
+        </div>
       </div>
 
       {/* Main content area */}

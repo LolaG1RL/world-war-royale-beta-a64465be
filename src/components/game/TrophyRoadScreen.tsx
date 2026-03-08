@@ -3,8 +3,8 @@ import { useGame } from '@/context/GameContext';
 import { BottomNav } from './BottomNav';
 import { trophyRoadRewards, arenas, getArenaForTrophies, allCards } from '@/data/cards';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Lock, Check, Trophy, Gift } from 'lucide-react';
-import { addCards } from '@/data/cardInventory';
+import { ChevronLeft, Lock, Check, Trophy, Gift, Swords } from 'lucide-react';
+import { addCards, isCardOwned } from '@/data/cardInventory';
 import RevealScreen, { RevealItem } from './RevealScreen';
 
 const TrophyRoadScreen = () => {
@@ -93,6 +93,17 @@ const TrophyRoadScreen = () => {
     next.add(trophies);
     saveClaimed(next);
   };
+
+  // Arena progress
+  const nextArena = arenas.find(a => a.trophies > profile.trophies);
+  const arenaProgress = currentArena.id === 15 ? 100 
+    : nextArena 
+      ? Math.min(100, ((profile.trophies - currentArena.trophies) / (nextArena.trophies - currentArena.trophies)) * 100)
+      : 100;
+
+  // Expand/collapse per arena to show unlocked cards
+  const [expandedArena, setExpandedArena] = useState<number | null>(null);
+
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden relative">
       {/* Header */}
@@ -107,14 +118,55 @@ const TrophyRoadScreen = () => {
         </div>
       </div>
 
-      {/* Arena display */}
+      {/* Current Arena display + progress bar */}
       <div className="bg-gradient-to-r from-[hsl(220,25%,14%)] to-[hsl(220,20%,18%)] p-3 border-b border-border">
         <div className="flex items-center gap-3">
           <span className="text-3xl">{currentArena.emoji}</span>
-          <div>
+          <div className="flex-1">
             <div className="text-xs font-display font-bold text-foreground">{currentArena.name}</div>
             <div className="text-[9px] text-muted-foreground">Arena {currentArena.id} • {currentArena.trophies}+ trophies</div>
+            {/* Progress bar to next arena */}
+            <div className="mt-1.5">
+              <div className="flex items-center justify-between text-[8px] mb-0.5">
+                <span className="text-muted-foreground">{currentArena.trophies}</span>
+                <span className="text-muted-foreground">{currentArena.id === 15 ? '∞' : nextArena?.trophies}</span>
+              </div>
+              <div className="h-2 rounded-full bg-muted/50 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${arenaProgress}%` }}
+                  transition={{ duration: 0.5 }}
+                  className={`h-full rounded-full ${currentArena.id === 15 ? 'bg-gradient-to-r from-primary to-amber-400' : 'bg-primary'}`}
+                />
+              </div>
+              <div className="text-[8px] text-center mt-0.5">
+                {currentArena.id === 15 ? (
+                  <span className="text-primary font-bold">🏆 LEGENDS — Max Arena!</span>
+                ) : (
+                  <span className="text-muted-foreground">
+                    {nextArena!.trophies - profile.trophies} trophies to <span className="text-foreground font-bold">{nextArena?.name}</span>
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* Matchmaking info */}
+        <div className="mt-2 flex items-center gap-1.5 bg-[hsl(220,20%,12%)] rounded-lg px-2.5 py-1.5 border border-border">
+          <Swords className="w-3 h-3 text-primary flex-shrink-0" />
+          <div className="text-[8px] text-muted-foreground">
+            {currentArena.id === 15 ? (
+              <span>Matchmaking: <span className="text-foreground font-bold">All Arena 15 players</span></span>
+            ) : (
+              <span>Matchmaking: <span className="text-foreground font-bold">{Math.max(0, profile.trophies - 100)} – {profile.trophies + 100}</span> trophies</span>
+            )}
+          </div>
+        </div>
+
+        {/* No derank notice */}
+        <div className="mt-1.5 text-[7px] text-center text-muted-foreground">
+          ⚠️ You can <span className="text-foreground font-bold">never</span> drop to a lower Arena!
         </div>
       </div>
 
@@ -124,18 +176,70 @@ const TrophyRoadScreen = () => {
           const arenaRewards = trophyRoadRewards.filter(r => r.trophies >= arena.trophies && r.trophies < (arenas[arenas.length - 1 - ai + 1]?.trophies || 99999));
           const isCurrentArena = arena.id === currentArena.id;
           const isFuture = arena.trophies > profile.trophies;
+          const cardsForArena = allCards.filter(c => c.unlockArena === arena.id);
+          const isExpanded = expandedArena === arena.id;
 
           return (
             <div key={arena.id} className={`border-b border-border ${isCurrentArena ? 'bg-primary/5' : ''}`}>
-              <div className={`flex items-center gap-2 px-3 py-2 ${isFuture ? 'opacity-50' : ''}`}>
+              <button
+                onClick={() => setExpandedArena(isExpanded ? null : arena.id)}
+                className={`flex items-center gap-2 px-3 py-2 w-full text-left ${isFuture ? 'opacity-50' : ''}`}
+              >
                 <span className="text-lg">{arena.emoji}</span>
                 <div className="flex-1">
                   <div className="text-[10px] font-display font-bold text-foreground">{arena.name}</div>
-                  <div className="text-[8px] text-muted-foreground">{arena.trophies} trophies</div>
+                  <div className="text-[8px] text-muted-foreground">{arena.trophies} trophies • {cardsForArena.length} cards</div>
                 </div>
                 {isCurrentArena && <span className="text-[8px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-bold">CURRENT</span>}
                 {isFuture && <Lock className="w-3 h-3 text-muted-foreground" />}
-              </div>
+                <span className="text-[10px] text-muted-foreground">{isExpanded ? '▲' : '▼'}</span>
+              </button>
+
+              {/* Expanded: show unlockable cards */}
+              <AnimatePresence>
+                {isExpanded && cardsForArena.length > 0 && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-3 pb-2">
+                      <div className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
+                        🃏 Cards unlocked in {arena.name}
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {cardsForArena.map(card => {
+                          const owned = isCardOwned(card.id);
+                          return (
+                            <div
+                              key={card.id}
+                              className={`flex items-center gap-1 px-1.5 py-0.5 rounded border text-[7px] ${
+                                owned
+                                  ? 'bg-card border-border text-foreground'
+                                  : isFuture
+                                    ? 'bg-muted/10 border-border/30 text-muted-foreground/50'
+                                    : 'bg-primary/5 border-primary/20 text-foreground'
+                              }`}
+                            >
+                              <span>{card.emoji}</span>
+                              <span className="font-bold truncate max-w-[60px]">{card.name}</span>
+                              <span className={`text-[6px] px-1 rounded ${
+                                card.rarity === 'legendary' ? 'bg-primary/20 text-primary' :
+                                card.rarity === 'epic' ? 'bg-purple-400/20 text-purple-400' :
+                                card.rarity === 'rare' ? 'bg-blue-400/20 text-blue-400' :
+                                card.rarity === 'champion' ? 'bg-amber-400/20 text-amber-400' :
+                                'bg-muted text-muted-foreground'
+                              }`}>{card.rarity[0].toUpperCase()}</span>
+                              {owned && <span className="text-[6px]">✅</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {arenaRewards.length > 0 && (
                 <div className="px-3 pb-2">
