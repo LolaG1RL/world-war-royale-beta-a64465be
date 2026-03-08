@@ -471,6 +471,7 @@ const translations: TranslationMap = {
   'matchmaking.no_players': { en: 'No players available', es: 'No hay jugadores disponibles', fr: 'Aucun joueur disponible', de: 'Keine Spieler verfügbar', pt: 'Nenhum jogador disponível', ja: 'プレイヤーが見つかりません', ko: '사용 가능한 플레이어 없음', zh: '没有可用玩家', ar: 'لا لاعبين متاحين', ru: 'Нет доступных игроков' },
   'matchmaking.ai_opponent': { en: 'Matching with AI opponent...', es: 'Emparejando con IA...', fr: 'Match contre l\'IA...', de: 'Gegen KI-Gegner...', pt: 'Emparelhando com IA...', ja: 'AI対戦相手とマッチング...', ko: 'AI 상대와 매칭 중...', zh: '与AI对手匹配...', ar: 'المطابقة مع خصم ذكاء اصطناعي...', ru: 'Подбор ИИ-противника...' },
   'matchmaking.ai_fallback_hint': { en: 'If no player is found, you\'ll face an AI opponent', es: 'Si no se encuentra jugador, enfrentarás una IA', fr: 'Si aucun joueur n\'est trouvé, vous affronterez une IA', de: 'Wenn kein Spieler gefunden wird, kämpfst du gegen eine KI', pt: 'Se nenhum jogador for encontrado, você enfrentará uma IA', ja: 'プレイヤーが見つからない場合、AIと対戦します', ko: '플레이어를 찾지 못하면 AI 상대와 대전합니다', zh: '如果找不到玩家，将与AI对战', ar: 'إذا لم يتم العثور على لاعب، ستواجه ذكاء اصطناعي', ru: 'Если игрок не найден, вас ждёт ИИ-противник' },
+  'matchmaking.arena15_any': { en: 'Any Legends player', es: 'Cualquier jugador Leyenda', fr: 'Tout joueur Légende', de: 'Jeder Legenden-Spieler', pt: 'Qualquer jogador Lenda', ja: 'レジェンドプレイヤー全員', ko: '모든 레전드 플레이어', zh: '任何传奇玩家', ar: 'أي لاعب أسطوري', ru: 'Любой игрок Легенд' },
 };
 
 // Get a translation by key
