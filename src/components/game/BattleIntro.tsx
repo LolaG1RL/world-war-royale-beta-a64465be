@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '@/context/GameContext';
 import { getPlayerBanner } from '@/data/banners';
@@ -8,25 +8,37 @@ import BattleBannerDisplay from './BattleBannerDisplay';
 const BattleIntro = ({ onComplete }: { onComplete: () => void }) => {
   const { profile } = useGame();
   const [visible, setVisible] = useState(true);
+  const onCompleteRef = useRef(onComplete);
+  const hasCompletedRef = useRef(false);
+
+  // Keep ref updated
+  onCompleteRef.current = onComplete;
 
   const playerBanner = getPlayerBanner();
 
-  // Random opponent
-  const oppName = ['DarkLord99', 'SwordMaster', 'WarChief', 'PhoenixKing', 'CrushR', 'NightWolf'][Math.floor(Math.random() * 6)];
-  const oppTrophies = Math.max(0, profile.trophies + Math.floor(Math.random() * 200) - 100);
-  const oppBanner = {
-    backgroundId: ['bg-crimson', 'bg-ocean', 'bg-stone', 'bg-inferno', 'bg-void'][Math.floor(Math.random() * 5)],
-    emblemId: ['emb-skull', 'emb-sword', 'emb-axe', 'emb-dragon', 'emb-ninja'][Math.floor(Math.random() * 5)],
-    badgeIds: ['badge-fire', 'badge-lightning'].slice(0, Math.floor(Math.random() * 3)),
-  };
+  // Random opponent - use refs to avoid recalculating on re-render
+  const oppDataRef = useRef({
+    name: ['DarkLord99', 'SwordMaster', 'WarChief', 'PhoenixKing', 'CrushR', 'NightWolf'][Math.floor(Math.random() * 6)],
+    trophies: Math.max(0, profile.trophies + Math.floor(Math.random() * 200) - 100),
+    banner: {
+      backgroundId: ['bg-crimson', 'bg-ocean', 'bg-stone', 'bg-inferno', 'bg-void'][Math.floor(Math.random() * 5)],
+      emblemId: ['emb-skull', 'emb-sword', 'emb-axe', 'emb-dragon', 'emb-ninja'][Math.floor(Math.random() * 5)],
+      badgeIds: ['badge-fire', 'badge-lightning'].slice(0, Math.floor(Math.random() * 3)),
+    }
+  });
 
   useEffect(() => {
+    if (hasCompletedRef.current) return;
+    
     const timer = setTimeout(() => {
+      if (hasCompletedRef.current) return;
+      hasCompletedRef.current = true;
       setVisible(false);
-      setTimeout(onComplete, 400);
+      setTimeout(() => onCompleteRef.current(), 400);
     }, 3000);
+    
     return () => clearTimeout(timer);
-  }, [onComplete]);
+  }, []); // Empty deps - run once only
 
   return (
     <AnimatePresence>
@@ -54,7 +66,7 @@ const BattleIntro = ({ onComplete }: { onComplete: () => void }) => {
             transition={{ type: 'spring', stiffness: 120, damping: 15, delay: 0.1 }}
             className="absolute top-[15%] left-4 right-4"
           >
-            <BattleBannerDisplay banner={oppBanner} name={oppName} trophies={oppTrophies} size="lg" />
+            <BattleBannerDisplay banner={oppDataRef.current.banner} name={oppDataRef.current.name} trophies={oppDataRef.current.trophies} size="lg" />
           </motion.div>
 
           {/* Player banner - slides from left at bottom */}
