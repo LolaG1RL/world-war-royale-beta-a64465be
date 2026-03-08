@@ -19,7 +19,7 @@ const SettingsScreen = () => {
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,25%,12%)] border-b border-border">
-        <button onClick={() => setScreen('menu')} className="text-muted-foreground"><X className="w-4 h-4" /></button>
+        <button onClick={() => setScreen('profile')} className="text-muted-foreground"><X className="w-4 h-4" /></button>
         <h2 className="font-display font-bold text-foreground text-sm uppercase tracking-wider">{T('settings.title')}</h2>
         <div className="w-4" />
       </div>
