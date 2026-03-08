@@ -326,7 +326,7 @@ const WarPassScreen = () => {
                 transition={{ duration: 1 }}
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary/20 rounded-full blur-xl pointer-events-none"
               />
-              <h2 className="font-display font-bold text-lg text-primary text-center mb-4">YOU GOT!</h2>
+              <h2 className="font-display font-bold text-lg text-primary text-center mb-4">{T('warpass.you_got')}</h2>
               <div className="grid grid-cols-3 gap-2 max-h-[40vh] overflow-y-auto">
                 {revealItems.map((r, i) => (
                   <motion.div
@@ -359,7 +359,7 @@ const WarPassScreen = () => {
                 onClick={() => setRevealItems(null)}
                 className="w-full mt-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold uppercase"
               >
-                Collect
+                {T('shop.collect')}
               </motion.button>
             </motion.div>
           </motion.div>
@@ -382,12 +382,12 @@ const WarPassScreen = () => {
               onClick={e => e.stopPropagation()}
               className="w-[80%] max-w-xs bg-card border border-border rounded-2xl p-5 text-center"
             >
-              <h3 className="font-display font-bold text-sm text-foreground mb-1">Confirm Purchase</h3>
-              <p className="text-[11px] text-muted-foreground mb-1">Buy <span className="text-foreground font-bold">{confirmAction.label}</span>?</p>
+              <h3 className="font-display font-bold text-sm text-foreground mb-1">{T('warpass.confirm_purchase')}</h3>
+              <p className="text-[11px] text-muted-foreground mb-1">{T('shop.buy')} <span className="text-foreground font-bold">{confirmAction.label}</span>?</p>
               <p className="text-lg font-bold text-primary mb-4">{confirmAction.cost}</p>
               <div className="flex gap-2">
-                <button onClick={() => setConfirmAction(null)} className="flex-1 py-2 rounded-xl bg-muted text-muted-foreground text-xs font-bold uppercase">Cancel</button>
-                <button onClick={confirmAction.onConfirm} className="flex-1 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase">Buy</button>
+                <button onClick={() => setConfirmAction(null)} className="flex-1 py-2 rounded-xl bg-muted text-muted-foreground text-xs font-bold uppercase">{T('warpass.cancel')}</button>
+                <button onClick={confirmAction.onConfirm} className="flex-1 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase">{T('shop.buy')}</button>
               </div>
             </motion.div>
           </motion.div>
@@ -399,8 +399,8 @@ const WarPassScreen = () => {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <Crown className="w-5 h-5 text-primary" />
-        <h1 className="font-display font-bold text-sm text-foreground flex-1">War Pass</h1>
-        <div className="text-[8px] text-muted-foreground mr-2">⏳ {getDaysLeft()}d left</div>
+        <h1 className="font-display font-bold text-sm text-foreground flex-1">{T('warpass.title')}</h1>
+        <div className="text-[8px] text-muted-foreground mr-2">⏳ {getDaysLeft()}d {T('warpass.left')}</div>
         <div className="flex items-center gap-1 bg-primary/20 px-2 py-0.5 rounded-full border border-primary/30">
           <span className="text-xs">👑</span>
           <span className="text-[10px] font-bold text-primary">{crowns}</span>
@@ -411,8 +411,8 @@ const WarPassScreen = () => {
       {!hasPaid && (
         <div className="bg-gradient-to-r from-[hsl(340,60%,18%)] to-[hsl(280,50%,18%)] border-b border-[hsl(280,30%,30%)] px-3 py-3 flex items-center justify-between">
           <div>
-            <div className="text-[11px] font-bold text-[hsl(340,70%,70%)]">🔥 Unlock War Pass+</div>
-            <div className="text-[8px] text-muted-foreground">Get exclusive rewards all season long</div>
+            <div className="text-[11px] font-bold text-[hsl(340,70%,70%)]">🔥 {T('warpass.unlock')}</div>
+            <div className="text-[8px] text-muted-foreground">{T('warpass.unlock_desc')}</div>
           </div>
           <button
             onClick={() => setConfirmAction({
@@ -431,7 +431,7 @@ const WarPassScreen = () => {
 
       {hasPaid && (
         <div className="bg-gradient-to-r from-[hsl(280,40%,18%)] to-[hsl(320,40%,18%)] border-b border-[hsl(280,30%,30%)] px-3 py-1.5 text-center">
-          <span className="text-[10px] font-bold text-[hsl(280,60%,70%)]">⭐ War Pass+ Active</span>
+          <span className="text-[10px] font-bold text-[hsl(280,60%,70%)]">{T('warpass.active')}</span>
         </div>
       )}
 
@@ -442,8 +442,8 @@ const WarPassScreen = () => {
         return nextTier ? (
           <div className="px-3 py-2 bg-[hsl(220,20%,11%)] border-b border-border flex items-center justify-between">
             <div>
-              <div className="text-[10px] font-bold text-foreground">⏭️ Skip to Tier {nextTier.tier}</div>
-              <div className="text-[8px] text-muted-foreground">Jump to {nextTier.crownsNeeded} crowns</div>
+              <div className="text-[10px] font-bold text-foreground">⏭️ {T('warpass.skip_to_tier')} {nextTier.tier}</div>
+              <div className="text-[8px] text-muted-foreground">{nextTier.crownsNeeded} 👑</div>
             </div>
             <button
               onClick={() => {
@@ -473,7 +473,7 @@ const WarPassScreen = () => {
       {/* Crown progress */}
       <div className="px-3 py-2 bg-[hsl(220,20%,11%)]">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-[9px] text-muted-foreground">Crown Progress</span>
+          <span className="text-[9px] text-muted-foreground">{T('warpass.crown_progress')}</span>
           <span className="text-[9px] text-primary font-bold ml-auto">{crowns} / {maxCrowns}</span>
         </div>
         <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -487,7 +487,7 @@ const WarPassScreen = () => {
       {/* Reward tracks */}
       <div className="flex-1 overflow-y-auto">
         <div className="sticky top-0 z-10 flex bg-[hsl(220,20%,10%)] border-b border-border">
-          <div className="flex-1 text-center py-1.5 text-[9px] font-bold text-[hsl(120,40%,55%)] uppercase tracking-wider">Free</div>
+          <div className="flex-1 text-center py-1.5 text-[9px] font-bold text-[hsl(120,40%,55%)] uppercase tracking-wider">{T('warpass.free')}</div>
           <div className="w-10" />
           <div className="flex-1 text-center py-1.5 text-[9px] font-bold text-[hsl(280,60%,65%)] uppercase tracking-wider">
             {hasPaid ? '⭐ Pass+' : '🔒 Pass+'}
@@ -509,7 +509,7 @@ const WarPassScreen = () => {
             }`}>
               {isExclusive && (
                 <div className="absolute left-0 right-0 text-center">
-                  <span className="text-[6px] font-bold text-[hsl(280,60%,65%)] uppercase tracking-widest">Season Exclusive</span>
+                  <span className="text-[6px] font-bold text-[hsl(280,60%,65%)] uppercase tracking-widest">{T('warpass.season_exclusive')}</span>
                 </div>
               )}
               <div className="flex-1 p-1.5">
