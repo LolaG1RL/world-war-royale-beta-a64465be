@@ -500,8 +500,10 @@ const BattleArena = () => {
           }
         }
 
-        // Check for Joan of Arc passive: +20% damage bonus while alive
-        const joanAlivePlayer = units.some(u => u.card.id === 'joan-of-arc' && u.side === 'player' && u.hp > 0);
+        // Check for Joan of Arc passive: +20% damage bonus while alive AND hero version unlocked
+        const heroUnlocked = JSON.parse(localStorage.getItem('active_season_heroes') || '[]');
+        const joanHeroUnlocked = heroUnlocked.includes('joan-of-arc');
+        const joanAlivePlayer = joanHeroUnlocked && units.some(u => u.card.id === 'joan-of-arc' && u.side === 'player' && u.hp > 0);
         const joanAliveEnemy = units.some(u => u.card.id === 'joan-of-arc' && u.side === 'enemy' && u.hp > 0);
 
         // Phase 1: Find targets and move/flag attacks
