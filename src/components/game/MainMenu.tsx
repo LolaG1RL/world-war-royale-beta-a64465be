@@ -175,7 +175,7 @@ const MainMenu = () => {
             transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
             className="mb-4"
           >
-            <img src={logoImage} alt="World War Royale" className="w-48 h-auto drop-shadow-2xl" />
+            <ArenaPreview arenaId={arena.id} arenaName={arena.name} arenaEmoji={arena.emoji} />
           </motion.div>
 
           <motion.button
