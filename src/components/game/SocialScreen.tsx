@@ -38,7 +38,37 @@ interface LeaderboardEntry {
   wins: number;
   username?: string;
   player_tag?: string;
+  country?: string;
 }
+
+// Top 100 worldwide rewards (rank 1 = best)
+const TOP_100_REWARDS: { rank: number; gold: number; gems: number; exclusiveBanner?: string; exclusiveEmote?: string; label: string }[] = [
+  { rank: 1, gold: 100000, gems: 5000, exclusiveBanner: '🏆 Champion Banner', exclusiveEmote: '👑 Champion Emote', label: '🥇 #1 World Champion' },
+  { rank: 2, gold: 75000, gems: 3500, exclusiveBanner: '🥈 Silver Banner', exclusiveEmote: '⚔️ Elite Emote', label: '🥈 #2' },
+  { rank: 3, gold: 50000, gems: 2500, exclusiveBanner: '🥉 Bronze Banner', exclusiveEmote: '🔥 Fire Emote', label: '🥉 #3' },
+  ...Array.from({ length: 7 }, (_, i) => ({
+    rank: i + 4, gold: 30000 - i * 2000, gems: 1500 - i * 100, exclusiveBanner: '⭐ Top 10 Banner', label: `#${i + 4}`
+  })),
+  ...Array.from({ length: 15 }, (_, i) => ({
+    rank: i + 11, gold: 15000 - i * 500, gems: 800 - i * 20, label: `#${i + 11}`
+  })),
+  ...Array.from({ length: 25 }, (_, i) => ({
+    rank: i + 26, gold: 8000 - i * 100, gems: 400 - i * 5, label: `#${i + 26}`
+  })),
+  ...Array.from({ length: 49 }, (_, i) => ({
+    rank: i + 51, gold: 5000 - i * 50, gems: 200 - i * 2, label: `#${i + 51}`
+  })),
+];
+
+// Top 10 local rewards
+const TOP_10_LOCAL_REWARDS = [
+  { rank: 1, gold: 25000, gems: 1000, exclusiveBanner: '🏅 National Champion Banner', label: '🥇 #1 National' },
+  { rank: 2, gold: 18000, gems: 700, label: '🥈 #2' },
+  { rank: 3, gold: 12000, gems: 500, label: '🥉 #3' },
+  ...Array.from({ length: 7 }, (_, i) => ({
+    rank: i + 4, gold: 8000 - i * 500, gems: 300 - i * 20, label: `#${i + 4}`
+  })),
+];
 
 interface ClanRow {
   id: string;
