@@ -701,7 +701,7 @@ const ShopScreen = () => {
 
             <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🖼️ Today's Backgrounds</div>
             <div className="grid grid-cols-2 gap-2 mb-4">
-              {getDailyBannerDeals('bg').map(({ item: bg, discountPct }, idx) => {
+              {getDailyBgDeals().map(({ item: bg, discountPct }, idx) => {
                 const owned = ownedBgs.has(bg.id);
                 const discountCost = Math.round(bg.cost * (1 - discountPct / 100));
                 return (
@@ -741,7 +741,7 @@ const ShopScreen = () => {
 
             <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🎭 Today's Emblems</div>
             <div className="grid grid-cols-4 gap-2 mb-4">
-              {getDailyBannerDeals('emb').map(({ item: emb, discountPct }) => {
+              {getDailyEmbDeals().map(({ item: emb, discountPct }) => {
                 const owned = ownedEmbs.has(emb.id);
                 const discountCost = Math.round(emb.cost * (1 - discountPct / 100));
                 return (
@@ -778,7 +778,7 @@ const ShopScreen = () => {
 
             <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🏅 Today's Badges</div>
             <div className="grid grid-cols-4 gap-2">
-              {getDailyBannerDeals('badge').map(({ item: badge, discountPct }) => {
+              {getDailyBadgeDeals().map(({ item: badge, discountPct }) => {
                 const owned = ownedBadgesSet.has(badge.id);
                 const discountCost = Math.round(badge.cost * (1 - discountPct / 100));
                 return (
