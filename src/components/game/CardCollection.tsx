@@ -232,14 +232,14 @@ const CardCollection = () => {
       
       // Check arena restriction
       if (card.unlockArena > profile.arena) {
-        toast.error(`This card requires Arena ${card.unlockArena}!`);
+        toast.error(`${t('cards.requires_arena', language)} ${card.unlockArena}!`);
         return;
       }
       
       // Check if this card has a hero version active
       const heroVersionCards = [...currentDeck, card].filter(c => isHeroUnlocked(c.id) && c.heroBonus);
       if (heroVersionCards.length > 2) {
-        toast.error('Max 2 hero version cards in a deck!');
+        toast.error(t('cards.deck_full', language));
         return;
       }
     }
@@ -270,7 +270,7 @@ const CardCollection = () => {
       setHeroSlots(newSlots);
       saveHeroSlots(newSlots);
     } else {
-      toast.error(`You only have ${maxHeroSlots} hero slot${maxHeroSlots !== 1 ? 's' : ''}!`);
+      toast.error(`${t('cards.slots_available', language)}: ${maxHeroSlots}`);
     }
   };
 
