@@ -1,0 +1,1 @@
+ALTER TABLE public.player_progress ADD COLUMN IF NOT EXISTS country text DEFAULT null;
