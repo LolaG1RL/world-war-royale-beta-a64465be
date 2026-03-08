@@ -93,17 +93,6 @@ const TrophyRoadScreen = () => {
     next.add(trophies);
     saveClaimed(next);
   };
-  };
-
-  const rarityColor = (rarity: string) => {
-    switch (rarity) {
-      case 'legendary': return 'text-[hsl(38,90%,55%)]';
-      case 'epic': return 'text-[hsl(280,60%,65%)]';
-      case 'rare': return 'text-[hsl(210,70%,60%)]';
-      default: return 'text-foreground';
-    }
-  };
-
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden relative">
       {/* Header */}
