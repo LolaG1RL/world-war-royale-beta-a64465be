@@ -64,7 +64,11 @@ const getStoredRiverData = () => {
       const d = JSON.parse(saved);
       const weekStart = d.weekStart || Date.now();
       const daysPassed = (Date.now() - weekStart) / (1000 * 60 * 60 * 24);
-      if (daysPassed >= 7) return null;
+      if (daysPassed >= 7) {
+        // Auto-reset: clear old race data
+        localStorage.removeItem('river_race_data');
+        return null;
+      }
       return d;
     } catch { return null; }
   }
