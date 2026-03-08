@@ -26,16 +26,33 @@ const BattleArena = () => {
         case 'insta-elixir':
           setElixir(10);
           break;
-        case 'insta-win':
+        case 'insta-win': {
+          // Calculate crowns at the moment of insta-win
+          const pC = (enemyTowerHP.left <= 0 ? 1 : 0) + (enemyTowerHP.right <= 0 ? 1 : 0) + (enemyTowerHP.king <= 0 ? 1 : 0) + 3; // bonus 3 for insta
+          const eC = (playerTowerHP.left <= 0 ? 1 : 0) + (playerTowerHP.right <= 0 ? 1 : 0) + (playerTowerHP.king <= 0 ? 1 : 0);
+          const net = pC - eC;
+          const s1 = JSON.parse(localStorage.getItem('war_pass_data') || '{"crowns":0}');
+          s1.crowns = Math.max(0, (s1.crowns || 0) + net);
+          localStorage.setItem('war_pass_data', JSON.stringify(s1));
+          localStorage.setItem('last_battle_crowns', String(net));
           setBattleResult('win');
           setProfile(prev => ({ ...prev, trophies: prev.trophies + 30, wins: prev.wins + 1 }));
           setScreen('result');
           break;
-        case 'insta-lose':
+        }
+        case 'insta-lose': {
+          const pC2 = (enemyTowerHP.left <= 0 ? 1 : 0) + (enemyTowerHP.right <= 0 ? 1 : 0) + (enemyTowerHP.king <= 0 ? 1 : 0);
+          const eC2 = (playerTowerHP.left <= 0 ? 1 : 0) + (playerTowerHP.right <= 0 ? 1 : 0) + (playerTowerHP.king <= 0 ? 1 : 0) + 3;
+          const net2 = pC2 - eC2;
+          const s2 = JSON.parse(localStorage.getItem('war_pass_data') || '{"crowns":0}');
+          s2.crowns = Math.max(0, (s2.crowns || 0) + net2);
+          localStorage.setItem('war_pass_data', JSON.stringify(s2));
+          localStorage.setItem('last_battle_crowns', String(net2));
           setBattleResult('lose');
           setProfile(prev => ({ ...prev, losses: prev.losses + 1, trophies: Math.max(0, prev.trophies - 15) }));
           setScreen('result');
           break;
+        }
         case 'spawn-unit': {
           const troops = deck.filter(c => c.type === 'troop');
           if (!troops.length) break;
@@ -75,6 +92,13 @@ const BattleArena = () => {
         if (prev <= 0) {
           const pCrowns = (enemyTowerHP.left <= 0 ? 1 : 0) + (enemyTowerHP.right <= 0 ? 1 : 0) + (enemyTowerHP.king <= 0 ? 1 : 0);
           const eCrowns = (playerTowerHP.left <= 0 ? 1 : 0) + (playerTowerHP.right <= 0 ? 1 : 0) + (playerTowerHP.king <= 0 ? 1 : 0);
+          const netCrowns = pCrowns - eCrowns;
+          // Save net crowns to war pass
+          const saved = JSON.parse(localStorage.getItem('war_pass_data') || '{"crowns":0}');
+          saved.crowns = Math.max(0, (saved.crowns || 0) + netCrowns);
+          localStorage.setItem('war_pass_data', JSON.stringify(saved));
+          // Store last battle crowns for result screen
+          localStorage.setItem('last_battle_crowns', String(netCrowns));
           const result = pCrowns >= eCrowns ? 'win' : 'lose';
           setBattleResult(result);
           setProfile(prev => ({ ...prev, trophies: result === 'win' ? prev.trophies + 30 : Math.max(0, prev.trophies - 15), wins: result === 'win' ? prev.wins + 1 : prev.wins, losses: result === 'lose' ? prev.losses + 1 : prev.losses }));
