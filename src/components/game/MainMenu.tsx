@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { useAuth } from '@/context/AuthContext';
-import { getArenaForTrophies } from '@/data/cards';
+import { getArenaForTrophies, trophyRoadRewards } from '@/data/cards';
 import CardComponent from './CardComponent';
 import { motion } from 'framer-motion';
 import { Swords, Trophy, Users, ShoppingBag, Crown, Map, Star, Gift, Zap, Mail } from 'lucide-react';
@@ -13,6 +13,39 @@ const MainMenu = () => {
   const { signOut, user } = useAuth();
   const arena = getArenaForTrophies(profile.trophies);
   const [unreadMail, setUnreadMail] = useState(0);
+  const [unclaimedTrophy, setUnclaimedTrophy] = useState(0);
+  const [unclaimedWarPass, setUnclaimedWarPass] = useState(0);
+
+  // Check unclaimed trophy road rewards
+  useEffect(() => {
+    const saved = localStorage.getItem('trophy_road_claimed');
+    const claimed = new Set<number>(saved ? JSON.parse(saved) : []);
+    const count = trophyRoadRewards.filter(r => r.trophies <= profile.trophies && !claimed.has(r.trophies)).length;
+    setUnclaimedTrophy(count);
+  }, [profile.trophies]);
+
+  // Check unclaimed war pass rewards
+  useEffect(() => {
+    const saved = localStorage.getItem('war_pass_data');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        const crowns = data.crowns || 0;
+        const claimedFree = new Set(data.claimedFree || []);
+        const claimedPaid = new Set(data.claimedPaid || []);
+        const hasPaid = data.hasPaid || false;
+        // Count unclaimed tiers where crowns are sufficient
+        const WAR_PASS_TIERS = [2,4,7,10,14,18,22,27,32,37,42,48,54,60,67,74,82,90,98,110];
+        let count = 0;
+        WAR_PASS_TIERS.forEach((needed, i) => {
+          const tier = i + 1;
+          if (crowns >= needed && !claimedFree.has(tier)) count++;
+          if (crowns >= needed && hasPaid && !claimedPaid.has(tier)) count++;
+        });
+        setUnclaimedWarPass(count);
+      } catch {}
+    }
+  }, []);
 
   // Check unread mail count
   useEffect(() => {
@@ -28,7 +61,6 @@ const MainMenu = () => {
       }
     };
     checkMail();
-    // Also subscribe to realtime for new mail
     const channel = supabase
       .channel('mailbox-notifications')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mailbox_messages' }, () => {
