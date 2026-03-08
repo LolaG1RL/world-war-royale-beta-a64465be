@@ -6,7 +6,7 @@ import BattleBannerDisplay from './BattleBannerDisplay';
 
 /** Pre-battle intro: player banner slides from bottom-left, opponent from top-right */
 const BattleIntro = ({ onComplete }: { onComplete: () => void }) => {
-  const { profile } = useGame();
+  const { profile, clan } = useGame();
   const [visible, setVisible] = useState(true);
   const onCompleteRef = useRef(onComplete);
   const hasCompletedRef = useRef(false);
@@ -20,12 +20,19 @@ const BattleIntro = ({ onComplete }: { onComplete: () => void }) => {
   const oppDataRef = useRef({
     name: ['DarkLord99', 'SwordMaster', 'WarChief', 'PhoenixKing', 'CrushR', 'NightWolf'][Math.floor(Math.random() * 6)],
     trophies: Math.max(0, profile.trophies + Math.floor(Math.random() * 200) - 100),
+    clanName: ['Iron Legion', 'Shadow Wolves', 'Dragon Order', 'Storm Riders', ''][Math.floor(Math.random() * 5)],
     banner: {
       backgroundId: ['bg-crimson', 'bg-ocean', 'bg-stone', 'bg-inferno', 'bg-void'][Math.floor(Math.random() * 5)],
       emblemId: ['emb-skull', 'emb-sword', 'emb-axe', 'emb-dragon', 'emb-ninja'][Math.floor(Math.random() * 5)],
       badgeIds: ['badge-fire', 'badge-lightning'].slice(0, Math.floor(Math.random() * 3)),
     }
   });
+
+  // Store opponent data for BattleResult crown display
+  useEffect(() => {
+    localStorage.setItem('last_opp_name', oppDataRef.current.name);
+    localStorage.setItem('last_opp_clan', oppDataRef.current.clanName);
+  }, []);
 
   useEffect(() => {
     if (hasCompletedRef.current) return;
@@ -38,7 +45,7 @@ const BattleIntro = ({ onComplete }: { onComplete: () => void }) => {
     }, 3000);
     
     return () => clearTimeout(timer);
-  }, []); // Empty deps - run once only
+  }, []);
 
   return (
     <AnimatePresence>
@@ -66,7 +73,13 @@ const BattleIntro = ({ onComplete }: { onComplete: () => void }) => {
             transition={{ type: 'spring', stiffness: 120, damping: 15, delay: 0.1 }}
             className="absolute top-[15%] left-4 right-4"
           >
-            <BattleBannerDisplay banner={oppDataRef.current.banner} name={oppDataRef.current.name} trophies={oppDataRef.current.trophies} size="lg" />
+            <BattleBannerDisplay 
+              banner={oppDataRef.current.banner} 
+              name={oppDataRef.current.name} 
+              trophies={oppDataRef.current.trophies} 
+              clanName={oppDataRef.current.clanName || undefined}
+              size="lg" 
+            />
           </motion.div>
 
           {/* Player banner - slides from left at bottom */}
@@ -76,7 +89,13 @@ const BattleIntro = ({ onComplete }: { onComplete: () => void }) => {
             transition={{ type: 'spring', stiffness: 120, damping: 15, delay: 0.1 }}
             className="absolute bottom-[15%] left-4 right-4"
           >
-            <BattleBannerDisplay banner={playerBanner} name={profile.name} trophies={profile.trophies} size="lg" />
+            <BattleBannerDisplay 
+              banner={playerBanner} 
+              name={profile.name} 
+              trophies={profile.trophies} 
+              clanName={clan?.name || undefined}
+              size="lg" 
+            />
           </motion.div>
 
           {/* Countdown flash */}

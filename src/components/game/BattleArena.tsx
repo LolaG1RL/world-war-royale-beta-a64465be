@@ -8,6 +8,8 @@ import { allEmotes, getEquippedEmotes } from '@/data/emotes';
 import BattleIntro from './BattleIntro';
 import BattleBannerDisplay from './BattleBannerDisplay';
 import { getPlayerBanner } from '@/data/banners';
+import { playBattleMusic, playOvertimeMusic, stopMusic } from '@/lib/music';
+import { playCardSfx } from '@/lib/sfx';
 
 interface DeployedUnit {
   id: string;
@@ -65,6 +67,21 @@ const BattleArena = () => {
   const [activeEmote, setActiveEmote] = useState<{svg: string; side: 'player' | 'enemy'; key: number} | null>(null);
   const [emoteCounter, setEmoteCounter] = useState(0);
   const [damageNumbers, setDamageNumbers] = useState<{id: number; x: number; y: number; damage: number}[]>([]);
+  const [spellProjectiles, setSpellProjectiles] = useState<{id: number; x: number; y: number; emoji: string; targetX: number; targetY: number}[]>([]);
+  const projectileCounter = useRef(0);
+
+  // Start arena music when intro finishes
+  useEffect(() => {
+    if (!showIntro) {
+      playBattleMusic(profile.arena);
+    }
+    return () => stopMusic();
+  }, [showIntro, profile.arena]);
+
+  // Switch to overtime music
+  useEffect(() => {
+    if (isDoubleElixir) playOvertimeMusic();
+  }, [isDoubleElixir]);
   const damageCounter = useRef(0);
   const equippedEmoteIds = getEquippedEmotes();
   const equippedEmotes = equippedEmoteIds.map(id => allEmotes.find(e => e.id === id)).filter(Boolean);
@@ -688,30 +705,42 @@ const BattleArena = () => {
     if (card.type === 'spell') {
       const splash = (card.splashRadius || 2) * 5;
       
-      // Damage enemies in radius
-      setDeployedUnits(units => units.map(u => {
-        if (u.side === 'player') return u;
-        const dist = Math.sqrt((ax - u.x) ** 2 + (ay - u.y) ** 2);
-        if (dist <= splash) {
-          return { ...u, hp: u.hp - card.damage };
-        }
-        return u;
-      }));
-      
-      // Damage towers
-      setTowers(t => t.map(tower => {
-        if (tower.side === 'player') return tower;
-        const dist = Math.sqrt((ax - tower.x) ** 2 + (ay - tower.y) ** 2);
-        if (dist <= splash) {
-          return { ...tower, hp: Math.max(0, tower.hp - card.damage) };
-        }
-        return tower;
-      }));
+      // Spell projectile visual — animate from card hand to target
+      projectileCounter.current++;
+      const projId = projectileCounter.current;
+      setSpellProjectiles(prev => [...prev, { id: projId, x: 50, y: 95, emoji: card.emoji, targetX: ax, targetY: ay }]);
+      playCardSfx('spell', card.rarity);
 
-      // Show damage indicator
-      damageCounter.current++;
-      setDamageNumbers(prev => [...prev, { id: damageCounter.current, x: ax, y: ay, damage: card.damage }]);
+      // After projectile reaches target, apply damage
+      setTimeout(() => {
+        setSpellProjectiles(prev => prev.filter(p => p.id !== projId));
+        
+        // Damage enemies in radius
+        setDeployedUnits(units => units.map(u => {
+          if (u.side === 'player') return u;
+          const dist = Math.sqrt((ax - u.x) ** 2 + (ay - u.y) ** 2);
+          if (dist <= splash) {
+            return { ...u, hp: u.hp - card.damage };
+          }
+          return u;
+        }));
+        
+        // Damage towers
+        setTowers(t => t.map(tower => {
+          if (tower.side === 'player') return tower;
+          const dist = Math.sqrt((ax - tower.x) ** 2 + (ay - tower.y) ** 2);
+          if (dist <= splash) {
+            return { ...tower, hp: Math.max(0, tower.hp - card.damage) };
+          }
+          return tower;
+        }));
+
+        // Show damage indicator
+        damageCounter.current++;
+        setDamageNumbers(prev => [...prev, { id: damageCounter.current, x: ax, y: ay, damage: card.damage }]);
+      }, 400);
     } else {
+      playCardSfx(card.type, card.rarity);
       spawnUnit(card, ax, ay, 'player');
     }
     
@@ -853,6 +882,24 @@ const BattleArena = () => {
               style={{ left: `${d.x}%`, top: `${d.y}%`, transform: 'translate(-50%, -50%)' }}
             >
               <span className="text-red-400 font-black text-sm drop-shadow-lg">-{d.damage}</span>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+
+        {/* Spell Projectiles */}
+        <AnimatePresence>
+          {spellProjectiles.map(p => (
+            <motion.div
+              key={p.id}
+              initial={{ left: `${p.x}%`, top: `${p.y}%`, scale: 1.5, opacity: 1 }}
+              animate={{ left: `${p.targetX}%`, top: `${p.targetY}%`, scale: 2, opacity: 1 }}
+              exit={{ scale: 3, opacity: 0 }}
+              transition={{ duration: 0.4, ease: 'easeIn' }}
+              className="absolute z-40 pointer-events-none"
+              style={{ transform: 'translate(-50%, -50%)' }}
+            >
+              <span className="text-2xl drop-shadow-[0_0_8px_rgba(255,100,0,0.8)]">{p.emoji}</span>
+              <div className="absolute inset-0 rounded-full bg-primary/30 blur-md animate-pulse" />
             </motion.div>
           ))}
         </AnimatePresence>

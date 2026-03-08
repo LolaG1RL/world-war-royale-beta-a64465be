@@ -13,12 +13,19 @@ import BattleBannerDisplay from './BattleBannerDisplay';
 import { getPlayerBanner } from '@/data/banners';
 import ArenaPreview from './ArenaPreview';
 import RevealScreen, { RevealItem } from './RevealScreen';
+import { playLobbyMusic, stopMusic, isPlaying } from '@/lib/music';
 import { updateSfxSettings, playCoinCollect } from '@/lib/sfx';
 import { t, tArena } from '@/lib/i18n';
 
 const MainMenu = () => {
   const { profile, deck, chests, setScreen, setActiveTab, setProfile } = useGame();
   const { signOut, user } = useAuth();
+
+  // Play lobby music
+  useEffect(() => {
+    if (!isPlaying()) playLobbyMusic();
+    return () => stopMusic();
+  }, []);
   const { sfxEnabled, sfxVolume, language } = useSettings();
   const arena = getArenaForTrophies(profile.trophies);
   const playerBanner = getPlayerBanner();

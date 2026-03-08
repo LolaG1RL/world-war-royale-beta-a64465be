@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getCardEntry, addCards, removeCards, canRequest, setRequestCooldown, getRequestTimeLeft, getSkipCooldownCost, skipRequestCooldown, DONATION_LIMITS, getDonationsToday, recordDonation } from '@/data/cardInventory';
 import { allEmotes, getEquippedEmotes } from '@/data/emotes';
+import { countryCodeToFlag } from '@/lib/countryFlags';
 
 const BANNER_COLORS = [
   '#b91c1c', '#dc2626', '#ef4444',
@@ -789,13 +790,16 @@ const SocialScreen = () => {
                     <div className="w-7 h-7 rounded-lg bg-[hsl(210,60%,40%)] border border-[hsl(210,70%,55%)] flex items-center justify-center">
                       <span className="text-[9px] font-black text-foreground">{entry.level}</span>
                     </div>
+                    {/* Country flag */}
+                    {entry.country && (
+                      <span className="text-sm" title={entry.country}>{countryCodeToFlag(entry.country)}</span>
+                    )}
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-bold text-foreground truncate">
                         {entry.username} {isYou && <span className="text-[8px] text-primary">(You)</span>}
                       </div>
                       <div className="text-[8px] text-muted-foreground">
                         {entry.player_tag} • {entry.wins}W
-                        {globalSubTab === 'worldwide' && entry.country && <span> • {entry.country}</span>}
                       </div>
                       {reward && (
                         <div className="flex gap-1 mt-0.5 flex-wrap">
