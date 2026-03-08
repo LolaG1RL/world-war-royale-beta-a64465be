@@ -1,14 +1,15 @@
 import { useGame } from '@/context/GameContext';
 import { allCards } from '@/data/cards';
 import CardComponent from './CardComponent';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+import { useState, useMemo } from 'react';
 import { GameCard } from '@/data/cards';
 import { allEmotes, getOwnedEmotes, getEquippedEmotes, setEquippedEmotes } from '@/data/emotes';
 import { BottomNav } from './BottomNav';
 import { getCardEntry, getUpgradeRequirements, canUpgrade, upgradeCard, addCards } from '@/data/cardInventory';
 import { toast } from 'sonner';
 import BannerCustomizer from './BannerCustomizer';
+import { getAllMatchups } from '@/data/cardMatchups';
 
 const CardCollection = () => {
   const { deck, setDeck, setScreen, setActiveTab, profile, setProfile } = useGame();
@@ -21,6 +22,10 @@ const CardCollection = () => {
   const [ownedEmotes] = useState(() => getOwnedEmotes());
   const [equipped, setEquipped] = useState(() => getEquippedEmotes());
   const [, forceUpdate] = useState(0);
+  const [detailTab, setDetailTab] = useState<'overview' | 'matchup'>('overview');
+
+  const allCardIds = useMemo(() => allCards.map(c => c.id), []);
+  const matchupData = useMemo(() => getAllMatchups(allCardIds), [allCardIds]);
 
   const filtered = filter === 'all' ? allCards : allCards.filter(c => c.type === filter);
   const isInDeck = (card: GameCard) => decks[deckSlot].some(d => d.id === card.id);
@@ -164,153 +169,313 @@ const CardCollection = () => {
 
           {/* Card detail modal - Clash Royale style */}
           <AnimatePresence>
-            {selectedCard && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 z-50"
-                onClick={() => setSelectedCard(null)}
-              >
-                <div
-                  className="absolute inset-0 bg-background/90"
-                  style={{
-                    backgroundImage:
-                      'linear-gradient(135deg, hsl(var(--background)) 25%, hsl(var(--card)) 25%, hsl(var(--card)) 50%, hsl(var(--background)) 50%, hsl(var(--background)) 75%, hsl(var(--card)) 75%, hsl(var(--card)) 100%)',
-                    backgroundSize: '36px 36px',
-                  }}
-                />
+            {selectedCard && (() => {
+              const entry = getCardEntry(selectedCard.id);
+              const req = getUpgradeRequirements(selectedCard.id, selectedCard.rarity);
+              const canUp = canUpgrade(selectedCard.id, selectedCard.rarity, profile.gold);
+              const enriched = { ...selectedCard, level: entry.level, count: entry.count };
+              const progressValue = req && !req.maxLevel ? Math.min(100, (entry.count / req.cardsNeeded) * 100) : 100;
+              const targetLabel = enriched.targets
+                ? enriched.targets === 'ground-air' ? 'Ground + Air'
+                  : enriched.targets === 'buildings' ? 'Buildings'
+                    : enriched.targets.charAt(0).toUpperCase() + enriched.targets.slice(1)
+                : enriched.type === 'spell' ? 'Area' : 'Ground';
 
+              const detailRows = [
+                { label: 'Type', value: enriched.type.toUpperCase(), icon: '🏷️' },
+                { label: 'Targets', value: targetLabel, icon: '🎯' },
+                { label: 'Elixir Cost', value: String(enriched.elixir), icon: '💧' },
+                { label: 'Hitpoints', value: enriched.hp ? String(enriched.hp) : '—', icon: '❤️' },
+                { label: 'Damage', value: String(enriched.damage), icon: '⚔️' },
+                { label: 'Hit Speed', value: enriched.hitSpeed ? `${enriched.hitSpeed}s` : '—', icon: '⏱️' },
+                { label: 'Speed', value: enriched.speed ? enriched.speed.replace('-', ' ') : '—', icon: '💨' },
+                { label: 'Range', value: typeof enriched.range === 'number' ? `${enriched.range}` : (enriched.range || '—').replace('-', ' '), icon: '📏' },
+                { label: 'Count', value: String(enriched.deployCount || 1), icon: '👥' },
+              ];
+
+              const cardMatchup = matchupData[selectedCard.id];
+
+              const handleSwipe = (_: any, info: PanInfo) => {
+                if (Math.abs(info.offset.x) > 50) {
+                  if (info.offset.x < 0 && detailTab === 'overview') setDetailTab('matchup');
+                  if (info.offset.x > 0 && detailTab === 'matchup') setDetailTab('overview');
+                }
+              };
+
+              return (
                 <motion.div
-                  initial={{ scale: 0.92, y: 20, opacity: 0 }}
-                  animate={{ scale: 1, y: 0, opacity: 1 }}
-                  exit={{ scale: 0.96, y: 10, opacity: 0 }}
-                  className="relative h-full w-full max-w-md mx-auto flex flex-col"
-                  onClick={(e) => e.stopPropagation()}
+                  key="card-detail"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-50"
+                  onClick={() => { setSelectedCard(null); setDetailTab('overview'); }}
                 >
-                  {(() => {
-                    const entry = getCardEntry(selectedCard.id);
-                    const req = getUpgradeRequirements(selectedCard.id, selectedCard.rarity);
-                    const canUp = canUpgrade(selectedCard.id, selectedCard.rarity, profile.gold);
-                    const enriched = { ...selectedCard, level: entry.level, count: entry.count };
-                    const progressValue = req && !req.maxLevel ? Math.min(100, (entry.count / req.cardsNeeded) * 100) : 100;
-                    const targetLabel = enriched.targets
-                      ? enriched.targets === 'ground-air'
-                        ? 'Ground + Air'
-                        : enriched.targets === 'buildings'
-                          ? 'Buildings'
-                          : enriched.targets.charAt(0).toUpperCase() + enriched.targets.slice(1)
-                      : enriched.type === 'spell'
-                        ? 'Area'
-                        : 'Ground';
+                  <div
+                    className="absolute inset-0 bg-background/90"
+                    style={{
+                      backgroundImage:
+                        'linear-gradient(135deg, hsl(var(--background)) 25%, hsl(var(--card)) 25%, hsl(var(--card)) 50%, hsl(var(--background)) 50%, hsl(var(--background)) 75%, hsl(var(--card)) 75%, hsl(var(--card)) 100%)',
+                      backgroundSize: '36px 36px',
+                    }}
+                  />
 
-                    const detailRows = [
-                      { label: 'Type', value: enriched.type.toUpperCase() },
-                      { label: 'Targets', value: targetLabel },
-                      { label: 'Elixir Cost', value: String(enriched.elixir) },
-                      { label: 'Hitpoints', value: enriched.hp ? String(enriched.hp) : '—' },
-                      { label: 'Damage', value: String(enriched.damage) },
-                      { label: 'Hit Speed', value: enriched.hitSpeed ? `${enriched.hitSpeed}s` : '—' },
-                      { label: 'Speed', value: enriched.speed ? enriched.speed.replace('-', ' ') : '—' },
-                      { label: 'Range', value: typeof enriched.range === 'number' ? `${enriched.range}` : (enriched.range || '—').replace('-', ' ') },
-                      { label: 'Count', value: String(enriched.deployCount || 1) },
-                    ];
+                  <motion.div
+                    initial={{ scale: 0.92, y: 20, opacity: 0 }}
+                    animate={{ scale: 1, y: 0, opacity: 1 }}
+                    exit={{ scale: 0.96, y: 10, opacity: 0 }}
+                    className="relative h-full w-full max-w-md mx-auto flex flex-col"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Header */}
+                    <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Card Info</div>
+                      <button
+                        onClick={() => { setSelectedCard(null); setDetailTab('overview'); }}
+                        className="w-8 h-8 rounded-full bg-muted text-foreground font-black"
+                      >
+                        ×
+                      </button>
+                    </div>
 
-                    return (
-                      <>
-                        <div className="px-4 pt-4 pb-2 flex items-center justify-between">
-                          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Card Info</div>
-                          <button
-                            onClick={() => setSelectedCard(null)}
-                            className="w-8 h-8 rounded-full bg-muted text-foreground font-black"
+                    {/* Card name + level */}
+                    <div className="px-4">
+                      <h3 className="font-display font-black text-center text-2xl text-foreground leading-tight">{enriched.name}</h3>
+                      <div className="mt-1 flex items-center justify-center gap-2">
+                        <span className="text-[10px] font-bold text-primary">Level {entry.level}</span>
+                        {enriched.targets === 'buildings' && (
+                          <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/40">
+                            WIN CONDITION
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Tab bar - Overview | Matchup */}
+                    <div className="flex mx-4 mt-3 rounded-xl bg-muted/50 border border-border overflow-hidden">
+                      <button
+                        onClick={() => setDetailTab('overview')}
+                        className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${
+                          detailTab === 'overview'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        Overview
+                      </button>
+                      <button
+                        onClick={() => setDetailTab('matchup')}
+                        className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${
+                          detailTab === 'matchup'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        Matchup
+                      </button>
+                    </div>
+
+                    {/* Swipeable content */}
+                    <motion.div
+                      className="flex-1 overflow-y-auto px-4 pb-4 mt-2"
+                      drag="x"
+                      dragConstraints={{ left: 0, right: 0 }}
+                      dragElastic={0.2}
+                      onDragEnd={handleSwipe}
+                    >
+                      <AnimatePresence mode="wait">
+                        {detailTab === 'overview' ? (
+                          <motion.div
+                            key="overview"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.2 }}
                           >
-                            ×
-                          </button>
-                        </div>
-
-                        <div className="px-4 pb-4 flex-1 overflow-y-auto">
-                          <h3 className="font-display font-black text-center text-2xl text-foreground leading-tight">{enriched.name}</h3>
-                          <div className="mt-2 flex items-center justify-center gap-2">
-                            <span className="text-[10px] font-bold text-primary">Level {entry.level}</span>
-                            {enriched.targets === 'buildings' && (
-                              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/40">
-                                WIN CONDITION
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="mt-3 rounded-xl border border-border bg-card p-3">
-                            <div className="flex justify-center mb-3">
-                              <CardComponent card={enriched} size="lg" showElixir showLevel />
+                            {/* Card art */}
+                            <div className="rounded-xl border border-border bg-card p-3">
+                              <div className="flex justify-center mb-3">
+                                <CardComponent card={enriched} size="lg" showElixir showLevel />
+                              </div>
+                              <div className="rounded-lg bg-muted/70 p-2 border border-border">
+                                <div className="flex items-center justify-between text-[10px] font-bold mb-1.5">
+                                  <span className="text-muted-foreground uppercase">Card Level Progress</span>
+                                  <span className="text-foreground">
+                                    {req && !req.maxLevel ? `${entry.count}/${req.cardsNeeded}` : 'MAX'}
+                                  </span>
+                                </div>
+                                <div className="h-2 rounded-full bg-background/70 overflow-hidden">
+                                  <div className="h-full bg-primary rounded-full" style={{ width: `${progressValue}%` }} />
+                                </div>
+                              </div>
                             </div>
 
-                            <div className="rounded-lg bg-muted/70 p-2 border border-border">
-                              <div className="flex items-center justify-between text-[10px] font-bold mb-1.5">
-                                <span className="text-muted-foreground uppercase">Card Level Progress</span>
-                                <span className="text-foreground">
-                                  {req && !req.maxLevel ? `${entry.count}/${req.cardsNeeded}` : 'MAX'}
-                                </span>
+                            {/* Stats */}
+                            <div className="mt-3 rounded-xl border border-border bg-card overflow-hidden">
+                              {detailRows.map((row) => (
+                                <div key={row.label} className="flex items-center justify-between px-3 py-2 border-b border-border last:border-b-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-xs">{row.icon}</span>
+                                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">{row.label}</span>
+                                  </div>
+                                  <span className="text-xs font-bold text-foreground">{row.value}</span>
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Lore */}
+                            <div className="mt-3 rounded-xl border border-border bg-card px-3 py-2.5">
+                              <p className="text-xs text-foreground/90 leading-relaxed">{enriched.description}</p>
+                            </div>
+
+                            {/* Swipe hint */}
+                            <div className="mt-3 flex items-center justify-center gap-1 text-muted-foreground">
+                              <span className="text-[9px]">← Swipe for Matchups</span>
+                            </div>
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key="matchup"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            {/* Good against */}
+                            <div className="mb-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xs">✅</span>
+                                <span className="text-[11px] font-black text-foreground uppercase tracking-wider">Good Against</span>
                               </div>
-                              <div className="h-2 rounded-full bg-background/70 overflow-hidden">
-                                <div className="h-full bg-primary rounded-full" style={{ width: `${progressValue}%` }} />
+                              <div className="space-y-1">
+                                {cardMatchup?.counters.map(m => {
+                                  const card = allCards.find(c => c.id === m.cardId);
+                                  if (!card) return null;
+                                  return (
+                                    <div key={m.cardId} className="flex items-center gap-2 bg-card rounded-lg px-2 py-1.5 border border-border">
+                                      <span className="text-lg">{card.emoji}</span>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="text-[10px] font-bold text-foreground truncate">{card.name}</div>
+                                        <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-0.5">
+                                          <div className="h-full rounded-full flex">
+                                            <div
+                                              className="h-full bg-[hsl(142,60%,45%)]"
+                                              style={{ width: `${m.winRate}%` }}
+                                            />
+                                            <div
+                                              className="h-full bg-accent"
+                                              style={{ width: `${100 - m.winRate}%` }}
+                                            />
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-0.5">
+                                        <span className="text-[10px] font-black text-[hsl(142,60%,45%)]">{m.winRate}</span>
+                                        <span className="text-[8px] text-muted-foreground">|</span>
+                                        <span className="text-[10px] font-black text-accent">{100 - m.winRate}</span>
+                                      </div>
+                                      <span className="text-[8px] text-muted-foreground">{m.sampleSize}</span>
+                                    </div>
+                                  );
+                                })}
+                                {(!cardMatchup?.counters.length) && (
+                                  <div className="text-[10px] text-muted-foreground text-center py-3">No strong matchups found</div>
+                                )}
                               </div>
                             </div>
-                          </div>
 
-                          <div className="mt-3 rounded-xl border border-border bg-card overflow-hidden">
-                            {detailRows.map((row) => (
-                              <div key={row.label} className="flex items-center justify-between px-3 py-2 border-b border-border last:border-b-0">
-                                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">{row.label}</span>
-                                <span className="text-xs font-bold text-foreground">{row.value}</span>
+                            {/* Bad against */}
+                            <div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xs">❌</span>
+                                <span className="text-[11px] font-black text-foreground uppercase tracking-wider">Bad Against</span>
                               </div>
-                            ))}
-                          </div>
+                              <div className="space-y-1">
+                                {cardMatchup?.counteredBy.map(m => {
+                                  const card = allCards.find(c => c.id === m.cardId);
+                                  if (!card) return null;
+                                  const lossRate = 100 - m.winRate;
+                                  return (
+                                    <div key={m.cardId} className="flex items-center gap-2 bg-card rounded-lg px-2 py-1.5 border border-border">
+                                      <span className="text-lg">{card.emoji}</span>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="text-[10px] font-bold text-foreground truncate">{card.name}</div>
+                                        <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-0.5">
+                                          <div className="h-full rounded-full flex">
+                                            <div
+                                              className="h-full bg-accent"
+                                              style={{ width: `${lossRate}%` }}
+                                            />
+                                            <div
+                                              className="h-full bg-[hsl(142,60%,45%)]"
+                                              style={{ width: `${m.winRate}%` }}
+                                            />
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-0.5">
+                                        <span className="text-[10px] font-black text-accent">{lossRate}</span>
+                                        <span className="text-[8px] text-muted-foreground">|</span>
+                                        <span className="text-[10px] font-black text-[hsl(142,60%,45%)]">{m.winRate}</span>
+                                      </div>
+                                      <span className="text-[8px] text-muted-foreground">{m.sampleSize}</span>
+                                    </div>
+                                  );
+                                })}
+                                {(!cardMatchup?.counteredBy.length) && (
+                                  <div className="text-[10px] text-muted-foreground text-center py-3">No weak matchups found</div>
+                                )}
+                              </div>
+                            </div>
 
-                          <div className="mt-3 rounded-xl border border-border bg-card px-3 py-2.5">
-                            <p className="text-xs text-foreground/90 leading-relaxed">{enriched.description}</p>
-                          </div>
-                        </div>
+                            {/* Swipe hint */}
+                            <div className="mt-3 flex items-center justify-center gap-1 text-muted-foreground">
+                              <span className="text-[9px]">Swipe for Overview →</span>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
 
-                        <div className="px-4 pb-4 pt-2 border-t border-border bg-background/90">
-                          {req && !req.maxLevel && (
-                            <button
-                              onClick={() => {
-                                handleUpgrade(enriched);
-                                const newEntry = getCardEntry(selectedCard.id);
-                                setSelectedCard({ ...selectedCard, level: newEntry.level, count: newEntry.count });
-                              }}
-                              disabled={!canUp}
-                              className={`w-full py-2.5 rounded-xl font-black text-xs uppercase tracking-wider ${
-                                canUp ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground cursor-not-allowed'
-                              }`}
-                            >
-                              Upgrade • 💰 {req.goldNeeded.toLocaleString()}
-                            </button>
-                          )}
-
-                          <button
-                            onClick={() => {
-                              toggleDeck(enriched);
-                              setSelectedCard(null);
-                            }}
-                            className={`w-full mt-2 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider ${
-                              isInDeck(enriched)
-                                ? 'bg-accent text-accent-foreground'
-                                : currentDeck.length < 8
-                                  ? 'bg-secondary text-foreground'
-                                  : 'bg-muted text-muted-foreground cursor-not-allowed'
-                            }`}
-                            disabled={!isInDeck(enriched) && currentDeck.length >= 8}
-                          >
-                            {isInDeck(enriched) ? 'Remove from Deck' : 'Add to Deck'}
-                          </button>
-                        </div>
-                      </>
-                    );
-                  })()}
+                    {/* Bottom actions */}
+                    <div className="px-4 pb-4 pt-2 border-t border-border bg-background/90">
+                      {req && !req.maxLevel && (
+                        <button
+                          onClick={() => {
+                            handleUpgrade(enriched);
+                            const newEntry = getCardEntry(selectedCard.id);
+                            setSelectedCard({ ...selectedCard, level: newEntry.level, count: newEntry.count });
+                          }}
+                          disabled={!canUp}
+                          className={`w-full py-2.5 rounded-xl font-black text-xs uppercase tracking-wider ${
+                            canUp ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground cursor-not-allowed'
+                          }`}
+                        >
+                          Upgrade • 💰 {req.goldNeeded.toLocaleString()}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          toggleDeck(enriched);
+                          setSelectedCard(null);
+                          setDetailTab('overview');
+                        }}
+                        className={`w-full mt-2 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider ${
+                          isInDeck(enriched)
+                            ? 'bg-accent text-accent-foreground'
+                            : currentDeck.length < 8
+                              ? 'bg-secondary text-foreground'
+                              : 'bg-muted text-muted-foreground cursor-not-allowed'
+                        }`}
+                        disabled={!isInDeck(enriched) && currentDeck.length >= 8}
+                      >
+                        {isInDeck(enriched) ? 'Remove from Deck' : 'Add to Deck'}
+                      </button>
+                    </div>
+                  </motion.div>
                 </motion.div>
-              </motion.div>
-            )}
+              );
+            })()}
           </AnimatePresence>
         </>
       ) : (
