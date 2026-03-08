@@ -71,9 +71,9 @@ const BannerInline = ({ profile, clanName, clanBanner }: { profile: PlayerProfil
 
       {/* Sub tabs */}
       <div className="flex bg-[hsl(220,20%,14%)] border-b border-border">
-        {(['backgrounds', 'emblems', 'badges'] as BannerSubTab[]).map(t => (
-          <button key={t} onClick={() => setSubTab(t)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${subTab === t ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
-            {t === 'backgrounds' ? t('cards.bg_tab', language) : t === 'emblems' ? t('cards.emblem_tab', language) : t('cards.badges_tab', language)}
+        {(['backgrounds', 'emblems', 'badges'] as BannerSubTab[]).map(tab => (
+          <button key={tab} onClick={() => setSubTab(tab)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${subTab === tab ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
+            {tab === 'backgrounds' ? '🖼️ BG' : tab === 'emblems' ? '🎭 Emblem' : '🏅 Badges'}
           </button>
         ))}
       </div>
