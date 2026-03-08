@@ -6,11 +6,11 @@ import CardComponent from './CardComponent';
 import { motion } from 'framer-motion';
 import { Swords, Trophy, Crown, Map, Star, Mail } from 'lucide-react';
 import splashImage from '@/assets/world-war-royale-splash.png';
-import logoImage from '@/assets/world-war-royale-logo.png';
 import { supabase } from '@/integrations/supabase/client';
 import { BottomNav } from './BottomNav';
 import BattleBannerDisplay from './BattleBannerDisplay';
 import { getPlayerBanner } from '@/data/banners';
+import ArenaPreview from './ArenaPreview';
 
 const MainMenu = () => {
   const { profile, deck, chests, setScreen, setActiveTab } = useGame();
@@ -175,7 +175,7 @@ const MainMenu = () => {
             transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
             className="mb-4"
           >
-            <img src={logoImage} alt="World War Royale" className="w-48 h-auto drop-shadow-2xl" />
+            <ArenaPreview arenaId={arena.id} arenaName={arena.name} arenaEmoji={arena.emoji} />
           </motion.div>
 
           <motion.button
