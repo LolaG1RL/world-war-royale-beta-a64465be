@@ -88,3 +88,20 @@ export function debouncedSaveInventory(userId: string) {
   if (saveTimeout) clearTimeout(saveTimeout);
   saveTimeout = setTimeout(() => saveInventory(userId), 3000);
 }
+
+/** Listen for localStorage changes and auto-save. Call once on mount. */
+let periodicSaveInterval: ReturnType<typeof setInterval> | null = null;
+export function startPeriodicSave(userId: string) {
+  if (periodicSaveInterval) clearInterval(periodicSaveInterval);
+  // Save every 30 seconds
+  periodicSaveInterval = setInterval(() => saveInventory(userId), 30000);
+  // Also save when page is about to close
+  window.addEventListener('beforeunload', () => saveInventory(userId));
+}
+
+export function stopPeriodicSave() {
+  if (periodicSaveInterval) {
+    clearInterval(periodicSaveInterval);
+    periodicSaveInterval = null;
+  }
+}

@@ -3,7 +3,7 @@ import { GameCard, ChestData, PlayerProfile, ClanData, getStarterDeck, defaultCh
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { markCardsOwned } from '@/data/cardInventory';
-import { loadInventory, debouncedSaveInventory } from '@/lib/inventorySync';
+import { loadInventory, debouncedSaveInventory, startPeriodicSave, stopPeriodicSave } from '@/lib/inventorySync';
 
 interface GameState {
   screen: string;
@@ -94,9 +94,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       }
       // Load inventory (banners, emotes, war pass, trophy road, etc.) from DB
       await loadInventory(user.id);
+      startPeriodicSave(user.id);
       setLoaded(true);
     };
     load();
+    return () => stopPeriodicSave();
   }, [user]);
 
   // Handle payment success from Stripe redirect
