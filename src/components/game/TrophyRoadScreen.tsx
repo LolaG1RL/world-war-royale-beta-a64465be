@@ -186,53 +186,14 @@ const TrophyRoadScreen = () => {
         })}
       </div>
 
-      {/* Reward popup */}
       <AnimatePresence>
-        {showRewardPopup && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 bg-[hsl(0,0%,0%,0.85)] flex items-center justify-center p-6"
-            onClick={() => setShowRewardPopup(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.7, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.7, opacity: 0 }}
-              className="bg-[hsl(220,25%,12%)] border border-border rounded-2xl p-4 w-full max-w-xs"
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="text-center mb-3">
-                <div className="text-2xl mb-1">🎁</div>
-                <h3 className="font-display font-bold text-foreground text-sm">{rewardTitle}</h3>
-                <p className="text-[9px] text-muted-foreground">You received:</p>
-              </div>
-
-              <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                {rewardItems.map((item, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: i * 0.08 }}
-                    className="flex items-center gap-2 bg-[hsl(220,20%,16%)] rounded-lg px-3 py-1.5 border border-border"
-                  >
-                    <span className="text-base">{item.emoji}</span>
-                    <span className={`text-[10px] font-bold flex-1 ${rarityColor(item.rarity)}`}>{item.name}</span>
-                    <span className="text-[10px] font-bold text-primary">x{item.count}</span>
-                  </motion.div>
-                ))}
-              </div>
-
-              <button
-                onClick={() => setShowRewardPopup(false)}
-                className="w-full mt-3 py-2 rounded-lg bg-primary text-primary-foreground font-bold text-xs"
-              >
-                OK
-              </button>
-            </motion.div>
-          </motion.div>
+        {revealItems && (
+          <RevealScreen
+            items={revealItems}
+            title={`🎁 ${revealTitle}`}
+            subtitle="You received:"
+            onClose={() => setRevealItems(null)}
+          />
         )}
       </AnimatePresence>
 
