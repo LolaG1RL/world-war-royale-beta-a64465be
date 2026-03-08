@@ -9,6 +9,8 @@ import splashImage from '@/assets/world-war-royale-splash.png';
 import logoImage from '@/assets/world-war-royale-logo.png';
 import { supabase } from '@/integrations/supabase/client';
 import { BottomNav } from './BottomNav';
+import BattleBannerDisplay from './BattleBannerDisplay';
+import { getPlayerBanner } from '@/data/banners';
 
 const MainMenu = () => {
   const { profile, deck, chests, setScreen, setActiveTab } = useGame();
