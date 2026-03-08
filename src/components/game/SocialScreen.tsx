@@ -1054,7 +1054,7 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                     ) : (
                       <div className="text-[10px] text-foreground">{msg.content}</div>
                     )}
-                    {isTrade && !isMe && msg.trade_card_offered && msg.trade_card_wanted && (
+                    {isTrade && msg.trade_card_offered && msg.trade_card_wanted && (
                       <button
                         onClick={() => acceptTrade(msg)}
                         className="mt-1 px-3 py-1 bg-primary/20 text-primary rounded-lg text-[9px] font-bold flex items-center gap-1 hover:bg-primary/30 transition-colors"
@@ -1062,7 +1062,7 @@ const ClanView = ({ clan, profile, user, leaveClan, setScreen }: { clan: any; pr
                         <Repeat className="w-3 h-3" /> Accept Trade
                       </button>
                     )}
-                    {isRequest && !isMe && msg.trade_card_wanted && (
+                    {isRequest && msg.trade_card_wanted && (
                       <button
                         onClick={() => donateCard(msg)}
                         className="mt-1 px-3 py-1 bg-hp-green/20 text-hp-green rounded-lg text-[9px] font-bold flex items-center gap-1 hover:bg-hp-green/30 transition-colors"
