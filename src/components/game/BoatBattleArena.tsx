@@ -2,9 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { GameCard } from '@/data/cards';
 import { allCards } from '@/data/cards';
 import { useGame } from '@/context/GameContext';
+import { useSettings } from '@/context/SettingsContext';
 import CardComponent from './CardComponent';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield } from 'lucide-react';
+import { t } from '@/lib/i18n';
 
 /**
  * Boat Battle Arena — PvE mode

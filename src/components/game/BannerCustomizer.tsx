@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useGame } from '@/context/GameContext';
+import { useSettings } from '@/context/SettingsContext';
 import {
   allBackgrounds, allEmblems, allBadges,
   getPlayerBanner, setPlayerBanner, PlayerBanner,
@@ -9,6 +10,7 @@ import {
 } from '@/data/banners';
 import BattleBannerDisplay from './BattleBannerDisplay';
 import { BottomNav } from './BottomNav';
+import { t } from '@/lib/i18n';
 
 type SubTab = 'backgrounds' | 'emblems' | 'badges';
 

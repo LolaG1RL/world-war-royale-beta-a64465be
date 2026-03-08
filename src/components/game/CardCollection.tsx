@@ -1,5 +1,7 @@
 import { useGame } from '@/context/GameContext';
+import { useSettings } from '@/context/SettingsContext';
 import { allCards, arenas } from '@/data/cards';
+import { t } from '@/lib/i18n';
 import CardComponent from './CardComponent';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useState, useMemo, useEffect } from 'react';

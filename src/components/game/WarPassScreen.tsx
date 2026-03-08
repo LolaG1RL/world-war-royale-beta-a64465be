@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
+import { useSettings } from '@/context/SettingsContext';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Lock, Crown, Check, Loader2 } from 'lucide-react';
 import { BottomNav } from './BottomNav';
 import { toast } from 'sonner';
+import { allCards } from '@/data/cards';
+import { addCards } from '@/data/cardInventory';
+import { addOwnedBackground, addOwnedEmblem } from '@/data/banners';
+import { addOwnedEmote } from '@/data/emotes';
+import { t } from '@/lib/i18n';
 import { allCards } from '@/data/cards';
 import { addCards } from '@/data/cardInventory';
 import { addOwnedBackground, addOwnedEmblem } from '@/data/banners';
@@ -127,6 +133,8 @@ const WAR_PASS_REWARDS: PassReward[] = [
 
 const WarPassScreen = () => {
   const { setScreen, profile, setProfile } = useGame();
+  const { language } = useSettings();
+  const T = (key: string) => t(key, language);
   const [crowns, setCrowns] = useState(0);
   const [hasPaid, setHasPaid] = useState(false);
   const [claimedFree, setClaimedFree] = useState<Set<number>>(new Set());

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
+import { useSettings } from '@/context/SettingsContext';
 import { useAuth } from '@/context/AuthContext';
 import { allCards, GameCard } from '@/data/cards';
 import { getCardEntry, isCardOwned, subscribeToCardInventory } from '@/data/cardInventory';
@@ -8,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Swords, Shield, Anchor, Clock, ChevronRight, Check, X, Shuffle, Ship, Plus, Target } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { t } from '@/lib/i18n';
 
 // --- TYPES ---
 interface BoatData {
