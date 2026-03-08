@@ -263,14 +263,14 @@ export const allCards: GameCard[] = [
     hitSpeed: 1.4, speed: 'slow', range: 4.0, targets: 'ground-air', unitType: 'ground'
   },
   { 
-    id: 'balloon', name: 'War Balloon', elixir: 5, rarity: 'rare', type: 'troop', 
-    hp: 1400, damage: 200, description: 'Slow-flying balloon that drops bombs on buildings. Death damage.', 
-    era: 'Steampunk', emoji: '🎈', level: 1, count: 0, maxCount: 20,
+    id: 'balloon', name: 'Da Vinci Airship', elixir: 5, rarity: 'rare', type: 'troop', 
+    hp: 1400, damage: 200, description: 'Leonardo\'s flying machine drops bombs on buildings. Death damage.', 
+    era: 'Renaissance', emoji: '🎈', level: 1, count: 0, maxCount: 20,
     hitSpeed: 3.0, speed: 'medium', range: 'melee-short', targets: 'buildings', unitType: 'air', deathDamage: 250, splashRadius: 1.5
   },
   { 
-    id: 'valkyrie', name: 'Valkyrie', elixir: 4, rarity: 'rare', type: 'troop', 
-    hp: 900, damage: 110, description: 'Norse warrior maiden with 360° axe spin attack.', 
+    id: 'valkyrie', name: 'Shield Maiden', elixir: 4, rarity: 'rare', type: 'troop', 
+    hp: 900, damage: 110, description: 'Norse shield maiden with 360° axe spin attack.', 
     era: 'Viking Age', emoji: '💃', level: 1, count: 0, maxCount: 20,
     hitSpeed: 1.5, speed: 'medium', range: 'melee-medium', targets: 'ground', unitType: 'ground', splashRadius: 1.2
   },
@@ -295,9 +295,9 @@ export const allCards: GameCard[] = [
     hitSpeed: 1.6, speed: 'medium', range: 5.5, targets: 'ground-air', unitType: 'ground', splashRadius: 1.0
   },
   { 
-    id: 'fireball', name: 'Fireball', elixir: 4, rarity: 'epic', type: 'spell', 
-    damage: 350, description: 'A devastating ball of fire. Damages everything in its radius.', 
-    era: 'Fantasy', emoji: '🔥', level: 1, count: 0, maxCount: 10,
+    id: 'fireball', name: 'Greek Fire', elixir: 4, rarity: 'epic', type: 'spell', 
+    damage: 350, description: 'Ancient incendiary weapon. Damages everything in its radius.', 
+    era: 'Byzantine', emoji: '🔥', level: 1, count: 0, maxCount: 10,
     splashRadius: 2.5
   },
   { 
@@ -324,79 +324,79 @@ export const allCards: GameCard[] = [
     era: 'Mythology', emoji: '⚡', level: 1, count: 0, maxCount: 10
   },
   { 
-    id: 'golem', name: 'Stone Golem', elixir: 8, rarity: 'epic', type: 'troop', 
-    hp: 4500, damage: 100, description: 'Massive stone construct. Splits into two Golemites on death.', 
-    era: 'Fantasy', emoji: '🗿', level: 1, count: 0, maxCount: 4,
+    id: 'golem', name: 'Easter Island Titan', elixir: 8, rarity: 'epic', type: 'troop', 
+    hp: 4500, damage: 100, description: 'A living Moai statue. Splits into two fragments on death.', 
+    era: 'Polynesia', emoji: '🗿', level: 1, count: 0, maxCount: 4,
     hitSpeed: 2.5, speed: 'slow', range: 'melee-short', targets: 'buildings', unitType: 'ground', deathDamage: 200
   },
   { 
-    id: 'pekka', name: 'P.E.K.K.A', elixir: 7, rarity: 'epic', type: 'troop', 
-    hp: 3500, damage: 600, description: 'Armored automaton with massive sword. Devastating single-target.', 
-    era: 'Steampunk', emoji: '🤖', level: 1, count: 0, maxCount: 4,
+    id: 'pekka', name: 'Iron Colossus', elixir: 7, rarity: 'epic', type: 'troop', 
+    hp: 3500, damage: 600, description: 'Steampunk automaton forged in Victorian workshops. Devastating single-target.', 
+    era: 'Industrial Age', emoji: '🤖', level: 1, count: 0, maxCount: 4,
     hitSpeed: 1.8, speed: 'slow', range: 'melee-long', targets: 'ground', unitType: 'ground'
   },
 
   // ========== BUILDINGS ==========
   {
-    id: 'cannon', name: 'Cannon', elixir: 3, rarity: 'common', type: 'building',
-    hp: 800, damage: 100, description: 'Defensive cannon that targets ground troops. Reliable and cheap.',
+    id: 'cannon', name: 'Colonial Cannon', elixir: 3, rarity: 'common', type: 'building',
+    hp: 800, damage: 100, description: 'A rugged colonial-era cannon. Reliable ground defense.',
     era: 'Colonial', emoji: '💥', level: 1, count: 0, maxCount: 800,
     hitSpeed: 0.8, range: 5.5, targets: 'ground', unitType: 'ground', lifetime: 30
   },
   {
-    id: 'watchtower', name: 'Watchtower', elixir: 4, rarity: 'rare', type: 'building',
-    hp: 1000, damage: 70, description: 'Tall tower that shoots arrows at air and ground. Great range.',
-    era: 'Medieval', emoji: '🏰', level: 1, count: 0, maxCount: 50,
+    id: 'watchtower', name: 'Roman Watchtower', elixir: 4, rarity: 'rare', type: 'building',
+    hp: 1000, damage: 70, description: 'A tall Roman-style tower that rains arrows on air and ground.',
+    era: 'Ancient Rome', emoji: '🏰', level: 1, count: 0, maxCount: 50,
     hitSpeed: 1.0, range: 7.0, targets: 'ground-air', unitType: 'ground', lifetime: 35
   },
   {
-    id: 'bomb-tower', name: 'Bomb Tower', elixir: 4, rarity: 'rare', type: 'building',
-    hp: 1200, damage: 120, description: 'Lobs explosive bombs at ground troops. Splash damage!',
-    era: 'Medieval', emoji: '💣', level: 1, count: 0, maxCount: 50,
+    id: 'bomb-tower', name: 'Ming Powder Tower', elixir: 4, rarity: 'rare', type: 'building',
+    hp: 1200, damage: 120, description: 'Chinese gunpowder tower that lobs explosive shells. Splash damage!',
+    era: 'Ming Dynasty', emoji: '💣', level: 1, count: 0, maxCount: 50,
     hitSpeed: 1.6, range: 5.0, targets: 'ground', unitType: 'ground', splashRadius: 1.5, lifetime: 25, deathDamage: 200
   },
   {
-    id: 'inferno-tower', name: 'Inferno Tower', elixir: 5, rarity: 'epic', type: 'building',
-    hp: 1500, damage: 40, description: 'Beam that ramps up damage over time. Melts tanks.',
-    era: 'Fantasy', emoji: '🔥', level: 1, count: 0, maxCount: 10,
+    id: 'inferno-tower', name: 'Greek Fire Beacon', elixir: 5, rarity: 'epic', type: 'building',
+    hp: 1500, damage: 40, description: 'Byzantine fire weapon. Beam ramps up damage over time. Melts tanks.',
+    era: 'Byzantine', emoji: '🔥', level: 1, count: 0, maxCount: 10,
     hitSpeed: 0.4, range: 6.0, targets: 'ground-air', unitType: 'ground', lifetime: 35
   },
   {
-    id: 'tombstone', name: 'Tombstone', elixir: 3, rarity: 'common', type: 'building',
-    hp: 500, damage: 0, description: 'Periodically spawns skeletons. Spawns more on death.',
-    era: 'Fantasy', emoji: '🪦', level: 1, count: 0, maxCount: 400,
+    id: 'tombstone', name: 'Aztec Death Shrine', elixir: 3, rarity: 'common', type: 'building',
+    hp: 500, damage: 0, description: 'Cursed Aztec shrine that periodically summons undead warriors.',
+    era: 'Aztec Empire', emoji: '🪦', level: 1, count: 0, maxCount: 400,
     hitSpeed: 0, range: 0, targets: 'ground', unitType: 'ground', lifetime: 40
   },
   {
-    id: 'tesla', name: 'Tesla Coil', elixir: 4, rarity: 'epic', type: 'building',
-    hp: 900, damage: 130, description: 'Hidden electrical tower. Zaps air and ground enemies.',
-    era: 'Steampunk', emoji: '⚡', level: 1, count: 0, maxCount: 10,
+    id: 'tesla', name: 'Tesla\'s Lightning Rod', elixir: 4, rarity: 'epic', type: 'building',
+    hp: 900, damage: 130, description: 'Nikola Tesla\'s invention. Hidden electrical tower that zaps all enemies.',
+    era: 'Industrial Age', emoji: '⚡', level: 1, count: 0, maxCount: 10,
     hitSpeed: 1.1, range: 5.5, targets: 'ground-air', unitType: 'ground', lifetime: 30
   },
 
   // ========== MORE BUILDING-TARGETING TROOPS ==========
   {
-    id: 'siege-ram', name: 'Siege Ram', elixir: 4, rarity: 'rare', type: 'troop',
-    hp: 1800, damage: 250, description: 'Armored battering ram that charges at buildings. Releases troops on death.',
-    era: 'Medieval', emoji: '🪵', level: 1, count: 0, maxCount: 20,
+    id: 'siege-ram', name: 'Hunnic Siege Ram', elixir: 4, rarity: 'rare', type: 'troop',
+    hp: 1800, damage: 250, description: 'An armored battering ram from the Hunnic hordes. Demolishes buildings.',
+    era: 'Hunnic Empire', emoji: '🪵', level: 1, count: 0, maxCount: 20,
     hitSpeed: 2.0, speed: 'medium', range: 'melee-short', targets: 'buildings', unitType: 'ground'
   },
   {
-    id: 'giant', name: 'Giant', elixir: 5, rarity: 'common', type: 'troop',
-    hp: 3500, damage: 150, description: 'Huge slow brute that only attacks buildings. Massive HP pool.',
-    era: 'Fantasy', emoji: '🧌', level: 1, count: 0, maxCount: 400,
+    id: 'giant', name: 'Norse Troll', elixir: 5, rarity: 'common', type: 'troop',
+    hp: 3500, damage: 150, description: 'Enormous Scandinavian troll. Only smashes buildings with its club.',
+    era: 'Norse Mythology', emoji: '🧌', level: 1, count: 0, maxCount: 400,
     hitSpeed: 1.5, speed: 'slow', range: 'melee-short', targets: 'buildings', unitType: 'ground'
   },
   {
-    id: 'royal-giant', name: 'Royal Giant', elixir: 6, rarity: 'rare', type: 'troop',
-    hp: 2800, damage: 180, description: 'Giant with a cannon. Targets buildings from range.',
-    era: 'Medieval', emoji: '🫅', level: 1, count: 0, maxCount: 20,
+    id: 'royal-giant', name: 'Ottoman Bombard', elixir: 6, rarity: 'rare', type: 'troop',
+    hp: 2800, damage: 180, description: 'Massive Ottoman siege cannon on wheels. Bombards buildings from afar.',
+    era: 'Ottoman Empire', emoji: '🫅', level: 1, count: 0, maxCount: 20,
     hitSpeed: 1.7, speed: 'slow', range: 5.0, targets: 'buildings', unitType: 'ground'
   },
   {
-    id: 'wall-breakers', name: 'Wall Breakers', elixir: 2, rarity: 'common', type: 'troop',
-    hp: 300, damage: 400, description: 'Two speedy bombers that charge at buildings and explode!',
-    era: 'Medieval', emoji: '💀', level: 1, count: 0, maxCount: 200,
+    id: 'wall-breakers', name: 'Inca Sappers', elixir: 2, rarity: 'common', type: 'troop',
+    hp: 300, damage: 400, description: 'Two speedy Inca demolition runners that charge at buildings and explode!',
+    era: 'Inca Empire', emoji: '💀', level: 1, count: 0, maxCount: 200,
     hitSpeed: 1.0, speed: 'very-fast', range: 'melee-short', targets: 'buildings', unitType: 'ground', deployCount: 2, deathDamage: 400
   },
 

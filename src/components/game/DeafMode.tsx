@@ -99,6 +99,11 @@ const DeafMode = () => {
   const [revealItems, setRevealItems] = useState<RevealItem[] | null>(null);
   const [spawnCardId, setSpawnCardId] = useState('');
   const [spawnAmount, setSpawnAmount] = useState(1);
+  // Digit input states for resources/trophies/level
+  const [inputGems, setInputGems] = useState('');
+  const [inputGold, setInputGold] = useState('');
+  const [inputTrophies, setInputTrophies] = useState('');
+  const [inputLevel, setInputLevel] = useState('');
   const [mailTab, setMailTab] = useState<'mods' | 'mail' | 'grants'>('mods');
   const [mailTarget, setMailTarget] = useState('');
   const [mailWorldwide, setMailWorldwide] = useState(false);
@@ -415,26 +420,33 @@ const DeafMode = () => {
           {mailTab === 'mods' ? (
             <>
               <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Resources</div>
-              <div className="grid grid-cols-2 gap-1 mb-2">
-                <ModBtn label="💎 +100 Gems" onClick={() => modActions.addGems(100)} />
-                <ModBtn label="💎 +1000 Gems" onClick={() => modActions.addGems(1000)} />
-                <ModBtn label="💰 +1000 Gold" onClick={() => modActions.addGold(1000)} />
-                <ModBtn label="💰 +10K Gold" onClick={() => modActions.addGold(10000)} />
+              <div className="space-y-1.5 mb-2">
+                <div className="flex gap-1 items-center">
+                  <span className="text-[10px] w-6">💎</span>
+                  <input type="number" placeholder="Gems amount" value={inputGems} onChange={e => setInputGems(e.target.value)} className="flex-1 bg-slate-800 border border-border rounded px-2 py-1 text-[10px] text-foreground placeholder:text-muted-foreground" />
+                  <button onClick={() => { const n = parseInt(inputGems); if (!isNaN(n) && n !== 0) { modActions.addGems(n); setInputGems(''); } }} className="px-2 py-1 bg-green-900 hover:bg-green-800 text-green-300 border border-green-700 rounded text-[9px] font-bold">Set</button>
+                </div>
+                <div className="flex gap-1 items-center">
+                  <span className="text-[10px] w-6">💰</span>
+                  <input type="number" placeholder="Gold amount" value={inputGold} onChange={e => setInputGold(e.target.value)} className="flex-1 bg-slate-800 border border-border rounded px-2 py-1 text-[10px] text-foreground placeholder:text-muted-foreground" />
+                  <button onClick={() => { const n = parseInt(inputGold); if (!isNaN(n) && n !== 0) { modActions.addGold(n); setInputGold(''); } }} className="px-2 py-1 bg-green-900 hover:bg-green-800 text-green-300 border border-green-700 rounded text-[9px] font-bold">Set</button>
+                </div>
               </div>
 
-              <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Progress</div>
-              <div className="grid grid-cols-2 gap-1 mb-2">
-                <ModBtn label="🏆 +100 Trophies" onClick={() => modActions.addTrophies(100)} />
-                <ModBtn label="🏆 +1000 Trophies" onClick={() => modActions.addTrophies(1000)} />
-                <ModBtn label="🏆 -100 Trophies" onClick={() => modActions.addTrophies(-100)} variant="danger" />
-                <ModBtn label="🏆 Reset to 0" onClick={modActions.resetTrophies} variant="danger" />
+              <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Trophies</div>
+              <div className="flex gap-1 items-center mb-2">
+                <span className="text-[10px] w-6">🏆</span>
+                <input type="number" placeholder="Amount (+/-)" value={inputTrophies} onChange={e => setInputTrophies(e.target.value)} className="flex-1 bg-slate-800 border border-border rounded px-2 py-1 text-[10px] text-foreground placeholder:text-muted-foreground" />
+                <button onClick={() => { const n = parseInt(inputTrophies); if (!isNaN(n) && n !== 0) { modActions.addTrophies(n); setInputTrophies(''); } }} className="px-2 py-1 bg-green-900 hover:bg-green-800 text-green-300 border border-green-700 rounded text-[9px] font-bold">Add</button>
+                <button onClick={() => { modActions.resetTrophies(); }} className="px-2 py-1 bg-red-900/50 hover:bg-red-800 text-red-300 border border-red-700/50 rounded text-[9px] font-bold">Reset</button>
               </div>
 
               <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Level</div>
-              <div className="grid grid-cols-3 gap-1 mb-2">
-                {[1, 5, 8, 10, 13, 14].map(l => (
-                  <ModBtn key={l} label={`Lv.${l}`} onClick={() => modActions.setLevel(l)} active={profile.level === l} />
-                ))}
+              <div className="flex gap-1 items-center mb-2">
+                <span className="text-[10px] w-6">⬆️</span>
+                <input type="number" min={1} max={14} placeholder="1-14" value={inputLevel} onChange={e => setInputLevel(e.target.value)} className="flex-1 bg-slate-800 border border-border rounded px-2 py-1 text-[10px] text-foreground placeholder:text-muted-foreground" />
+                <button onClick={() => { const n = parseInt(inputLevel); if (!isNaN(n) && n >= 1 && n <= 14) { modActions.setLevel(n); setInputLevel(''); } }} className="px-2 py-1 bg-green-900 hover:bg-green-800 text-green-300 border border-green-700 rounded text-[9px] font-bold">Set</button>
+                <span className="text-[8px] text-muted-foreground">Current: {profile.level}</span>
               </div>
 
               <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Spawn Cards</div>

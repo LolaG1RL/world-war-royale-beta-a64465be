@@ -500,8 +500,10 @@ const BattleArena = () => {
           }
         }
 
-        // Check for Joan of Arc passive: +20% damage bonus while alive
-        const joanAlivePlayer = units.some(u => u.card.id === 'joan-of-arc' && u.side === 'player' && u.hp > 0);
+        // Check for Joan of Arc passive: +20% damage bonus while alive AND hero version unlocked
+        const heroUnlocked = JSON.parse(localStorage.getItem('active_season_heroes') || '[]');
+        const joanHeroUnlocked = heroUnlocked.includes('joan-of-arc');
+        const joanAlivePlayer = joanHeroUnlocked && units.some(u => u.card.id === 'joan-of-arc' && u.side === 'player' && u.hp > 0);
         const joanAliveEnemy = units.some(u => u.card.id === 'joan-of-arc' && u.side === 'enemy' && u.hp > 0);
 
         // Phase 1: Find targets and move/flag attacks
@@ -908,7 +910,10 @@ const BattleArena = () => {
             <div className="text-[7px] font-bold text-center text-foreground/70 mt-1 max-w-14 leading-tight">
               {championCard.ability.name}
             </div>
-            {championCard.passive && (
+            {championCard.passive && (() => {
+              const heroUnlocked = JSON.parse(localStorage.getItem('active_season_heroes') || '[]');
+              return heroUnlocked.includes(championCard.id);
+            })() && (
               <div className="mt-1 px-1 py-0.5 rounded bg-amber-500/20 border border-amber-500/30">
                 <div className="text-[5px] font-bold text-amber-400 uppercase text-center">Passive</div>
                 <div className="text-[5px] text-amber-300/80 text-center leading-tight">{championCard.passive.name}</div>
