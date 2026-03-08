@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
 import { Shield, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { lovable } from '@/integrations/lovable/index';
 import splashImage from '@/assets/world-war-royale-splash.png';
 
 const DeafIDLogin = () => {
