@@ -22,7 +22,8 @@ interface DeployedUnit {
   lastAttackTime: number;
   targetId: string | null;
   isCharging: boolean;
-  deployCount: number; // track individual unit for swarms
+  deployCount: number;
+  lifetimeRemaining?: number; // for buildings
 }
 
 interface TowerData {
