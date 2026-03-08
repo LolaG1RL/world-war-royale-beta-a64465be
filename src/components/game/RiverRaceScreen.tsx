@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { useAuth } from '@/context/AuthContext';
 import { allCards, GameCard } from '@/data/cards';
+import { getCardEntry } from '@/data/cardInventory';
 import { BottomNav } from './ShopScreen';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Swords, Shield, Anchor, Clock, ChevronRight, Check, X, Shuffle, Ship, Plus, Target } from 'lucide-react';
@@ -238,7 +239,7 @@ const RiverRaceScreen = () => {
   };
 
   const makeDefenses = (): BoatDefense[] =>
-    Array.from({ length: 3 }, (_, i) => ({ id: i, hp: 1000, maxHp: 1000, cards: [], destroyed: false }));
+    Array.from({ length: 1 }, (_, i) => ({ id: i, hp: 1000, maxHp: 1000, cards: [], destroyed: false }));
 
   const initWarDecks = (): WarDeck[] => {
     return Array.from({ length: 4 }, () => ({ cards: [], usedToday: false }));
@@ -691,8 +692,8 @@ const RiverRaceScreen = () => {
       {/* ===== BOAT DEFENSE ===== */}
       {mode === 'boat-defense' && playerBoat && (
         <div className="flex-1 overflow-y-auto p-3">
-          <div className="text-sm font-display font-bold text-foreground mb-1">⛵ Boat Defenses</div>
-          <div className="text-[8px] text-muted-foreground mb-3">Set up 4 cards per defense tower. Rivals attack these when they do Boat Battles against you!</div>
+          <div className="text-sm font-display font-bold text-foreground mb-1">⛵ Your Boat Part</div>
+          <div className="text-[8px] text-muted-foreground mb-3">Each clan member has 1 boat part with max 4 cards. Add any card you own as defense!</div>
           <div className="space-y-3">
             {playerBoat.defenses.map((def, i) => (
               <div key={def.id} className={`bg-card border rounded-xl p-3 ${def.destroyed ? 'border-destructive/30 opacity-50' : 'border-border'}`}>
@@ -784,13 +785,17 @@ const RiverRaceScreen = () => {
             </div>
           </div>
           <div className="p-3">
-            <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-2">Available Cards (tap to add)</div>
+            <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-2">Owned Cards (tap to add)</div>
             <div className="grid grid-cols-4 gap-1.5">
-              {getAvailableCards().filter(c => !playerBoat.defenses[editingDefenseIdx]?.cards.includes(c.id)).map(card => (
+              {allCards.filter(c => {
+                const entry = getCardEntry(c.id);
+                return entry.count > 0 && !playerBoat.defenses[editingDefenseIdx]?.cards.includes(c.id);
+              }).map(card => (
                 <button key={card.id} onClick={() => addCardToDefense(editingDefenseIdx, card.id)}
                   className="bg-[hsl(220,15%,14%)] border border-border rounded-lg p-1.5 flex flex-col items-center gap-0.5 hover:border-primary/40 transition-colors">
                   <span className="text-lg">{card.emoji}</span>
                   <span className="text-[7px] font-bold text-foreground truncate w-full text-center">{card.name}</span>
+                  <span className="text-[6px] text-muted-foreground">x{getCardEntry(card.id).count}</span>
                   <span className="text-[7px] text-primary font-bold">{card.elixir}⚡</span>
                 </button>
               ))}
