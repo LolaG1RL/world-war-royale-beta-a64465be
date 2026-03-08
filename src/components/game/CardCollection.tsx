@@ -9,8 +9,164 @@ import { allEmotes, getOwnedEmotes, getEquippedEmotes, setEquippedEmotes } from 
 import { BottomNav } from './BottomNav';
 import { getCardEntry, getUpgradeRequirements, canUpgrade, upgradeCard, addCards, isCardOwned } from '@/data/cardInventory';
 import { toast } from 'sonner';
-import BannerCustomizer from './BannerCustomizer';
+import {
+  allBackgrounds, allEmblems, allBadges,
+  getPlayerBanner, setPlayerBanner, PlayerBanner,
+  getOwnedBackgrounds, getOwnedEmblems, getOwnedBadges,
+  addOwnedBadge, getUnlockedAchievementBadges,
+} from '@/data/banners';
+import BattleBannerDisplay from './BattleBannerDisplay';
 import { getAllMatchups } from '@/data/cardMatchups';
+
+const RARITY_BORDER: Record<string, string> = {
+  common: 'border-muted-foreground/40',
+  rare: 'border-blue-400',
+  epic: 'border-purple-400',
+  legendary: 'border-primary',
+};
+
+type BannerSubTab = 'backgrounds' | 'emblems' | 'badges';
+
+const BannerInline = ({ profile }: { profile: PlayerProfile }) => {
+  const [banner, setBanner] = useState<PlayerBanner>(getPlayerBanner());
+  const [subTab, setSubTab] = useState<BannerSubTab>('backgrounds');
+  const [ownedBgs] = useState(() => getOwnedBackgrounds());
+  const [ownedEmbs] = useState(() => getOwnedEmblems());
+  const [ownedBadges, setOwnedBadgesState] = useState(() => getOwnedBadges());
+
+  useEffect(() => {
+    const unlocked = getUnlockedAchievementBadges(profile);
+    let changed = false;
+    unlocked.forEach(id => {
+      if (!ownedBadges.has(id)) {
+        addOwnedBadge(id);
+        changed = true;
+      }
+    });
+    if (changed) setOwnedBadgesState(getOwnedBadges());
+  }, [profile]);
+
+  const save = (b: PlayerBanner) => { setBanner(b); setPlayerBanner(b); };
+  const selectBg = (id: string) => { if (ownedBgs.has(id)) save({ ...banner, backgroundId: id }); };
+  const selectEmblem = (id: string) => { if (ownedEmbs.has(id)) save({ ...banner, emblemId: id }); };
+  const toggleBadge = (id: string) => {
+    if (!ownedBadges.has(id)) return;
+    const cur = [...banner.badgeIds];
+    if (cur.includes(id)) save({ ...banner, badgeIds: cur.filter(b => b !== id) });
+    else if (cur.length < 3) save({ ...banner, badgeIds: [...cur, id] });
+  };
+
+  const ownedBackgrounds = allBackgrounds.filter(bg => ownedBgs.has(bg.id));
+  const ownedEmblemsList = allEmblems.filter(emb => ownedEmbs.has(emb.id));
+  const ownedBadgesList = allBadges.filter(b => ownedBadges.has(b.id));
+
+  return (
+    <>
+      {/* Preview */}
+      <div className="px-4 py-3 bg-[hsl(220,20%,11%)] border-b border-border">
+        <BattleBannerDisplay banner={banner} name={profile.name} trophies={profile.trophies} size="lg" />
+      </div>
+
+      {/* Sub tabs */}
+      <div className="flex bg-[hsl(220,20%,14%)] border-b border-border">
+        {(['backgrounds', 'emblems', 'badges'] as BannerSubTab[]).map(t => (
+          <button key={t} onClick={() => setSubTab(t)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${subTab === t ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
+            {t === 'backgrounds' ? '🖼️ BG' : t === 'emblems' ? '🎭 Emblem' : '🏅 Badges'}
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-3 bg-[hsl(220,20%,10%)]">
+        {subTab === 'backgrounds' && (
+          ownedBackgrounds.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground text-xs">No backgrounds owned yet.<br />Buy some in the Shop → Banners tab!</div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              {ownedBackgrounds.map(bg => {
+                const selected = banner.backgroundId === bg.id;
+                return (
+                  <button key={bg.id} onClick={() => selectBg(bg.id)} className={`relative h-16 rounded-xl overflow-hidden border-2 transition-all ${selected ? 'border-primary ring-2 ring-primary/30' : RARITY_BORDER[bg.rarity]}`} style={{ background: bg.css }}>
+                    {bg.animated && bg.animationSvg && <div className="absolute inset-0" dangerouslySetInnerHTML={{ __html: bg.animationSvg }} />}
+                    <div className="absolute bottom-0 left-0 right-0 bg-[hsl(0,0%,0%,0.6)] px-1.5 py-0.5">
+                      <span className="text-[8px] font-bold text-foreground">{bg.name}</span>
+                    </div>
+                    {selected && <div className="absolute top-1 left-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center text-[8px] text-primary-foreground font-bold">✓</div>}
+                  </button>
+                );
+              })}
+            </div>
+          )
+        )}
+        {subTab === 'emblems' && (
+          ownedEmblemsList.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground text-xs">No emblems owned yet.<br />Buy some in the Shop → Banners tab!</div>
+          ) : (
+            <div className="grid grid-cols-4 gap-2">
+              {ownedEmblemsList.map(emb => {
+                const selected = banner.emblemId === emb.id;
+                return (
+                  <button key={emb.id} onClick={() => selectEmblem(emb.id)} className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 border-2 transition-all ${selected ? 'border-primary bg-primary/10' : `${RARITY_BORDER[emb.rarity]} bg-card`}`}>
+                    <span className={`text-xl ${emb.animated ? 'animate-pulse' : ''}`}>{emb.emoji}</span>
+                    <span className="text-[7px] font-bold text-foreground truncate w-full text-center px-0.5">{emb.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )
+        )}
+        {subTab === 'badges' && (
+          <>
+            <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-1.5">Equipped ({banner.badgeIds.length}/3)</div>
+            <div className="flex gap-1.5 mb-3">
+              {[0, 1, 2].map(i => {
+                const bid = banner.badgeIds[i];
+                const badge = bid ? allBadges.find(b => b.id === bid) : null;
+                return (
+                  <button key={i} onClick={() => badge && toggleBadge(badge.id)} className={`w-10 h-10 rounded-full flex items-center justify-center ${badge ? 'bg-primary/20 border-2 border-primary/40 cursor-pointer' : 'border-2 border-dashed border-muted-foreground/20 bg-muted/10'}`}>
+                    {badge ? <span className="text-base">{badge.emoji}</span> : null}
+                  </button>
+                );
+              })}
+            </div>
+            {ownedBadgesList.length === 0 ? (
+              <div className="text-center py-4 text-muted-foreground text-xs">No badges earned yet.<br />Win battles to unlock achievement badges!</div>
+            ) : (
+              <>
+                {ownedBadgesList.filter(b => b.type === 'achievement').length > 0 && (
+                  <>
+                    <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-1.5">Achievement Badges</div>
+                    <div className="grid grid-cols-4 gap-2 mb-3">
+                      {ownedBadgesList.filter(b => b.type === 'achievement').map(badge => (
+                        <button key={badge.id} onClick={() => toggleBadge(badge.id)} className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 border-2 transition-all ${banner.badgeIds.includes(badge.id) ? 'border-primary bg-primary/10' : `${RARITY_BORDER[badge.rarity]} bg-card`}`}>
+                          <span className="text-lg">{badge.emoji}</span>
+                          <span className="text-[6px] font-bold text-foreground text-center leading-tight">{badge.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {ownedBadgesList.filter(b => b.type === 'cosmetic').length > 0 && (
+                  <>
+                    <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mb-1.5">Cosmetic Badges</div>
+                    <div className="grid grid-cols-4 gap-2">
+                      {ownedBadgesList.filter(b => b.type === 'cosmetic').map(badge => (
+                        <button key={badge.id} onClick={() => toggleBadge(badge.id)} className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 border-2 transition-all ${banner.badgeIds.includes(badge.id) ? 'border-primary bg-primary/10' : `${RARITY_BORDER[badge.rarity]} bg-card`}`}>
+                          <span className="text-lg">{badge.emoji}</span>
+                          <span className="text-[6px] font-bold text-foreground text-center leading-tight">{badge.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+          </>
+        )}
+      </div>
+    </>
+  );
+};
 
 // Hero slot helpers
 const getHeroSlots = (level: number): number => {
