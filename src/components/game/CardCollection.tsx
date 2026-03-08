@@ -70,6 +70,12 @@ const CardCollection = () => {
     if (isAdding) {
       if (currentDeck.length >= 8) return;
       
+      // Check arena restriction
+      if (card.unlockArena > profile.arena) {
+        toast.error(`This card requires Arena ${card.unlockArena}!`);
+        return;
+      }
+      
       // Check if this card has a hero version active
       const heroVersionCards = [...currentDeck, card].filter(c => isHeroUnlocked(c.id) && c.heroBonus);
       if (heroVersionCards.length > 2) {
@@ -133,18 +139,13 @@ const CardCollection = () => {
   const currentDeck = decks[deckSlot];
   const avgElixir = currentDeck.length > 0 ? (currentDeck.reduce((a, c) => a + c.elixir, 0) / currentDeck.length).toFixed(1) : '0.0';
 
-  // If banner tab selected, render full-screen BannerCustomizer
-  if (mainTab === 'banner') {
-    return <BannerCustomizer />;
-  }
-
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,25%,12%)] border-b border-border">
         <div className="w-8" />
-        <h2 className="font-display font-bold text-foreground text-sm">{mainTab === 'cards' ? 'BATTLE DECK' : 'EMOTES'}</h2>
-        <span className="text-xs font-bold text-primary">{mainTab === 'cards' ? `${currentDeck.length}/8` : `${equipped.length}/8`}</span>
+        <h2 className="font-display font-bold text-foreground text-sm">{mainTab === 'cards' ? 'BATTLE DECK' : mainTab === 'emotes' ? 'EMOTES' : 'BATTLE BANNER'}</h2>
+        <span className="text-xs font-bold text-primary">{mainTab === 'cards' ? `${currentDeck.length}/8` : mainTab === 'emotes' ? `${equipped.length}/8` : ''}</span>
       </div>
 
       {/* Cards / Emotes / Banner tab */}
@@ -155,7 +156,7 @@ const CardCollection = () => {
         <button onClick={() => setMainTab('emotes')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${mainTab === 'emotes' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
           😀 Emotes
         </button>
-        <button onClick={() => setMainTab('banner')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors text-muted-foreground`}>
+        <button onClick={() => setMainTab('banner')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${mainTab === 'banner' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
           🏴 Banner
         </button>
       </div>
@@ -692,7 +693,7 @@ const CardCollection = () => {
             })()}
           </AnimatePresence>
         </>
-      ) : (
+      ) : mainTab === 'emotes' ? (
         /* Emotes tab */
         <>
           {/* Equipped emotes */}
