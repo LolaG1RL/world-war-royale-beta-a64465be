@@ -914,7 +914,7 @@ const CardCollection = () => {
         </>
       ) : (
         /* Banner tab - inline */
-        <BannerInline profile={profile} />
+        <BannerInline profile={profile} clanName={clan?.name} />
       )}
 
       <BottomNav active="cards" setScreen={setScreen} />
