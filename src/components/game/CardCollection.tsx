@@ -1,67 +1,16 @@
 import { useGame } from '@/context/GameContext';
 import { allCards } from '@/data/cards';
 import CardComponent from './CardComponent';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
 import { GameCard } from '@/data/cards';
-import { Gift, Check } from 'lucide-react';
-
-// Daily freebies logic
-function getTodayKey() {
-  const d = new Date();
-  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-}
-
-function getFreebiesClaimed(): boolean {
-  try {
-    const stored = localStorage.getItem('daily_freebies_claimed');
-    if (!stored) return false;
-    const parsed = JSON.parse(stored);
-    return parsed.date === getTodayKey();
-  } catch { return false; }
-}
-
-function setFreebiesClaimed() {
-  localStorage.setItem('daily_freebies_claimed', JSON.stringify({ date: getTodayKey() }));
-}
-
-interface RewardItem {
-  emoji: string;
-  name: string;
-  count: number;
-  rarity: string;
-}
-
-function generateDailyFreebies(): RewardItem[] {
-  // Weighted random: mostly commons, small chance rare, tiny chance epic
-  const rewards: RewardItem[] = [];
-  const roll = () => {
-    const r = Math.random();
-    if (r < 0.60) return allCards.filter(c => c.rarity === 'common');
-    if (r < 0.85) return allCards.filter(c => c.rarity === 'rare');
-    if (r < 0.97) return allCards.filter(c => c.rarity === 'epic');
-    return allCards.filter(c => c.rarity === 'legendary');
-  };
-  // 3 card rewards + small gold
-  for (let i = 0; i < 3; i++) {
-    const pool = roll();
-    const card = pool[Math.floor(Math.random() * pool.length)];
-    const count = card.rarity === 'common' ? 2 + Math.floor(Math.random() * 3) :
-                  card.rarity === 'rare' ? 1 + Math.floor(Math.random() * 2) : 1;
-    rewards.push({ emoji: card.emoji, name: card.name, count, rarity: card.rarity });
-  }
-  rewards.push({ emoji: '💰', name: 'Gold', count: 15 + Math.floor(Math.random() * 35), rarity: 'common' });
-  return rewards;
-}
 
 const CardCollection = () => {
-  const { deck, setDeck, setScreen, setActiveTab, profile, setProfile } = useGame();
+  const { deck, setDeck, setScreen, setActiveTab } = useGame();
   const [selectedCard, setSelectedCard] = useState<GameCard | null>(null);
   const [filter, setFilter] = useState<'all' | 'troop' | 'spell' | 'building'>('all');
   const [deckSlot, setDeckSlot] = useState(0);
   const [decks, setDecks] = useState<GameCard[][]>([deck, [], [], [], []]);
-  const [freebiesClaimed, setFreebiesClaimedState] = useState(getFreebiesClaimed);
-  const [showFreebieRewards, setShowFreebieRewards] = useState<RewardItem[] | null>(null);
   const filtered = filter === 'all' ? allCards : allCards.filter(c => c.type === filter);
   const isInDeck = (card: GameCard) => decks[deckSlot].some(d => d.id === card.id);
 
