@@ -1,6 +1,6 @@
 import { useGame } from '@/context/GameContext';
 import { useSettings } from '@/context/SettingsContext';
-import { t } from '@/lib/i18n';
+import { t, tRarity } from '@/lib/i18n';
 import { shopItems, allCards } from '@/data/cards';
 import { X, Loader2, Check, Gift } from 'lucide-react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -214,12 +214,7 @@ const RARITY_COLORS: Record<string, string> = {
   legendary: 'border-primary',
 };
 
-const RARITY_LABELS: Record<string, string> = {
-  common: 'Common',
-  rare: 'Rare',
-  epic: 'Epic',
-  legendary: 'Legendary',
-};
+// Rarity labels now use i18n - see getRarityLabel helper below
 
 // Reward item type
 interface RewardItem {
@@ -230,7 +225,7 @@ interface RewardItem {
 }
 
 // Reward reveal modal
-const RewardReveal = ({ rewards, onClose }: { rewards: RewardItem[]; onClose: () => void }) => (
+const RewardReveal = ({ rewards, onClose, language }: { rewards: RewardItem[]; onClose: () => void; language: import('@/lib/i18n').Language }) => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -254,7 +249,7 @@ const RewardReveal = ({ rewards, onClose }: { rewards: RewardItem[]; onClose: ()
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary/20 rounded-full blur-xl pointer-events-none"
       />
 
-      <h2 className="font-display font-bold text-lg text-primary text-center mb-4">YOU GOT!</h2>
+      <h2 className="font-display font-bold text-lg text-primary text-center mb-4">{t('shop.you_got', language)}</h2>
       <div className="grid grid-cols-3 gap-2 max-h-[40vh] overflow-y-auto">
         {rewards.map((r, i) => (
           <motion.div
@@ -287,7 +282,7 @@ const RewardReveal = ({ rewards, onClose }: { rewards: RewardItem[]; onClose: ()
         onClick={onClose}
         className="w-full mt-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold uppercase"
       >
-        Collect
+        {t('shop.collect', language)}
       </motion.button>
     </motion.div>
   </motion.div>
@@ -341,12 +336,12 @@ const ShopScreen = () => {
 
   const handleDailyDealPurchase = (deal: typeof DAILY_DEAL_POOL[0], index: number) => {
     if (purchasedDeals.has(index)) {
-      toast.error('Already purchased today!');
+      toast.error(t('shop.already_purchased', language));
       return;
     }
     const currency = deal.currency === 'gold' ? profile.gold : profile.gems;
     if (currency < deal.cost) {
-      toast.error(`Not enough ${deal.currency}!`);
+      toast.error(`${t('shop.not_enough', language)} ${t(`shop.${deal.currency}`, language)}!`);
       return;
     }
     const newProfile = { ...profile };
@@ -387,7 +382,7 @@ const ShopScreen = () => {
 
     if (item.currency === 'real') {
       const priceId = STRIPE_PRICES[itemId];
-      if (!priceId) { toast.error('Item not available'); setPurchasing(null); return; }
+      if (!priceId) { toast.error(t('common.loading', language)); setPurchasing(null); return; }
       try {
         const { data, error } = await supabase.functions.invoke('create-payment', { body: { priceId } });
         if (error) throw error;
@@ -398,7 +393,7 @@ const ShopScreen = () => {
     }
 
     const currency = item.currency === 'gold' ? profile.gold : profile.gems;
-    if (currency < item.cost) { toast.error(`Not enough ${item.currency}!`); setPurchasing(null); return; }
+    if (currency < item.cost) { toast.error(`${t('shop.not_enough', language)} ${t(`shop.${item.currency}`, language)}!`); setPurchasing(null); return; }
     const newProfile = { ...profile };
     if (item.currency === 'gold') newProfile.gold -= item.cost; else newProfile.gems -= item.cost;
 
@@ -447,7 +442,7 @@ const ShopScreen = () => {
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
       {/* Reward popup */}
       <AnimatePresence>
-        {rewardPopup && <RewardReveal rewards={rewardPopup} onClose={() => setRewardPopup(null)} />}
+        {rewardPopup && <RewardReveal rewards={rewardPopup} onClose={() => setRewardPopup(null)} language={language} />}
       </AnimatePresence>
 
       {/* Confirm purchase dialog */}
@@ -467,21 +462,21 @@ const ShopScreen = () => {
               onClick={e => e.stopPropagation()}
               className="w-[80%] max-w-xs bg-card border border-border rounded-2xl p-5 text-center"
             >
-              <h3 className="font-display font-bold text-sm text-foreground mb-1">Confirm Purchase</h3>
-              <p className="text-[11px] text-muted-foreground mb-1">Buy <span className="text-foreground font-bold">{confirmAction.label}</span>?</p>
+              <h3 className="font-display font-bold text-sm text-foreground mb-1">{t('shop.confirm_purchase', language)}</h3>
+              <p className="text-[11px] text-muted-foreground mb-1">{t('shop.buy', language)} <span className="text-foreground font-bold">{confirmAction.label}</span>?</p>
               <p className="text-lg font-bold text-primary mb-4">{confirmAction.cost}</p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setConfirmAction(null)}
                   className="flex-1 py-2 rounded-xl bg-muted text-muted-foreground text-xs font-bold uppercase"
                 >
-                  Cancel
+                  {t('shop.cancel', language)}
                 </button>
                 <button
                   onClick={confirmAction.onConfirm}
                   className="flex-1 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase"
                 >
-                  Buy
+                  {t('shop.buy', language)}
                 </button>
               </div>
             </motion.div>
@@ -501,11 +496,14 @@ const ShopScreen = () => {
 
       {/* Shop tabs */}
       <div className="flex bg-[hsl(220,20%,14%)] border-b border-border overflow-x-auto">
-        {(['featured', 'cards', 'chests', 'emotes', 'banners', 'gems'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap px-2 ${tab === t ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
-            {t}
+        {(['featured', 'cards', 'chests', 'emotes', 'banners', 'gems'] as const).map(tabKey => {
+          const tabLabels: Record<string, string> = { featured: t('shop.featured', language), cards: t('nav.cards', language), chests: t('shop.chests', language), emotes: t('cards.emotes', language), banners: t('cards.banners', language), gems: t('shop.gems', language) };
+          return (
+          <button key={tabKey} onClick={() => setTab(tabKey)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap px-2 ${tab === tabKey ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
+            {tabLabels[tabKey]}
           </button>
-        ))}
+          )}
+        )}
       </div>
 
       {/* Shop items */}
@@ -514,8 +512,8 @@ const ShopScreen = () => {
         {tab === 'featured' && (
           <>
             <div className="mb-3 bg-gradient-to-r from-[hsl(38,80%,25%)] to-[hsl(28,90%,20%)] rounded-xl p-3 border border-primary/30">
-              <div className="text-[10px] text-primary font-bold uppercase tracking-wider">Daily Deals</div>
-              <div className="text-[8px] text-foreground/70 mt-0.5">Refreshes in {countdown}</div>
+              <div className="text-[10px] text-primary font-bold uppercase tracking-wider">{t('shop.daily_deals', language)}</div>
+              <div className="text-[8px] text-foreground/70 mt-0.5">{t('shop.refreshes_in', language)} {countdown}</div>
             </div>
             <div className="grid grid-cols-3 gap-2 mb-4">
               {dailyDeals.map((deal, i) => {
@@ -542,12 +540,12 @@ const ShopScreen = () => {
                     <span className="text-[9px] font-bold text-foreground text-center leading-tight">{deal.name}</span>
                     <span className="text-[7px] text-muted-foreground">x{deal.amount}</span>
                     <span className={`text-[7px] font-bold ${deal.rarity === 'legendary' ? 'text-primary' : deal.rarity === 'epic' ? 'text-purple-400' : deal.rarity === 'rare' ? 'text-blue-400' : 'text-muted-foreground'}`}>
-                      {RARITY_LABELS[deal.rarity]}
+                      {tRarity(deal.rarity, language)}
                     </span>
                     <div className={`mt-auto w-full py-1 rounded-lg text-[9px] font-bold text-center ${
                       deal.currency === 'gold' ? 'bg-primary/20 text-primary' : 'bg-elixir/20 text-elixir'
                     }`}>
-                      {bought ? 'SOLD' : `${deal.currency === 'gold' ? '💰' : '💎'} ${deal.cost}`}
+                      {bought ? t('shop.sold', language) : `${deal.currency === 'gold' ? '💰' : '💎'} ${deal.cost}`}
                     </div>
                   </motion.button>
                 );
@@ -560,8 +558,8 @@ const ShopScreen = () => {
         {tab === 'cards' && (
           <>
             <div className="mb-3 bg-gradient-to-r from-[hsl(140,50%,20%)] to-[hsl(160,50%,18%)] rounded-xl p-3 border border-[hsl(140,50%,35%)]">
-              <div className="text-[10px] text-[hsl(140,60%,60%)] font-bold uppercase tracking-wider">🎁 Daily Free Cards</div>
-              <div className="text-[8px] text-foreground/70 mt-0.5">Refreshes in {countdown}</div>
+              <div className="text-[10px] text-[hsl(140,60%,60%)] font-bold uppercase tracking-wider">{t('shop.daily_free_cards', language)}</div>
+              <div className="text-[8px] text-foreground/70 mt-0.5">{t('shop.refreshes_in', language)} {countdown}</div>
             </div>
             <div className="grid grid-cols-3 gap-2 mb-4">
               {dailyFreebies.map((freebie, i) => {
@@ -583,10 +581,10 @@ const ShopScreen = () => {
                     <span className="text-[9px] font-bold text-foreground text-center leading-tight">{freebie.name}</span>
                     <span className="text-[7px] text-muted-foreground">x{freebie.amount}</span>
                     <span className={`text-[7px] font-bold ${freebie.rarity === 'epic' ? 'text-purple-400' : freebie.rarity === 'rare' ? 'text-blue-400' : 'text-muted-foreground'}`}>
-                      {RARITY_LABELS[freebie.rarity]}
+                      {tRarity(freebie.rarity, language)}
                     </span>
                     <div className="mt-auto w-full py-1 rounded-lg text-[9px] font-bold text-center bg-[hsl(140,50%,15%)] text-[hsl(140,60%,60%)]">
-                      {claimed ? 'CLAIMED' : 'FREE'}
+                      {claimed ? t('shop.claimed', language) : t('shop.free', language)}
                     </div>
                   </motion.button>
                 );
@@ -637,8 +635,8 @@ const ShopScreen = () => {
         {tab === 'emotes' && (
           <>
             <div className="mb-3 bg-gradient-to-r from-[hsl(38,60%,20%)] to-[hsl(28,70%,18%)] rounded-xl p-3 border border-primary/30">
-              <div className="text-[10px] text-primary font-bold uppercase tracking-wider">😀 Daily Emote Deals</div>
-              <div className="text-[8px] text-foreground/70 mt-0.5">Refreshes in {countdown}</div>
+              <div className="text-[10px] text-primary font-bold uppercase tracking-wider">{t('shop.daily_emote_deals', language)}</div>
+              <div className="text-[8px] text-foreground/70 mt-0.5">{t('shop.refreshes_in', language)} {countdown}</div>
             </div>
             <div className="grid grid-cols-3 gap-2 mb-4">
               {emoteDeals.map((deal, i) => {
@@ -675,10 +673,10 @@ const ShopScreen = () => {
                     <div className="w-10 h-10 mt-1" dangerouslySetInnerHTML={{ __html: deal.emote.svg }} />
                     <span className="text-[9px] font-bold text-foreground text-center leading-tight">{deal.emote.name}</span>
                     <span className={`text-[7px] font-bold ${deal.emote.rarity === 'legendary' ? 'text-primary' : deal.emote.rarity === 'epic' ? 'text-purple-400' : deal.emote.rarity === 'rare' ? 'text-blue-400' : 'text-muted-foreground'}`}>
-                      {deal.emote.rarity.charAt(0).toUpperCase() + deal.emote.rarity.slice(1)}
+                      {tRarity(deal.emote.rarity, language)}
                     </span>
                     <div className="mt-auto w-full py-1 rounded-lg text-[9px] font-bold text-center bg-elixir/20 text-elixir">
-                      {bought ? 'OWNED' : `💎 ${deal.cost}`}
+                      {bought ? t('shop.owned', language) : `💎 ${deal.cost}`}
                     </div>
                   </motion.button>
                 );
@@ -691,14 +689,14 @@ const ShopScreen = () => {
         {tab === 'banners' && (
           <>
             <div className="mb-3 bg-gradient-to-r from-purple-900/50 to-slate-800/50 rounded-xl p-3 border border-purple-400/30">
-              <div className="text-[10px] text-purple-300 font-bold uppercase tracking-wider">Daily Banner Deals</div>
-              <div className="text-[8px] text-foreground/70 mt-0.5">Refreshes in {countdown}</div>
+              <div className="text-[10px] text-purple-300 font-bold uppercase tracking-wider">{t('shop.daily_banner_deals', language)}</div>
+              <div className="text-[8px] text-foreground/70 mt-0.5">{t('shop.refreshes_in', language)} {countdown}</div>
             </div>
 
-            <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🖼️ Today's Backgrounds</div>
+            <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">{t('shop.todays_bg', language)}</div>
             <div className="grid grid-cols-2 gap-2 mb-4">
               {dailyBgDeals.filter(({ item }) => !ownedBgs.has(item.id)).length === 0 ? (
-                <div className="col-span-2 text-center text-muted-foreground text-xs py-4">You own all today's backgrounds!</div>
+                <div className="col-span-2 text-center text-muted-foreground text-xs py-4">{t('shop.own_all_bgs', language)}</div>
               ) : dailyBgDeals.map(({ item: bg, discountPct }) => {
                 const owned = ownedBgs.has(bg.id);
                 if (owned) return null;
@@ -708,7 +706,7 @@ const ShopScreen = () => {
                   <button
                     key={bg.id}
                     onClick={() => {
-                      if (!canAfford) { toast.error(`Not enough ${bg.currency}!`); return; }
+                      if (!canAfford) { toast.error(`${t('shop.not_enough', language)} ${t(`shop.${bg.currency}`, language)}!`); return; }
                       setConfirmAction({
                         label: bg.name,
                         cost: `${bg.currency === 'gold' ? '💰' : '💎'} ${finalCost}`,
@@ -716,7 +714,7 @@ const ShopScreen = () => {
                           setProfile(p => bg.currency === 'gold' ? { ...p, gold: p.gold - finalCost } : { ...p, gems: p.gems - finalCost });
                           addOwnedBackground(bg.id);
                           setOwnedBgs(getOwnedBackgrounds());
-                          toast.success(`${bg.name} unlocked!`);
+                          toast.success(`${bg.name} ${t('shop.unlocked', language)}`);
                           setConfirmAction(null);
                         },
                       });
@@ -737,10 +735,10 @@ const ShopScreen = () => {
               })}
             </div>
 
-            <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🎭 Today's Emblems</div>
+            <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">{t('shop.todays_emb', language)}</div>
             <div className="grid grid-cols-4 gap-2 mb-4">
               {dailyEmbDeals.filter(({ item }) => !ownedEmbs.has(item.id)).length === 0 ? (
-                <div className="col-span-4 text-center text-muted-foreground text-xs py-4">You own all today's emblems!</div>
+                <div className="col-span-4 text-center text-muted-foreground text-xs py-4">{t('shop.own_all_emb', language)}</div>
               ) : dailyEmbDeals.map(({ item: emb, discountPct }) => {
                 const owned = ownedEmbs.has(emb.id);
                 if (owned) return null;
@@ -750,7 +748,7 @@ const ShopScreen = () => {
                   <button
                     key={emb.id}
                     onClick={() => {
-                      if (!canAfford) { toast.error(`Not enough ${emb.currency}!`); return; }
+                      if (!canAfford) { toast.error(`${t('shop.not_enough', language)} ${t(`shop.${emb.currency}`, language)}!`); return; }
                       setConfirmAction({
                         label: emb.name,
                         cost: `${emb.currency === 'gold' ? '💰' : '💎'} ${finalCost}`,
@@ -758,7 +756,7 @@ const ShopScreen = () => {
                           setProfile(p => emb.currency === 'gold' ? { ...p, gold: p.gold - finalCost } : { ...p, gems: p.gems - finalCost });
                           addOwnedEmblem(emb.id);
                           setOwnedEmbs(getOwnedEmblems());
-                          toast.success(`${emb.name} unlocked!`);
+                          toast.success(`${emb.name} ${t('shop.unlocked', language)}`);
                           setConfirmAction(null);
                         },
                       });
@@ -776,10 +774,9 @@ const ShopScreen = () => {
               })}
             </div>
 
-            <div className="text-center py-4 text-muted-foreground text-xs">
+            <div className="text-center py-4 text-muted-foreground text-xs whitespace-pre-line">
               <span className="text-lg">🏅</span><br />
-              Badges are earned through achievements!<br />
-              Check Cards → Banner to equip your earned badges.
+              {t('shop.badges_earned', language)}
             </div>
           </>
         )}
@@ -789,8 +786,8 @@ const ShopScreen = () => {
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🎖️</span>
             <div>
-              <div className="text-xs font-display font-bold text-foreground">WAR PASS+</div>
-              <div className="text-[8px] text-muted-foreground">Unlock premium rewards all season</div>
+              <div className="text-xs font-display font-bold text-foreground">{t('shop.war_pass_plus', language)}</div>
+              <div className="text-[8px] text-muted-foreground">{t('shop.unlock_premium', language)}</div>
             </div>
           </div>
           <div className="flex gap-2">
@@ -808,7 +805,7 @@ const ShopScreen = () => {
             className="w-full mt-3 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold uppercase disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {purchasing === 'war-pass' ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            Buy War Pass+ - $4.99
+            {t('shop.buy_war_pass', language)}
           </button>
         </div>
         )}

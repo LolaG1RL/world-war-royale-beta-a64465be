@@ -1,6 +1,6 @@
 import { useGame } from '@/context/GameContext';
 import { useSettings } from '@/context/SettingsContext';
-import { t } from '@/lib/i18n';
+import { t, tRarity } from '@/lib/i18n';
 import { BottomNav } from './BottomNav';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Clock, ChevronRight, Trophy, X } from 'lucide-react';
@@ -218,8 +218,8 @@ function saveDailyQuestProgress(quests: { progress: number; claimed: boolean }[]
   localStorage.setItem('daily_quest_progress', JSON.stringify({ date: getTodayKey(), quests }));
 }
 
-// ── Reward Reveal ──
-const RewardReveal = ({ rewards, onClose }: { rewards: RewardItem[]; onClose: () => void }) => (
+// Reward reveal modal
+const RewardReveal = ({ rewards, onClose, language }: { rewards: RewardItem[]; onClose: () => void; language: import('@/lib/i18n').Language }) => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -241,7 +241,7 @@ const RewardReveal = ({ rewards, onClose }: { rewards: RewardItem[]; onClose: ()
         transition={{ duration: 1 }}
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary/20 rounded-full blur-xl pointer-events-none"
       />
-      <h2 className="font-display font-bold text-lg text-primary text-center mb-4">YOU GOT!</h2>
+      <h2 className="font-display font-bold text-lg text-primary text-center mb-4">{t('shop.you_got', language)}</h2>
       <div className="grid grid-cols-3 gap-2 max-h-[40vh] overflow-y-auto">
         {rewards.map((r, i) => (
           <motion.div
@@ -272,7 +272,7 @@ const RewardReveal = ({ rewards, onClose }: { rewards: RewardItem[]; onClose: ()
         onClick={onClose}
         className="w-full mt-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold uppercase"
       >
-        Collect
+        {t('shop.collect', language)}
       </motion.button>
     </motion.div>
   </motion.div>
@@ -362,9 +362,9 @@ function useCountdownToMidnight() {
 
 // ── Daily quests config ──
 const DAILY_QUESTS = [
-  { name: 'Win 3 Battles', max: 3, reward: { type: 'gold' as const, amount: 200 }, rewardLabel: '💰 200' },
-  { name: 'Play 5 Cards', max: 5, reward: { type: 'gold' as const, amount: 100 }, rewardLabel: '💰 100' },
-  { name: 'Destroy 10 Towers', max: 10, reward: { type: 'gems' as const, amount: 5 }, rewardLabel: '💎 5' },
+  { nameKey: 'events.quest_win_battles', name: 'Win 3 Battles', max: 3, reward: { type: 'gold' as const, amount: 200 }, rewardLabel: '💰 200' },
+  { nameKey: 'events.quest_play_cards', name: 'Play 5 Cards', max: 5, reward: { type: 'gold' as const, amount: 100 }, rewardLabel: '💰 100' },
+  { nameKey: 'events.quest_destroy_towers', name: 'Destroy 10 Towers', max: 10, reward: { type: 'gems' as const, amount: 5 }, rewardLabel: '💎 5' },
 ];
 
 // ── Main Component ──
@@ -385,16 +385,16 @@ const EventsScreen = () => {
 
   const simulateWin = useCallback((event: EventData) => {
     const prog = getEventProgress(event.id);
-    if (prog.completed) { toast.info('Already completed!'); return; }
-    if (event.maxLosses && event.maxLosses > 0 && prog.losses >= event.maxLosses) { toast.error('Too many losses!'); return; }
+    if (prog.completed) { toast.info(t('events.already_completed', language)); return; }
+    if (event.maxLosses && event.maxLosses > 0 && prog.losses >= event.maxLosses) { toast.error(t('events.too_many_losses', language)); return; }
 
     const won = Math.random() > 0.4;
     if (won) {
       prog.wins += 1;
-      toast.success(`Victory! (${prog.wins} wins)`);
+      toast.success(`${t('battle.victory', language)} (${prog.wins} ${t('events.wins', language).toLowerCase()})`);
     } else {
       prog.losses += 1;
-      toast.error(`Defeat! (${prog.losses} losses)`);
+      toast.error(`${t('battle.defeat', language)} (${prog.losses} ${t('events.losses', language).toLowerCase()})`);
     }
 
     if (event.maxWins && prog.wins >= event.maxWins) prog.completed = true;
@@ -408,7 +408,7 @@ const EventsScreen = () => {
     const prog = getEventProgress(event.id);
     const ms = event.milestones?.[milestoneIdx];
     if (!ms || prog.claimed.includes(milestoneIdx)) return;
-    if (prog.wins < ms.wins) { toast.error(`Need ${ms.wins} wins!`); return; }
+    if (prog.wins < ms.wins) { toast.error(`${t('events.win_count', language)} ${ms.wins}!`); return; }
 
     prog.claimed.push(milestoneIdx);
     setEventProgress(event.id, prog);
@@ -429,8 +429,8 @@ const EventsScreen = () => {
 
   const claimEventReward = useCallback((event: EventData) => {
     const prog = getEventProgress(event.id);
-    if (prog.claimed.includes(-1)) { toast.info('Already claimed!'); return; }
-    if (prog.wins < 1) { toast.error('Win at least 1 battle first!'); return; }
+    if (prog.claimed.includes(-1)) { toast.info(t('events.already_completed', language)); return; }
+    if (prog.wins < 1) { toast.error(`${t('events.win_count', language)} 1!`); return; }
 
     prog.claimed.push(-1);
     setEventProgress(event.id, prog);
@@ -479,7 +479,7 @@ const EventsScreen = () => {
     if (event.entryFee) {
       const currency = event.entryFee.currency === 'gold' ? profile.gold : profile.gems;
       if (currency < event.entryFee.amount) {
-        toast.error(`Not enough ${event.entryFee.currency}!`);
+        toast.error(`${t('shop.not_enough', language)} ${t(`shop.${event.entryFee.currency}`, language)}!`);
         return;
       }
       setProfile(p => event.entryFee!.currency === 'gold'
@@ -497,10 +497,10 @@ const EventsScreen = () => {
     switch (rd.type) {
       case 'gold': return `💰 ${rd.amount}`;
       case 'gems': return `💎 ${rd.amount}`;
-      case 'cards': return `🃏 ${rd.amount} ${rd.rarity}`;
-      case 'emote': return '😀 Exclusive Emote';
-      case 'banner-bg': return '🖼️ Exclusive BG';
-      case 'banner-emb': return '🎭 Exclusive Emblem';
+      case 'cards': return `🃏 ${rd.amount} ${tRarity(rd.rarity || 'common', language)}`;
+      case 'emote': return t('events.exclusive_emote', language);
+      case 'banner-bg': return t('events.exclusive_bg', language);
+      case 'banner-emb': return t('events.exclusive_emblem', language);
     }
   };
 
@@ -508,7 +508,7 @@ const EventsScreen = () => {
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden">
       {/* Reward popup */}
       <AnimatePresence>
-        {rewardPopup && <RewardReveal rewards={rewardPopup} onClose={() => setRewardPopup(null)} />}
+        {rewardPopup && <RewardReveal rewards={rewardPopup} onClose={() => setRewardPopup(null)} language={language} />}
       </AnimatePresence>
 
       {/* Event detail modal */}
@@ -529,7 +529,7 @@ const EventsScreen = () => {
 
               <div className="flex items-center gap-3 mb-3">
                 <div className="bg-muted rounded-lg px-2 py-1 text-center">
-                  <div className="text-[8px] text-muted-foreground">TIME LEFT</div>
+                  <div className="text-[8px] text-muted-foreground">{t('events.time_left', language)}</div>
                   <div className="text-xs font-bold text-primary">{fmtHours(selectedEvent.hoursLeft)}</div>
                 </div>
                 {(() => {
@@ -537,12 +537,12 @@ const EventsScreen = () => {
                   return (
                     <>
                       <div className="bg-muted rounded-lg px-2 py-1 text-center">
-                        <div className="text-[8px] text-muted-foreground">WINS</div>
+                        <div className="text-[8px] text-muted-foreground">{t('events.wins', language)}</div>
                         <div className="text-xs font-bold text-hp-green">{prog.wins}</div>
                       </div>
                       {selectedEvent.maxLosses && selectedEvent.maxLosses > 0 && (
                         <div className="bg-muted rounded-lg px-2 py-1 text-center">
-                          <div className="text-[8px] text-muted-foreground">LOSSES</div>
+                          <div className="text-[8px] text-muted-foreground">{t('events.losses', language)}</div>
                           <div className="text-xs font-bold text-accent">{prog.losses}/{selectedEvent.maxLosses}</div>
                         </div>
                       )}
@@ -554,7 +554,7 @@ const EventsScreen = () => {
               {/* Milestones */}
               {selectedEvent.milestones && (
                 <div className="space-y-1.5 mb-3">
-                  <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold">Milestones</div>
+                  <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold">{t('events.milestones', language)}</div>
                   {selectedEvent.milestones.map((ms, idx) => {
                     const prog = getEventProgress(selectedEvent.id);
                     const reached = prog.wins >= ms.wins;
@@ -565,13 +565,13 @@ const EventsScreen = () => {
                           {ms.wins}
                         </div>
                         <div className="flex-1">
-                          <div className="text-[10px] font-bold text-foreground">{ms.wins} Win{ms.wins > 1 ? 's' : ''}</div>
+                          <div className="text-[10px] font-bold text-foreground">{ms.wins} {ms.wins > 1 ? t('events.wins_plural', language) : t('events.win_count', language)}</div>
                           <div className="text-[8px] text-muted-foreground">{rewardLabel(ms.reward)}</div>
                         </div>
                         {claimed ? (
-                          <span className="text-[8px] text-hp-green font-bold">✓ Claimed</span>
+                          <span className="text-[8px] text-hp-green font-bold">{t('events.claimed', language)}</span>
                         ) : reached ? (
-                          <button onClick={() => claimMilestone(selectedEvent, idx)} className="px-2 py-1 bg-primary text-primary-foreground rounded-lg text-[9px] font-bold">Claim</button>
+                          <button onClick={() => claimMilestone(selectedEvent, idx)} className="px-2 py-1 bg-primary text-primary-foreground rounded-lg text-[9px] font-bold">{t('events.claim_btn', language)}</button>
                         ) : (
                           <span className="text-[8px] text-muted-foreground">🔒</span>
                         )}
@@ -586,10 +586,10 @@ const EventsScreen = () => {
                 const prog = getEventProgress(selectedEvent.id);
                 return !prog.completed ? (
                   <button onClick={() => simulateWin(selectedEvent)} className="w-full py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold uppercase">
-                    ⚔️ Battle!
+                    {t('events.battle', language)}
                   </button>
                 ) : (
-                  <div className="text-center py-2 text-[10px] text-muted-foreground font-bold">COMPLETED</div>
+                  <div className="text-center py-2 text-[10px] text-muted-foreground font-bold">{t('events.completed', language)}</div>
                 );
               })()}
             </motion.div>
@@ -599,19 +599,22 @@ const EventsScreen = () => {
 
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,25%,12%)] border-b border-border">
-        <h2 className="font-display font-bold text-foreground text-sm uppercase tracking-wider">Events</h2>
+        <h2 className="font-display font-bold text-foreground text-sm uppercase tracking-wider">{t('events.title', language)}</h2>
         <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-          <Clock className="w-3 h-3" />Resets: {countdown}
+          <Clock className="w-3 h-3" />{t('events.resets', language)}: {countdown}
         </div>
       </div>
 
       {/* Tabs */}
       <div className="flex bg-[hsl(220,20%,14%)] border-b border-border">
-        {(['events', 'challenges', 'tournaments'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider ${tab === t ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
-            {t}
+        {(['events', 'challenges', 'tournaments'] as const).map(tabKey => {
+          const tabLabelMap: Record<string, string> = { events: t('events.events', language), challenges: t('events.challenges', language), tournaments: t('events.tournaments', language) };
+          return (
+          <button key={tabKey} onClick={() => setTab(tabKey)} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider ${tab === tabKey ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}>
+            {tabLabelMap[tabKey]}
           </button>
-        ))}
+          );
+        })}
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -619,14 +622,14 @@ const EventsScreen = () => {
           <div className="p-3 space-y-2">
             {/* Daily Quests */}
             <div className="bg-card border border-border rounded-xl p-3">
-              <div className="text-xs font-display font-bold text-foreground mb-2">📋 Daily Quests</div>
+              <div className="text-xs font-display font-bold text-foreground mb-2">{t('events.daily_quests', language)}</div>
               {DAILY_QUESTS.map((q, i) => {
                 const qp = questProgress.quests[i];
                 const done = qp.progress >= q.max;
                 return (
                   <div key={i} className="flex items-center gap-2 py-1.5 border-t border-border/30">
                     <div className="flex-1">
-                      <div className="text-[10px] font-bold text-foreground">{q.name}</div>
+                      <div className="text-[10px] font-bold text-foreground">{t(q.nameKey, language)}</div>
                       <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-0.5">
                         <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(qp.progress / q.max) * 100}%` }} />
                       </div>
@@ -635,7 +638,7 @@ const EventsScreen = () => {
                     {qp.claimed ? (
                       <span className="text-[8px] text-hp-green font-bold">✓</span>
                     ) : done ? (
-                      <button onClick={() => claimQuest(i)} className="px-2 py-0.5 bg-primary text-primary-foreground rounded text-[8px] font-bold animate-pulse">Claim</button>
+                      <button onClick={() => claimQuest(i)} className="px-2 py-0.5 bg-primary text-primary-foreground rounded text-[8px] font-bold animate-pulse">{t('events.claim_btn', language)}</button>
                     ) : (
                       <button onClick={() => addQuestProgress(i)} className="px-2 py-0.5 bg-muted text-muted-foreground rounded text-[8px] font-bold">+1</button>
                     )}
@@ -679,7 +682,7 @@ const EventsScreen = () => {
                   if (p.wins >= 1 && !p.claimed.includes(-1)) claimEventReward(e);
                 });
               }} className="w-full py-2 bg-hp-green/20 text-hp-green rounded-xl text-[10px] font-bold border border-hp-green/30">
-                Claim Available Event Rewards
+                {t('events.claim_available', language)}
               </button>
             )}
           </div>
@@ -706,14 +709,14 @@ const EventsScreen = () => {
                         <span className="text-hp-green">{prog.wins}W</span>
                         <span className="text-muted-foreground mx-1">-</span>
                         <span className="text-accent">{prog.losses}L</span>
-                        {prog.completed && <span className="text-hp-green ml-1 font-bold">DONE</span>}
+                        {prog.completed && <span className="text-hp-green ml-1 font-bold">{t('events.done', language)}</span>}
                       </div>
                     )}
                   </div>
                   <div className="text-right flex-shrink-0">
                     <div className="text-[8px] text-muted-foreground">{fmtHours(c.hoursLeft)}</div>
                     <div className={`text-[9px] font-bold mt-0.5 ${!c.entryFee ? 'text-hp-green' : 'text-primary'}`}>
-                      {!c.entryFee ? 'Free' : `💎 ${c.entryFee.amount}`}
+                      {!c.entryFee ? t('events.free', language) : `💎 ${c.entryFee.amount}`}
                     </div>
                     <ChevronRight className="w-3 h-3 text-muted-foreground mt-0.5" />
                   </div>
@@ -725,28 +728,28 @@ const EventsScreen = () => {
 
         {tab === 'tournaments' && (
           <div className="p-3 space-y-2">
-            {tournaments.map(t => {
-              const prog = getEventProgress(t.id);
+            {tournaments.map(tourney => {
+              const prog = getEventProgress(tourney.id);
               return (
-                <motion.button key={t.id} whileTap={{ scale: 0.98 }} onClick={() => setSelectedEvent(t)} className={`w-full bg-gradient-to-r from-card to-[hsl(220,20%,14%)] border rounded-xl p-3 flex items-center gap-3 transition-colors ${prog.completed ? 'border-hp-green/30' : 'border-primary/30 hover:border-primary/50'}`}>
+                <motion.button key={tourney.id} whileTap={{ scale: 0.98 }} onClick={() => setSelectedEvent(tourney)} className={`w-full bg-gradient-to-r from-card to-[hsl(220,20%,14%)] border rounded-xl p-3 flex items-center gap-3 transition-colors ${prog.completed ? 'border-hp-green/30' : 'border-primary/30 hover:border-primary/50'}`}>
                   <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
-                    <span className="text-xl">{t.emoji}</span>
+                    <span className="text-xl">{tourney.emoji}</span>
                   </div>
                   <div className="flex-1 text-left">
-                    <div className="text-xs font-bold text-foreground">{t.name}</div>
-                    <div className="text-[9px] text-muted-foreground">{t.description}</div>
+                    <div className="text-xs font-bold text-foreground">{tourney.name}</div>
+                    <div className="text-[9px] text-muted-foreground">{tourney.description}</div>
                     {prog.wins > 0 && (
-                      <div className="text-[8px] text-hp-green mt-0.5">{prog.wins} wins</div>
+                      <div className="text-[8px] text-hp-green mt-0.5">{prog.wins} {t('events.wins_plural', language).toLowerCase()}</div>
                     )}
                     <div className="flex gap-1 mt-1 flex-wrap">
-                      {t.milestones?.slice(0, 3).map((ms, mi) => (
+                      {tourney.milestones?.slice(0, 3).map((ms, mi) => (
                         <span key={mi} className="text-[7px] bg-primary/10 border border-primary/20 px-1 py-0.5 rounded text-primary">{ms.wins}W: {rewardLabel(ms.reward)}</span>
                       ))}
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <div className="text-[8px] text-primary font-bold">{fmtHours(t.hoursLeft)}</div>
-                    <div className="text-[9px] text-hp-green font-bold mt-0.5">Free</div>
+                    <div className="text-[8px] text-primary font-bold">{fmtHours(tourney.hoursLeft)}</div>
+                    <div className="text-[9px] text-hp-green font-bold mt-0.5">{t('events.free', language)}</div>
                     <ChevronRight className="w-3 h-3 text-muted-foreground mt-0.5" />
                   </div>
                 </motion.button>
