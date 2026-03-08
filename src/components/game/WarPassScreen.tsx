@@ -167,10 +167,34 @@ const WarPassScreen = () => {
 
     let items: RewardItem[] = [];
 
-    if (r.type === 'chest') {
+    if (r.type === 'season-emote') {
+      // Season exclusive emote
+      addOwnedEmote('em-wp-s1-fleur');
+      items = [{ emoji: '⚜️', name: 'S1 Fleur-de-lis Emote', count: 1, rarity: 'legendary' }];
+      toast.success('Season 1 Exclusive Emote unlocked!');
+    } else if (r.type === 'season-banner') {
+      // Season exclusive banner set (background + emblem)
+      addOwnedBackground('bg-wp-s1-divine-flame');
+      addOwnedEmblem('emb-wp-s1-joan');
+      items = [
+        { emoji: '🏴', name: 'S1 Divine Flame BG', count: 1, rarity: 'legendary' },
+        { emoji: '⚜️', name: "S1 Joan's Banner Emblem", count: 1, rarity: 'legendary' },
+      ];
+      toast.success('Season 1 Exclusive Banner Set unlocked!');
+    } else if (r.type === 'season-hero') {
+      // Season exclusive hero — unlock Joan of Arc card permanently
+      addCards('joan-of-arc', 1);
+      // Mark hero as "always active" for this season
+      const activeHeroes = JSON.parse(localStorage.getItem('active_season_heroes') || '[]');
+      if (!activeHeroes.includes('joan-of-arc')) {
+        activeHeroes.push('joan-of-arc');
+        localStorage.setItem('active_season_heroes', JSON.stringify(activeHeroes));
+      }
+      items = [{ emoji: '⚜️', name: 'Joan of Arc (Hero)', count: 1, rarity: 'hero' }];
+      toast.success('Season 1 Exclusive Hero Joan of Arc unlocked! She is always active!');
+    } else if (r.type === 'chest') {
       const contents = generateChestContents(r.label);
       setProfile(p => ({ ...p, gold: p.gold + contents.gold, gems: p.gems + contents.gems }));
-      // Add cards to inventory
       contents.items.forEach(item => {
         if (item.rarity !== 'common' || !item.name.includes('Gold')) {
           const card = allCards.find(c => c.name === item.name);
@@ -179,7 +203,6 @@ const WarPassScreen = () => {
       });
       items = contents.items;
     } else if (r.type === 'cards') {
-      // Pick specific random cards and show them
       const label = r.label.toLowerCase();
       let pool = allCards;
       if (label.includes('legendary')) pool = allCards.filter(c => c.rarity === 'legendary');
@@ -437,9 +460,18 @@ const WarPassScreen = () => {
           const freeClaimed = claimedFree.has(reward.tier);
           const paidClaimable = unlocked && hasPaid && !claimedPaid.has(reward.tier);
           const paidClaimed = claimedPaid.has(reward.tier);
+          const isExclusive = reward.paid.type.startsWith('season-');
 
           return (
-            <div key={reward.tier} className={`flex items-stretch border-b border-border ${unlocked ? 'bg-[hsl(220,15%,12%)]' : 'bg-background opacity-60'}`}>
+            <div key={reward.tier} className={`flex items-stretch border-b border-border ${
+              isExclusive ? 'bg-gradient-to-r from-[hsl(220,15%,12%)] via-[hsl(280,20%,14%)] to-[hsl(220,15%,12%)]' :
+              unlocked ? 'bg-[hsl(220,15%,12%)]' : 'bg-background opacity-60'
+            }`}>
+              {isExclusive && (
+                <div className="absolute left-0 right-0 text-center">
+                  <span className="text-[6px] font-bold text-[hsl(280,60%,65%)] uppercase tracking-widest">Season Exclusive</span>
+                </div>
+              )}
               <div className="flex-1 p-1.5">
                 <RewardCard
                   emoji={reward.free.emoji}
@@ -454,8 +486,11 @@ const WarPassScreen = () => {
 
               <div className="w-10 flex flex-col items-center justify-center relative">
                 <div className={`w-0.5 absolute top-0 bottom-0 ${unlocked ? 'bg-primary/40' : 'bg-border'}`} />
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center z-10 text-[9px] font-black border-2 ${unlocked ? 'bg-primary/20 border-primary text-primary' : 'bg-muted border-border text-muted-foreground'}`}>
-                  {reward.crownsNeeded}
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center z-10 text-[9px] font-black border-2 ${
+                  isExclusive ? 'bg-[hsl(280,30%,20%)] border-[hsl(280,50%,50%)] text-[hsl(280,60%,70%)]' :
+                  unlocked ? 'bg-primary/20 border-primary text-primary' : 'bg-muted border-border text-muted-foreground'
+                }`}>
+                  {reward.tier}
                 </div>
               </div>
 
@@ -469,6 +504,7 @@ const WarPassScreen = () => {
                   onClaim={() => claimReward(reward.tier, 'paid')}
                   variant="paid"
                   showLock={!hasPaid}
+                  isExclusive={isExclusive}
                 />
               </div>
             </div>
@@ -480,11 +516,13 @@ const WarPassScreen = () => {
   );
 };
 
-const RewardCard = ({ emoji, label, claimed, claimable, locked, onClaim, variant, showLock }: {
+const RewardCard = ({ emoji, label, claimed, claimable, locked, onClaim, variant, showLock, isExclusive }: {
   emoji: string; label: string; claimed: boolean; claimable: boolean; locked: boolean;
-  onClaim: () => void; variant: 'free' | 'paid'; showLock?: boolean;
+  onClaim: () => void; variant: 'free' | 'paid'; showLock?: boolean; isExclusive?: boolean;
 }) => {
-  const bg = variant === 'free'
+  const bg = isExclusive
+    ? 'bg-gradient-to-b from-[hsl(280,25%,18%)] to-[hsl(280,20%,12%)] border-[hsl(280,40%,35%)]'
+    : variant === 'free'
     ? 'bg-[hsl(120,15%,14%)] border-[hsl(120,20%,22%)]'
     : 'bg-[hsl(280,15%,14%)] border-[hsl(280,20%,22%)]';
 
@@ -501,8 +539,11 @@ const RewardCard = ({ emoji, label, claimed, claimable, locked, onClaim, variant
       {showLock && !claimed && (
         <Lock className="w-2.5 h-2.5 text-muted-foreground absolute top-1 right-1" />
       )}
+      {isExclusive && !claimed && (
+        <span className="absolute top-0.5 left-0.5 text-[5px] font-bold text-[hsl(280,60%,65%)] uppercase">★ S1</span>
+      )}
       <span className={`text-base ${claimed ? 'grayscale opacity-40' : ''}`}>{emoji}</span>
-      <span className={`text-[7px] font-bold leading-tight text-center ${claimed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>{label}</span>
+      <span className={`text-[7px] font-bold leading-tight text-center ${claimed ? 'text-muted-foreground line-through' : isExclusive ? 'text-[hsl(280,60%,70%)]' : 'text-foreground'}`}>{label}</span>
       {claimed && <Check className="w-3 h-3 text-[hsl(120,50%,50%)]" />}
       {claimable && !claimed && (
         <span className="text-[6px] font-bold text-primary animate-pulse">CLAIM</span>
