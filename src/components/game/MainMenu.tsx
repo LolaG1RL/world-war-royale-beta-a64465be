@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { useAuth } from '@/context/AuthContext';
 import { getArenaForTrophies } from '@/data/cards';
@@ -5,11 +6,37 @@ import CardComponent from './CardComponent';
 import { motion } from 'framer-motion';
 import { Swords, Trophy, Users, ShoppingBag, Crown, Map, Star, Gift, Zap, Mail } from 'lucide-react';
 import splashImage from '@/assets/world-war-royale-splash.png';
+import { supabase } from '@/integrations/supabase/client';
 
 const MainMenu = () => {
   const { profile, deck, chests, setScreen, setActiveTab } = useGame();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const arena = getArenaForTrophies(profile.trophies);
+  const [unreadMail, setUnreadMail] = useState(0);
+
+  // Check unread mail count
+  useEffect(() => {
+    if (!user) return;
+    const checkMail = async () => {
+      const { data } = await supabase
+        .from('mailbox_messages')
+        .select('id, is_read, is_claimed, reward_gold, reward_gems')
+        .or(`recipient_user_id.eq.${user.id},recipient_user_id.is.null`);
+      if (data) {
+        const count = data.filter(m => !m.is_read || (!m.is_claimed && (m.reward_gold > 0 || m.reward_gems > 0))).length;
+        setUnreadMail(count);
+      }
+    };
+    checkMail();
+    // Also subscribe to realtime for new mail
+    const channel = supabase
+      .channel('mailbox-notifications')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mailbox_messages' }, () => {
+        checkMail();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
 
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background relative overflow-hidden">
@@ -86,12 +113,17 @@ const MainMenu = () => {
           </button>
         </div>
         <div className="flex gap-1.5 px-3 pb-2">
-          <button onClick={() => setScreen('mailbox')} className="flex-1 bg-[hsl(220,15%,16%)] border border-border rounded-lg py-2 px-2 flex items-center gap-2 hover:bg-[hsl(220,15%,20%)] transition-colors">
+          <button onClick={() => setScreen('mailbox')} className="flex-1 bg-[hsl(220,15%,16%)] border border-border rounded-lg py-2 px-2 flex items-center gap-2 hover:bg-[hsl(220,15%,20%)] transition-colors relative">
             <Mail className="w-4 h-4 text-primary" />
             <div className="text-left">
               <div className="text-[9px] font-bold text-foreground">Mailbox</div>
               <div className="text-[7px] text-muted-foreground">Messages</div>
             </div>
+            {unreadMail > 0 && (
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full flex items-center justify-center">
+                <span className="text-[7px] font-black text-accent-foreground">{unreadMail > 9 ? '9+' : unreadMail}</span>
+              </div>
+            )}
           </button>
           <button onClick={() => setScreen('war-pass')} className="flex-1 bg-gradient-to-r from-[hsl(280,30%,16%)] to-[hsl(320,30%,16%)] border border-[hsl(280,20%,25%)] rounded-lg py-2 px-2 flex items-center gap-2 hover:from-[hsl(280,30%,20%)] hover:to-[hsl(320,30%,20%)] transition-colors">
             <Crown className="w-4 h-4 text-[hsl(280,60%,65%)]" />
