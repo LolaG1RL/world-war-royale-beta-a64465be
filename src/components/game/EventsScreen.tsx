@@ -598,7 +598,7 @@ const EventsScreen = () => {
               {(() => {
                 const prog = getEventProgress(selectedEvent.id);
                 return !prog.completed ? (
-                  <button onClick={() => simulateWin(selectedEvent)} className="w-full py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold uppercase">
+                  <button onClick={() => startEventBattle(selectedEvent)} className="w-full py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold uppercase">
                     {t('events.battle', language)}
                   </button>
                 ) : (
