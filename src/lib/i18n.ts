@@ -60,6 +60,16 @@ const translations: TranslationMap = {
   'battle.river_race': { en: 'River Race', es: 'Carrera del Río', fr: 'Course de Rivière', de: 'Flussrennen', pt: 'Corrida do Rio', ja: 'リバーレース', ko: '리버 레이스', zh: '河流竞赛', ar: 'سباق النهر', ru: 'Речная гонка' },
   'battle.medals': { en: 'Medals', es: 'Medallas', fr: 'Médailles', de: 'Medaillen', pt: 'Medalhas', ja: 'メダル', ko: '메달', zh: '奖牌', ar: 'الميداليات', ru: 'Медали' },
   'battle.gold_earned': { en: 'Gold Earned', es: 'Oro Ganado', fr: 'Or Gagné', de: 'Gold verdient', pt: 'Ouro Ganho', ja: 'ゴールド獲得', ko: '골드 획득', zh: '获得金币', ar: 'ذهب مكتسب', ru: 'Золото получено' },
+  'battle.vs': { en: '⚔️ VS ⚔️', es: '⚔️ VS ⚔️', fr: '⚔️ VS ⚔️', de: '⚔️ VS ⚔️', pt: '⚔️ VS ⚔️', ja: '⚔️ VS ⚔️', ko: '⚔️ VS ⚔️', zh: '⚔️ VS ⚔️', ar: '⚔️ VS ⚔️', ru: '⚔️ VS ⚔️' },
+  'battle.starting': { en: 'Battle starting...', es: 'Batalla comenzando...', fr: 'Combat en cours...', de: 'Kampf beginnt...', pt: 'Batalha começando...', ja: 'バトル開始...', ko: '전투 시작...', zh: '战斗开始...', ar: 'المعركة تبدأ...', ru: 'Бой начинается...' },
+  'battle.double_elixir': { en: '⚡ DOUBLE ELIXIR!', es: '⚡ ¡ELIXIR DOBLE!', fr: '⚡ DOUBLE ÉLIXIR!', de: '⚡ DOPPELTES ELIXIER!', pt: '⚡ ELIXIR DUPLO!', ja: '⚡ ダブルエリクサー！', ko: '⚡ 더블 엘릭서!', zh: '⚡ 双倍圣水！', ar: '⚡ إكسير مزدوج!', ru: '⚡ ДВОЙНОЙ ЭЛИКСИР!' },
+  'battle.boat_battle': { en: '⚓ BOAT BATTLE', es: '⚓ BATALLA NAVAL', fr: '⚓ COMBAT NAVAL', de: '⚓ BOOTKAMPF', pt: '⚓ BATALHA NAVAL', ja: '⚓ ボートバトル', ko: '⚓ 보트 전투', zh: '⚓ 船战', ar: '⚓ معركة بحرية', ru: '⚓ МОРСКОЙ БОЙ' },
+  'battle.towers_destroyed': { en: 'Towers destroyed', es: 'Torres destruidas', fr: 'Tours détruites', de: 'Türme zerstört', pt: 'Torres destruídas', ja: 'タワー破壊', ko: '타워 파괴', zh: '塔被摧毁', ar: 'أبراج مدمرة', ru: 'Башни разрушены' },
+  'battle.select_card': { en: 'Select a card first', es: 'Selecciona una carta', fr: 'Sélectionnez une carte', de: 'Wähle eine Karte', pt: 'Selecione uma carta', ja: 'カードを選択', ko: '카드를 선택하세요', zh: '先选择一张卡', ar: 'اختر بطاقة أولاً', ru: 'Выберите карту' },
+  'battle.tap_tower': { en: '👆 Tap a tower to attack!', es: '👆 ¡Toca una torre!', fr: '👆 Touchez une tour!', de: '👆 Tippe auf einen Turm!', pt: '👆 Toque uma torre!', ja: '👆 タワーをタップ！', ko: '👆 타워를 탭하세요!', zh: '👆 点击塔来攻击！', ar: '👆 انقر على البرج!', ru: '👆 Нажмите на башню!' },
+  'battle.defense_tower': { en: 'Defense Tower', es: 'Torre de Defensa', fr: 'Tour de Défense', de: 'Verteidigungsturm', pt: 'Torre de Defesa', ja: '防御タワー', ko: '방어 타워', zh: '防御塔', ar: 'برج الدفاع', ru: 'Башня обороны' },
+  'battle.destroyed': { en: '💥 DESTROYED', es: '💥 DESTRUIDA', fr: '💥 DÉTRUITE', de: '💥 ZERSTÖRT', pt: '💥 DESTRUÍDA', ja: '💥 破壊', ko: '💥 파괴됨', zh: '💥 摧毁', ar: '💥 مدمر', ru: '💥 РАЗРУШЕНА' },
+  'battle.next': { en: 'Next', es: 'Siguiente', fr: 'Suivant', de: 'Nächste', pt: 'Próximo', ja: '次', ko: '다음', zh: '下一个', ar: 'التالي', ru: 'Следующая' },
 
   // ═══ Cards / Deck ═══
   'cards.my_deck': { en: 'My Deck', es: 'Mi Mazo', fr: 'Mon Deck', de: 'Mein Deck', pt: 'Meu Deck', ja: 'マイデッキ', ko: '내 덱', zh: '我的卡组', ar: 'مجموعتي', ru: 'Моя колода' },
@@ -74,6 +84,20 @@ const translations: TranslationMap = {
   'cards.equipped': { en: 'Equipped', es: 'Equipado', fr: 'Équipé', de: 'Ausgerüstet', pt: 'Equipado', ja: '装備中', ko: '장착됨', zh: '已装备', ar: 'مجهز', ru: 'Экипировано' },
   'cards.deck_full': { en: 'Deck is full!', es: '¡Mazo completo!', fr: 'Deck complet!', de: 'Deck voll!', pt: 'Deck cheio!', ja: 'デッキが満杯！', ko: '덱이 가득 찼습니다!', zh: '卡组已满！', ar: 'المجموعة ممتلئة!', ru: 'Колода полна!' },
   'cards.already_in_deck': { en: 'Already in deck!', es: '¡Ya está en el mazo!', fr: 'Déjà dans le deck!', de: 'Bereits im Deck!', pt: 'Já está no deck!', ja: 'すでにデッキに入っています！', ko: '이미 덱에 있습니다!', zh: '已在卡组中！', ar: 'موجودة بالفعل!', ru: 'Уже в колоде!' },
+  'cards.battle_deck': { en: 'BATTLE DECK', es: 'MAZO DE BATALLA', fr: 'DECK DE COMBAT', de: 'KAMPFDECK', pt: 'DECK DE BATALHA', ja: 'バトルデッキ', ko: '배틀 덱', zh: '战斗卡组', ar: 'مجموعة المعركة', ru: 'БОЕВАЯ КОЛОДА' },
+  'cards.battle_banner': { en: 'BATTLE BANNER', es: 'ESTANDARTE', fr: 'BANNIÈRE', de: 'KAMPFBANNER', pt: 'BANDEIRA', ja: 'バトルバナー', ko: '배틀 배너', zh: '战斗旗帜', ar: 'لافتة المعركة', ru: 'БОЕВОЙ БАННЕР' },
+  'cards.deck': { en: 'Deck', es: 'Mazo', fr: 'Deck', de: 'Deck', pt: 'Deck', ja: 'デッキ', ko: '덱', zh: '卡组', ar: 'مجموعة', ru: 'Колода' },
+  'cards.avg_elixir': { en: 'Avg Elixir', es: 'Elixir Prom.', fr: 'Élixir Moy.', de: 'Ø Elixier', pt: 'Elixir Méd.', ja: '平均エリクサー', ko: '평균 엘릭서', zh: '平均圣水', ar: 'متوسط الإكسير', ru: 'Сред. эликсир' },
+  'cards.hero_slots': { en: 'Hero Slots', es: 'Ranuras Héroe', fr: 'Empl. Héros', de: 'Heldenslots', pt: 'Slots Herói', ja: 'ヒーロースロット', ko: '히어로 슬롯', zh: '英雄槽位', ar: 'فتحات الأبطال', ru: 'Слоты героев' },
+  'cards.not_unlocked': { en: '🔒 Not Unlocked', es: '🔒 No Desbloqueado', fr: '🔒 Non Débloqué', de: '🔒 Nicht Freigeschaltet', pt: '🔒 Não Desbloqueado', ja: '🔒 未解放', ko: '🔒 미해제', zh: '🔒 未解锁', ar: '🔒 غير مفتوح', ru: '🔒 Не открыто' },
+  'cards.upgrade': { en: 'Upgrade', es: 'Mejorar', fr: 'Améliorer', de: 'Aufwerten', pt: 'Melhorar', ja: 'アップグレード', ko: '업그레이드', zh: '升级', ar: 'ترقية', ru: 'Улучшить' },
+  'cards.all': { en: 'All', es: 'Todos', fr: 'Tous', de: 'Alle', pt: 'Todos', ja: '全て', ko: '전체', zh: '全部', ar: 'الكل', ru: 'Все' },
+  'cards.troop': { en: 'Troop', es: 'Tropa', fr: 'Troupe', de: 'Truppe', pt: 'Tropa', ja: 'ユニット', ko: '유닛', zh: '部队', ar: 'جندي', ru: 'Отряд' },
+  'cards.spell': { en: 'Spell', es: 'Hechizo', fr: 'Sort', de: 'Zauber', pt: 'Feitiço', ja: '呪文', ko: '주문', zh: '法术', ar: 'تعويذة', ru: 'Заклинание' },
+  'cards.building': { en: 'Building', es: 'Edificio', fr: 'Bâtiment', de: 'Gebäude', pt: 'Construção', ja: '建物', ko: '건물', zh: '建筑', ar: 'مبنى', ru: 'Здание' },
+  'cards.no_bg': { en: 'No backgrounds owned yet.', es: 'Sin fondos aún.', fr: 'Aucun fond possédé.', de: 'Noch keine Hintergründe.', pt: 'Sem fundos ainda.', ja: 'まだ背景がありません。', ko: '배경이 아직 없습니다.', zh: '还没有背景。', ar: 'لا خلفيات بعد.', ru: 'Нет фонов.' },
+  'cards.no_emb': { en: 'No emblems owned yet.', es: 'Sin emblemas aún.', fr: 'Aucun emblème possédé.', de: 'Noch keine Embleme.', pt: 'Sem emblemas ainda.', ja: 'まだエンブレムがありません。', ko: '엠블럼이 아직 없습니다.', zh: '还没有徽章。', ar: 'لا شعارات بعد.', ru: 'Нет эмблем.' },
+  'cards.no_badges': { en: 'No badges earned yet.', es: 'Sin insignias aún.', fr: 'Aucun badge obtenu.', de: 'Noch keine Abzeichen.', pt: 'Sem insígnias ainda.', ja: 'まだバッジがありません。', ko: '배지가 아직 없습니다.', zh: '还没有徽章。', ar: 'لا شارات بعد.', ru: 'Нет значков.' },
 
   // ═══ Social / Leaderboard ═══
   'social.clan': { en: 'Clan', es: 'Clan', fr: 'Clan', de: 'Clan', pt: 'Clã', ja: 'クラン', ko: '클랜', zh: '部落', ar: 'العشيرة', ru: 'Клан' },
@@ -103,6 +127,8 @@ const translations: TranslationMap = {
   'social.add_by_tag': { en: 'Add by Player Tag', es: 'Añadir por Tag del Jugador', fr: 'Ajouter par Tag Joueur', de: 'Per Spieler-Tag hinzufügen', pt: 'Adicionar por Tag do Jogador', ja: 'プレイヤータグで追加', ko: '플레이어 태그로 추가', zh: '通过玩家标签添加', ar: 'إضافة بعلامة اللاعب', ru: 'Добавить по тегу' },
   'social.leader': { en: 'Leader', es: 'Líder', fr: 'Chef', de: 'Anführer', pt: 'Líder', ja: 'リーダー', ko: '리더', zh: '首领', ar: 'القائد', ru: 'Лидер' },
   'social.members': { en: 'members', es: 'miembros', fr: 'membres', de: 'Mitglieder', pt: 'membros', ja: 'メンバー', ko: '멤버', zh: '成员', ar: 'أعضاء', ru: 'участников' },
+  'social.title': { en: 'Social', es: 'Social', fr: 'Social', de: 'Sozial', pt: 'Social', ja: 'ソーシャル', ko: '소셜', zh: '社交', ar: 'اجتماعي', ru: 'Соцсеть' },
+  'social.customize_flag': { en: 'Customize Flag', es: 'Personalizar Bandera', fr: 'Personnaliser Drapeau', de: 'Flagge anpassen', pt: 'Personalizar Bandeira', ja: '旗をカスタマイズ', ko: '깃발 커스터마이즈', zh: '自定义旗帜', ar: 'تخصيص العلم', ru: 'Настроить флаг' },
 
   // ═══ Shop ═══
   'shop.title': { en: 'Shop', es: 'Tienda', fr: 'Boutique', de: 'Shop', pt: 'Loja', ja: 'ショップ', ko: '상점', zh: '商店', ar: 'المتجر', ru: 'Магазин' },
@@ -118,6 +144,30 @@ const translations: TranslationMap = {
   'shop.you_got': { en: 'YOU GOT!', es: '¡OBTUVISTE!', fr: 'OBTENU!', de: 'ERHALTEN!', pt: 'VOCÊ GANHOU!', ja: '獲得！', ko: '획득!', zh: '你获得了！', ar: 'حصلت على!', ru: 'ВЫ ПОЛУЧИЛИ!' },
   'shop.collect': { en: 'Collect', es: 'Recolectar', fr: 'Collecter', de: 'Einsammeln', pt: 'Coletar', ja: '受け取る', ko: '수집', zh: '收取', ar: 'جمع', ru: 'Собрать' },
   'shop.not_enough': { en: 'Not enough', es: 'No hay suficiente', fr: 'Pas assez de', de: 'Nicht genug', pt: 'Não há suficiente', ja: '足りません', ko: '부족합니다', zh: '不足', ar: 'لا يكفي', ru: 'Недостаточно' },
+  'shop.daily_free_cards': { en: '🎁 Daily Free Cards', es: '🎁 Cartas Gratis Diarias', fr: '🎁 Cartes Gratuites du Jour', de: '🎁 Tägliche Gratiskarten', pt: '🎁 Cartas Grátis Diárias', ja: '🎁 デイリー無料カード', ko: '🎁 일일 무료 카드', zh: '🎁 每日免费卡牌', ar: '🎁 بطاقات مجانية يومية', ru: '🎁 Бесплатные карты дня' },
+  'shop.refreshes_in': { en: 'Refreshes in', es: 'Se renueva en', fr: 'Rafraîchit dans', de: 'Aktualisiert in', pt: 'Renova em', ja: '更新まで', ko: '갱신까지', zh: '刷新于', ar: 'يتجدد في', ru: 'Обновление через' },
+  'shop.sold': { en: 'SOLD', es: 'VENDIDO', fr: 'VENDU', de: 'VERKAUFT', pt: 'VENDIDO', ja: '売切', ko: '판매됨', zh: '已售', ar: 'مباع', ru: 'ПРОДАНО' },
+  'shop.claimed': { en: 'CLAIMED', es: 'RECLAMADO', fr: 'RÉCUPÉRÉ', de: 'ABGEHOLT', pt: 'RESGATADO', ja: '受取済', ko: '수령됨', zh: '已领取', ar: 'تمت المطالبة', ru: 'ПОЛУЧЕНО' },
+  'shop.owned': { en: 'OWNED', es: 'POSEÍDO', fr: 'POSSÉDÉ', de: 'BESITZT', pt: 'ADQUIRIDO', ja: '所持', ko: '보유중', zh: '已拥有', ar: 'مملوك', ru: 'В НАЛИЧИИ' },
+  'shop.daily_emote_deals': { en: '😀 Daily Emote Deals', es: '😀 Ofertas de Emotes', fr: '😀 Offres Emotes', de: '😀 Tägliche Emote-Angebote', pt: '😀 Ofertas de Emotes', ja: '😀 日替わりエモート', ko: '😀 일일 이모트', zh: '😀 每日表情特惠', ar: '😀 عروض التعبيرات', ru: '😀 Эмоции дня' },
+  'shop.daily_banner_deals': { en: 'Daily Banner Deals', es: 'Ofertas de Estandartes', fr: 'Offres Bannières', de: 'Tägliche Banner-Deals', pt: 'Ofertas de Bandeiras', ja: 'デイリーバナー', ko: '일일 배너', zh: '每日旗帜特惠', ar: 'عروض اللافتات', ru: 'Баннеры дня' },
+  'shop.todays_bg': { en: "🖼️ Today's Backgrounds", es: '🖼️ Fondos de Hoy', fr: "🖼️ Fonds du Jour", de: '🖼️ Heutige Hintergründe', pt: '🖼️ Fundos de Hoje', ja: '🖼️ 本日の背景', ko: '🖼️ 오늘의 배경', zh: '🖼️ 今日背景', ar: '🖼️ خلفيات اليوم', ru: '🖼️ Фоны дня' },
+  'shop.todays_emb': { en: "🎭 Today's Emblems", es: '🎭 Emblemas de Hoy', fr: "🎭 Emblèmes du Jour", de: '🎭 Heutige Embleme', pt: '🎭 Emblemas de Hoje', ja: '🎭 本日のエンブレム', ko: '🎭 오늘의 엠블럼', zh: '🎭 今日徽章', ar: '🎭 شعارات اليوم', ru: '🎭 Эмблемы дня' },
+
+  // ═══ Events ═══
+  'events.title': { en: 'Events', es: 'Eventos', fr: 'Événements', de: 'Events', pt: 'Eventos', ja: 'イベント', ko: '이벤트', zh: '活动', ar: 'الأحداث', ru: 'События' },
+  'events.events': { en: 'Events', es: 'Eventos', fr: 'Événements', de: 'Events', pt: 'Eventos', ja: 'イベント', ko: '이벤트', zh: '活动', ar: 'الأحداث', ru: 'События' },
+  'events.challenges': { en: 'Challenges', es: 'Desafíos', fr: 'Défis', de: 'Herausforderungen', pt: 'Desafios', ja: 'チャレンジ', ko: '도전', zh: '挑战', ar: 'التحديات', ru: 'Вызовы' },
+  'events.tournaments': { en: 'Tournaments', es: 'Torneos', fr: 'Tournois', de: 'Turniere', pt: 'Torneios', ja: 'トーナメント', ko: '토너먼트', zh: '锦标赛', ar: 'البطولات', ru: 'Турниры' },
+  'events.daily_quests': { en: '📋 Daily Quests', es: '📋 Misiones Diarias', fr: '📋 Quêtes du Jour', de: '📋 Tägliche Aufgaben', pt: '📋 Missões Diárias', ja: '📋 デイリークエスト', ko: '📋 일일 퀘스트', zh: '📋 每日任务', ar: '📋 المهام اليومية', ru: '📋 Ежедневные задания' },
+  'events.time_left': { en: 'TIME LEFT', es: 'TIEMPO RESTANTE', fr: 'TEMPS RESTANT', de: 'VERBLEIBENDE ZEIT', pt: 'TEMPO RESTANTE', ja: '残り時間', ko: '남은 시간', zh: '剩余时间', ar: 'الوقت المتبقي', ru: 'ОСТАЛОСЬ' },
+  'events.wins': { en: 'WINS', es: 'VICTORIAS', fr: 'VICTOIRES', de: 'SIEGE', pt: 'VITÓRIAS', ja: '勝利', ko: '승리', zh: '胜利', ar: 'الانتصارات', ru: 'ПОБЕД' },
+  'events.losses': { en: 'LOSSES', es: 'DERROTAS', fr: 'DÉFAITES', de: 'NIEDERLAGEN', pt: 'DERROTAS', ja: '敗北', ko: '패배', zh: '失败', ar: 'الهزائم', ru: 'ПОРАЖЕНИЙ' },
+  'events.milestones': { en: 'Milestones', es: 'Hitos', fr: 'Jalons', de: 'Meilensteine', pt: 'Marcos', ja: 'マイルストーン', ko: '마일스톤', zh: '里程碑', ar: 'الإنجازات', ru: 'Этапы' },
+  'events.battle': { en: '⚔️ Battle!', es: '⚔️ ¡Batalla!', fr: '⚔️ Combat!', de: '⚔️ Kampf!', pt: '⚔️ Batalha!', ja: '⚔️ バトル！', ko: '⚔️ 전투!', zh: '⚔️ 战斗！', ar: '⚔️ معركة!', ru: '⚔️ В бой!' },
+  'events.completed': { en: 'COMPLETED', es: 'COMPLETADO', fr: 'TERMINÉ', de: 'ABGESCHLOSSEN', pt: 'CONCLUÍDO', ja: '完了', ko: '완료', zh: '已完成', ar: 'مكتمل', ru: 'ЗАВЕРШЕНО' },
+  'events.claim_available': { en: 'Claim Available Event Rewards', es: 'Reclamar Recompensas Disponibles', fr: 'Récupérer les Récompenses', de: 'Verfügbare Belohnungen abholen', pt: 'Resgatar Recompensas', ja: '利用可能な報酬を受取', ko: '받을 수 있는 보상 수령', zh: '领取可用奖励', ar: 'اطلب المكافآت المتاحة', ru: 'Забрать доступные награды' },
+  'events.resets': { en: 'Resets', es: 'Se reinicia', fr: 'Réinitialisation', de: 'Reset', pt: 'Reinicia', ja: 'リセット', ko: '리셋', zh: '重置', ar: 'إعادة تعيين', ru: 'Сброс' },
 
   // ═══ Profile ═══
   'profile.title': { en: 'Profile', es: 'Perfil', fr: 'Profil', de: 'Profil', pt: 'Perfil', ja: 'プロフィール', ko: '프로필', zh: '个人资料', ar: 'الملف الشخصي', ru: 'Профиль' },
@@ -156,25 +206,71 @@ const translations: TranslationMap = {
   'trophy.no_derank': { en: 'Cannot derank from this arena!', es: '¡No puedes bajar de esta arena!', fr: 'Impossible de rétrograder de cette arène!', de: 'Kann nicht aus dieser Arena absteigen!', pt: 'Não pode descer desta arena!', ja: 'このアリーナから降格しません！', ko: '이 아레나에서 강등되지 않습니다!', zh: '不会从这个竞技场降级！', ar: 'لا يمكن التراجع من هذه الحلبة!', ru: 'Нельзя понизиться из этой арены!' },
   'trophy.cards_unlocked': { en: 'Cards Unlocked', es: 'Cartas Desbloqueadas', fr: 'Cartes Débloquées', de: 'Freigeschaltete Karten', pt: 'Cartas Desbloqueadas', ja: '解放カード', ko: '해제된 카드', zh: '已解锁卡牌', ar: 'بطاقات مفتوحة', ru: 'Открытые карты' },
   'trophy.progress': { en: 'Progress to next Arena', es: 'Progreso a la siguiente Arena', fr: 'Progression vers la prochaine Arène', de: 'Fortschritt zur nächsten Arena', pt: 'Progresso para a próxima Arena', ja: '次のアリーナへの進捗', ko: '다음 아레나까지 진행도', zh: '下一个竞技场进度', ar: 'التقدم للحلبة التالية', ru: 'Прогресс до следующей арены' },
+  'trophy.current': { en: 'CURRENT', es: 'ACTUAL', fr: 'ACTUEL', de: 'AKTUELL', pt: 'ATUAL', ja: '現在', ko: '현재', zh: '当前', ar: 'حالي', ru: 'ТЕКУЩАЯ' },
 
   // ═══ War Pass ═══
   'warpass.title': { en: 'War Pass', es: 'Pase de Guerra', fr: 'Passe de Guerre', de: 'Kriegspass', pt: 'Passe de Guerra', ja: 'ウォーパス', ko: '워패스', zh: '战争通行证', ar: 'تصريح الحرب', ru: 'Военный пропуск' },
   'warpass.free': { en: 'Free Track', es: 'Ruta Gratuita', fr: 'Piste Gratuite', de: 'Kostenlose Spur', pt: 'Trilha Gratuita', ja: '無料トラック', ko: '무료 트랙', zh: '免费赛道', ar: 'المسار المجاني', ru: 'Бесплатный путь' },
   'warpass.paid': { en: 'War Pass+', es: 'Pase+', fr: 'Passe+', de: 'Pass+', pt: 'Passe+', ja: 'パス+', ko: '패스+', zh: '通行证+', ar: 'تصريح+', ru: 'Пропуск+' },
+  'warpass.days_left': { en: 'days left', es: 'días restantes', fr: 'jours restants', de: 'Tage übrig', pt: 'dias restantes', ja: '日残り', ko: '일 남음', zh: '天剩余', ar: 'أيام متبقية', ru: 'дней осталось' },
+  'warpass.tier': { en: 'Tier', es: 'Nivel', fr: 'Palier', de: 'Stufe', pt: 'Nível', ja: 'ティア', ko: '티어', zh: '等级', ar: 'المرحلة', ru: 'Уровень' },
+  'warpass.unlock': { en: 'Unlock War Pass+', es: 'Desbloquear Pase+', fr: 'Débloquer Passe+', de: 'Pass+ freischalten', pt: 'Desbloquear Passe+', ja: 'パス+を解放', ko: '패스+ 해제', zh: '解锁通行证+', ar: 'فتح التصريح+', ru: 'Разблокировать Пропуск+' },
 
   // ═══ Chest ═══
   'chest.open': { en: 'Open', es: 'Abrir', fr: 'Ouvrir', de: 'Öffnen', pt: 'Abrir', ja: '開ける', ko: '열기', zh: '打开', ar: 'فتح', ru: 'Открыть' },
   'chest.unlocking': { en: 'Unlocking...', es: 'Desbloqueando...', fr: 'Déverrouillage...', de: 'Wird freigeschaltet...', pt: 'Desbloqueando...', ja: '解放中...', ko: '해제 중...', zh: '解锁中...', ar: 'جاري الفتح...', ru: 'Открывается...' },
   'chest.ready': { en: 'Ready!', es: '¡Listo!', fr: 'Prêt!', de: 'Fertig!', pt: 'Pronto!', ja: '準備完了！', ko: '준비됨!', zh: '准备好了！', ar: 'جاهز!', ru: 'Готово!' },
   'chest.skip': { en: 'Skip', es: 'Saltar', fr: 'Passer', de: 'Überspringen', pt: 'Pular', ja: 'スキップ', ko: '건너뛰기', zh: '跳过', ar: 'تخطي', ru: 'Пропустить' },
+  'chest.open_chest': { en: 'OPEN CHEST', es: 'ABRIR COFRE', fr: 'OUVRIR LE COFFRE', de: 'TRUHE ÖFFNEN', pt: 'ABRIR BAÚ', ja: 'チェストを開く', ko: '상자 열기', zh: '打开宝箱', ar: 'فتح الصندوق', ru: 'ОТКРЫТЬ СУНДУК' },
+  'chest.contains': { en: 'Contains', es: 'Contiene', fr: 'Contient', de: 'Enthält', pt: 'Contém', ja: '内容', ko: '포함', zh: '包含', ar: 'يحتوي', ru: 'Содержит' },
+  'chest.cards': { en: 'cards', es: 'cartas', fr: 'cartes', de: 'Karten', pt: 'cartas', ja: 'カード', ko: '카드', zh: '卡牌', ar: 'بطاقات', ru: 'карт' },
+  'chest.rewards': { en: 'REWARDS!', es: '¡RECOMPENSAS!', fr: 'RÉCOMPENSES!', de: 'BELOHNUNGEN!', pt: 'RECOMPENSAS!', ja: '報酬！', ko: '보상!', zh: '奖励！', ar: 'المكافآت!', ru: 'НАГРАДЫ!' },
+  'chest.go_back': { en: 'Go Back', es: 'Volver', fr: 'Retour', de: 'Zurück', pt: 'Voltar', ja: '戻る', ko: '돌아가기', zh: '返回', ar: 'رجوع', ru: 'Назад' },
+
+  // ═══ Mailbox ═══
+  'mail.title': { en: 'Mailbox', es: 'Buzón', fr: 'Boîte aux lettres', de: 'Postfach', pt: 'Caixa de Correio', ja: 'メールボックス', ko: '우편함', zh: '邮箱', ar: 'صندوق البريد', ru: 'Почта' },
+  'mail.new': { en: 'new', es: 'nuevo', fr: 'nouveau', de: 'neu', pt: 'novo', ja: '新着', ko: '새로운', zh: '新', ar: 'جديد', ru: 'новых' },
+  'mail.rewards': { en: 'Rewards', es: 'Recompensas', fr: 'Récompenses', de: 'Belohnungen', pt: 'Recompensas', ja: '報酬', ko: '보상', zh: '奖励', ar: 'المكافآت', ru: 'Награды' },
+  'mail.claim_rewards': { en: '🎁 Claim Rewards', es: '🎁 Reclamar Recompensas', fr: '🎁 Récupérer', de: '🎁 Belohnungen abholen', pt: '🎁 Resgatar', ja: '🎁 報酬を受取', ko: '🎁 보상 수령', zh: '🎁 领取奖励', ar: '🎁 اطلب المكافآت', ru: '🎁 Забрать награды' },
+  'mail.claimed': { en: '✅ Claimed', es: '✅ Reclamado', fr: '✅ Récupéré', de: '✅ Abgeholt', pt: '✅ Resgatado', ja: '✅ 受取済み', ko: '✅ 수령됨', zh: '✅ 已领取', ar: '✅ تم المطالبة', ru: '✅ Забрано' },
+  'mail.loading': { en: 'Loading mail...', es: 'Cargando correo...', fr: 'Chargement...', de: 'Wird geladen...', pt: 'Carregando...', ja: 'メール読み込み中...', ko: '메일 로딩 중...', zh: '加载邮件...', ar: 'جاري التحميل...', ru: 'Загрузка почты...' },
+  'mail.no_messages': { en: 'No messages yet', es: 'Sin mensajes aún', fr: 'Pas encore de messages', de: 'Noch keine Nachrichten', pt: 'Sem mensagens ainda', ja: 'まだメッセージがありません', ko: '메시지가 아직 없습니다', zh: '还没有消息', ar: 'لا رسائل بعد', ru: 'Пока нет сообщений' },
+  'mail.go_social': { en: 'Go to Social Tab →', es: 'Ir a Social →', fr: 'Aller à Social →', de: 'Zum Social Tab →', pt: 'Ir para Social →', ja: 'ソーシャルへ →', ko: '소셜 탭으로 →', zh: '前往社交 →', ar: 'اذهب للاجتماعي →', ru: 'К соцсети →' },
+
+  // ═══ River Race ═══
+  'river.title': { en: 'River Race', es: 'Carrera del Río', fr: 'Course de Rivière', de: 'Flussrennen', pt: 'Corrida do Rio', ja: 'リバーレース', ko: '리버 레이스', zh: '河流竞赛', ar: 'سباق النهر', ru: 'Речная гонка' },
+  'river.join_clan': { en: 'Join a Clan First!', es: '¡Únete a un clan!', fr: 'Rejoignez un clan!', de: 'Tritt zuerst einem Clan bei!', pt: 'Entre em um clã!', ja: 'まずクランに参加！', ko: '먼저 클랜에 가입하세요!', zh: '先加入部落！', ar: 'انضم لعشيرة أولاً!', ru: 'Вступите в клан!' },
+  'river.need_clan': { en: 'You need to be in a clan to participate in River Race.', es: 'Debes estar en un clan para participar.', fr: 'Vous devez être dans un clan pour participer.', de: 'Du musst in einem Clan sein.', pt: 'Você precisa estar em um clã.', ja: 'リバーレースに参加するにはクランが必要です。', ko: '리버 레이스에 참여하려면 클랜이 필요합니다.', zh: '需要加入部落才能参与。', ar: 'يجب أن تكون في عشيرة للمشاركة.', ru: 'Нужно быть в клане для участия.' },
+  'river.go_social': { en: 'Go to Social', es: 'Ir a Social', fr: 'Aller au Social', de: 'Zum Social', pt: 'Ir para Social', ja: 'ソーシャルへ', ko: '소셜로', zh: '前往社交', ar: 'اذهب للاجتماعي', ru: 'К соцсети' },
+  'river.training': { en: '⛵ Training', es: '⛵ Entrenamiento', fr: '⛵ Entraînement', de: '⛵ Training', pt: '⛵ Treino', ja: '⛵ トレーニング', ko: '⛵ 훈련', zh: '⛵ 训练', ar: '⛵ تدريب', ru: '⛵ Тренировка' },
+  'river.battle_day': { en: '⚔️ Battle', es: '⚔️ Batalla', fr: '⚔️ Combat', de: '⚔️ Kampf', pt: '⚔️ Batalha', ja: '⚔️ バトル', ko: '⚔️ 전투', zh: '⚔️ 战斗', ar: '⚔️ معركة', ru: '⚔️ Бой' },
+  'river.finish_line': { en: '🏁 Finish Line', es: '🏁 Línea de Meta', fr: '🏁 Ligne d\'Arrivée', de: '🏁 Ziellinie', pt: '🏁 Linha de Chegada', ja: '🏁 ゴール', ko: '🏁 결승선', zh: '🏁 终点线', ar: '🏁 خط النهاية', ru: '🏁 Финиш' },
+  'river.war_decks': { en: 'War Decks', es: 'Mazos de Guerra', fr: 'Decks de Guerre', de: 'Kriegsdecks', pt: 'Decks de Guerra', ja: 'ウォーデッキ', ko: '워 덱', zh: '战争卡组', ar: 'مجموعات الحرب', ru: 'Боевые колоды' },
 
   // ═══ Auth ═══
   'auth.sign_in': { en: 'Sign In', es: 'Iniciar Sesión', fr: 'Se Connecter', de: 'Anmelden', pt: 'Entrar', ja: 'サインイン', ko: '로그인', zh: '登录', ar: 'تسجيل الدخول', ru: 'Войти' },
   'auth.sign_up': { en: 'Sign Up', es: 'Registrarse', fr: 'S\'inscrire', de: 'Registrieren', pt: 'Cadastrar', ja: 'サインアップ', ko: '회원가입', zh: '注册', ar: 'التسجيل', ru: 'Регистрация' },
-  'auth.email': { en: 'Email', es: 'Correo electrónico', fr: 'E-mail', de: 'E-Mail', pt: 'E-mail', ja: 'メール', ko: '이메일', zh: '邮箱', ar: 'البريد الإلكتروني', ru: 'Эл. почта' },
+  'auth.email': { en: 'Email address', es: 'Correo electrónico', fr: 'Adresse e-mail', de: 'E-Mail-Adresse', pt: 'Endereço de e-mail', ja: 'メールアドレス', ko: '이메일 주소', zh: '邮箱地址', ar: 'عنوان البريد الإلكتروني', ru: 'Адрес эл. почты' },
   'auth.password': { en: 'Password', es: 'Contraseña', fr: 'Mot de passe', de: 'Passwort', pt: 'Senha', ja: 'パスワード', ko: '비밀번호', zh: '密码', ar: 'كلمة المرور', ru: 'Пароль' },
   'auth.loading': { en: 'LOADING...', es: 'CARGANDO...', fr: 'CHARGEMENT...', de: 'WIRD GELADEN...', pt: 'CARREGANDO...', ja: '読み込み中...', ko: '로딩 중...', zh: '加载中...', ar: 'جاري التحميل...', ru: 'ЗАГРУЗКА...' },
-  'auth.choose_username': { en: 'Choose your username', es: 'Elige tu nombre de usuario', fr: 'Choisissez votre nom d\'utilisateur', de: 'Wähle deinen Benutzernamen', pt: 'Escolha seu nome de usuário', ja: 'ユーザー名を選択', ko: '사용자 이름을 선택하세요', zh: '选择用户名', ar: 'اختر اسم المستخدم', ru: 'Выберите имя пользователя' },
+  'auth.choose_username': { en: 'CHOOSE YOUR NAME', es: 'ELIGE TU NOMBRE', fr: 'CHOISISSEZ VOTRE NOM', de: 'WÄHLE DEINEN NAMEN', pt: 'ESCOLHA SEU NOME', ja: '名前を選択', ko: '이름을 선택하세요', zh: '选择你的名字', ar: 'اختر اسمك', ru: 'ВЫБЕРИТЕ ИМЯ' },
+  'auth.sign_in_account': { en: 'Sign in to your account', es: 'Inicia sesión en tu cuenta', fr: 'Connectez-vous à votre compte', de: 'Melde dich in deinem Konto an', pt: 'Entre na sua conta', ja: 'アカウントにサインイン', ko: '계정에 로그인하세요', zh: '登录您的账户', ar: 'سجل الدخول إلى حسابك', ru: 'Войдите в свой аккаунт' },
+  'auth.create_account': { en: 'CREATE ACCOUNT', es: 'CREAR CUENTA', fr: 'CRÉER UN COMPTE', de: 'KONTO ERSTELLEN', pt: 'CRIAR CONTA', ja: 'アカウント作成', ko: '계정 생성', zh: '创建账户', ar: 'إنشاء حساب', ru: 'СОЗДАТЬ АККАУНТ' },
+  'auth.create_your_account': { en: 'Create your account', es: 'Crea tu cuenta', fr: 'Créez votre compte', de: 'Erstelle dein Konto', pt: 'Crie sua conta', ja: 'アカウントを作成', ko: '계정을 만드세요', zh: '创建您的账户', ar: 'أنشئ حسابك', ru: 'Создайте свой аккаунт' },
+  'auth.no_account': { en: "Don't have an account? ", es: '¿No tienes cuenta? ', fr: "Pas de compte ? ", de: 'Kein Konto? ', pt: 'Não tem conta? ', ja: 'アカウントがない？ ', ko: '계정이 없으신가요? ', zh: '没有账户？ ', ar: 'ليس لديك حساب؟ ', ru: 'Нет аккаунта? ' },
+  'auth.have_account': { en: 'Already have an account? ', es: '¿Ya tienes cuenta? ', fr: 'Déjà un compte ? ', de: 'Bereits ein Konto? ', pt: 'Já tem conta? ', ja: 'アカウントをお持ちですか？ ', ko: '이미 계정이 있으신가요? ', zh: '已有账户？ ', ar: 'لديك حساب بالفعل؟ ', ru: 'Уже есть аккаунт? ' },
+  'auth.or': { en: 'or', es: 'o', fr: 'ou', de: 'oder', pt: 'ou', ja: 'または', ko: '또는', zh: '或', ar: 'أو', ru: 'или' },
+  'auth.sign_in_google': { en: 'Sign in with Google', es: 'Iniciar con Google', fr: 'Connexion avec Google', de: 'Mit Google anmelden', pt: 'Entrar com Google', ja: 'Googleでサインイン', ko: 'Google로 로그인', zh: '使用Google登录', ar: 'تسجيل الدخول بـ Google', ru: 'Войти через Google' },
+  'auth.sign_in_apple': { en: 'Sign in with Apple', es: 'Iniciar con Apple', fr: 'Connexion avec Apple', de: 'Mit Apple anmelden', pt: 'Entrar com Apple', ja: 'Appleでサインイン', ko: 'Apple로 로그인', zh: '使用Apple登录', ar: 'تسجيل الدخول بـ Apple', ru: 'Войти через Apple' },
+  'auth.check_email': { en: 'Check Your Email!', es: '¡Revisa Tu Correo!', fr: 'Vérifiez Votre E-mail!', de: 'Prüfe Deine E-Mail!', pt: 'Verifique Seu E-mail!', ja: 'メールを確認！', ko: '이메일을 확인하세요!', zh: '查看您的邮件！', ar: 'تحقق من بريدك!', ru: 'Проверьте почту!' },
+  'auth.confirmation_sent': { en: 'We sent a confirmation link to', es: 'Enviamos un enlace de confirmación a', fr: 'Nous avons envoyé un lien de confirmation à', de: 'Wir haben einen Bestätigungslink gesendet an', pt: 'Enviamos um link de confirmação para', ja: '確認リンクを送信しました：', ko: '확인 링크를 보냈습니다:', zh: '我们已发送确认链接至', ar: 'أرسلنا رابط التأكيد إلى', ru: 'Мы отправили ссылку на' },
+  'auth.back_sign_in': { en: 'Back to Sign In', es: 'Volver a Iniciar Sesión', fr: 'Retour à la Connexion', de: 'Zurück zur Anmeldung', pt: 'Voltar ao Login', ja: 'サインインに戻る', ko: '로그인으로 돌아가기', zh: '返回登录', ar: 'العودة لتسجيل الدخول', ru: 'Вернуться к входу' },
+  'auth.warrior_name': { en: 'This is your warrior name. Choose wisely —', es: 'Este es tu nombre de guerrero. Elige bien —', fr: 'Votre nom de guerrier. Choisissez bien —', de: 'Dein Kriegername. Wähle weise —', pt: 'Este é seu nome de guerreiro. Escolha bem —', ja: 'これはあなたの戦士の名前です。慎重に選んでください —', ko: '이것은 당신의 전사 이름입니다. 신중하게 선택하세요 —', zh: '这是你的战士名字。请慎重选择 —', ar: 'هذا اسم محاربك. اختر بحكمة —', ru: 'Это ваше имя воина. Выбирайте мудро —' },
+  'auth.once_chosen': { en: 'once chosen, it\'s yours forever', es: 'una vez elegido, es tuyo para siempre', fr: 'une fois choisi, c\'est le vôtre pour toujours', de: 'einmal gewählt, gehört er dir für immer', pt: 'uma vez escolhido, é seu para sempre', ja: '一度選ぶと永遠にあなたのものです', ko: '한 번 선택하면 영원히 당신의 것입니다', zh: '一旦选择，永远是你的', ar: 'بمجرد الاختيار، سيكون لك إلى الأبد', ru: 'выбрав, оно ваше навсегда' },
+  'auth.enter_username': { en: 'Enter username (3-20 characters)', es: 'Nombre de usuario (3-20 caracteres)', fr: "Nom d'utilisateur (3-20 caractères)", de: 'Benutzername (3-20 Zeichen)', pt: 'Nome de usuário (3-20 caracteres)', ja: 'ユーザー名 (3-20文字)', ko: '사용자 이름 (3-20자)', zh: '用户名 (3-20个字符)', ar: 'اسم المستخدم (3-20 حرف)', ru: 'Имя пользователя (3-20 символов)' },
+  'auth.lock_in': { en: 'LOCK IN NAME', es: 'CONFIRMAR NOMBRE', fr: 'VERROUILLER LE NOM', de: 'NAMEN SPERREN', pt: 'CONFIRMAR NOME', ja: '名前を確定', ko: '이름 확정', zh: '确认名字', ar: 'تأكيد الاسم', ru: 'ПОДТВЕРДИТЬ ИМЯ' },
+  'auth.permanent': { en: 'permanent', es: 'permanente', fr: 'permanent', de: 'permanent', pt: 'permanente', ja: '永続的', ko: '영구적', zh: '永久的', ar: 'دائم', ru: 'постоянное' },
+  'auth.min_chars': { en: 'Minimum 3 characters', es: 'Mínimo 3 caracteres', fr: 'Minimum 3 caractères', de: 'Mindestens 3 Zeichen', pt: 'Mínimo 3 caracteres', ja: '最低3文字', ko: '최소 3자', zh: '最少3个字符', ar: 'الحد الأدنى 3 أحرف', ru: 'Минимум 3 символа' },
 
   // ═══ Common ═══
   'common.back': { en: 'Back', es: 'Volver', fr: 'Retour', de: 'Zurück', pt: 'Voltar', ja: '戻る', ko: '뒤로', zh: '返回', ar: 'رجوع', ru: 'Назад' },
@@ -184,6 +280,9 @@ const translations: TranslationMap = {
   'common.no': { en: 'No', es: 'No', fr: 'Non', de: 'Nein', pt: 'Não', ja: 'いいえ', ko: '아니오', zh: '否', ar: 'لا', ru: 'Нет' },
   'common.you': { en: 'You', es: 'Tú', fr: 'Vous', de: 'Du', pt: 'Você', ja: 'あなた', ko: '당신', zh: '你', ar: 'أنت', ru: 'Вы' },
   'common.level': { en: 'Level', es: 'Nivel', fr: 'Niveau', de: 'Stufe', pt: 'Nível', ja: 'レベル', ko: '레벨', zh: '等级', ar: 'المستوى', ru: 'Уровень' },
+  'common.claim': { en: 'Claim', es: 'Reclamar', fr: 'Récupérer', de: 'Abholen', pt: 'Resgatar', ja: '受取', ko: '수령', zh: '领取', ar: 'مطالبة', ru: 'Забрать' },
+  'common.confirm': { en: 'Confirm', es: 'Confirmar', fr: 'Confirmer', de: 'Bestätigen', pt: 'Confirmar', ja: '確認', ko: '확인', zh: '确认', ar: 'تأكيد', ru: 'Подтвердить' },
+  'common.loading': { en: 'Loading...', es: 'Cargando...', fr: 'Chargement...', de: 'Wird geladen...', pt: 'Carregando...', ja: '読み込み中...', ko: '로딩 중...', zh: '加载中...', ar: 'جاري التحميل...', ru: 'Загрузка...' },
 
   // ═══ Rarity ═══
   'rarity.common': { en: 'Common', es: 'Común', fr: 'Commun', de: 'Gewöhnlich', pt: 'Comum', ja: 'コモン', ko: '일반', zh: '普通', ar: 'عادي', ru: 'Обычная' },
@@ -216,18 +315,12 @@ export function tArena(arenaName: string, lang: Language): string {
     'Boot Camp': { en: 'Boot Camp', es: 'Campo de Entrenamiento', fr: 'Camp d\'Entraînement', de: 'Ausbildungslager', pt: 'Campo de Treino', ja: 'ブートキャンプ', ko: '부트 캠프', zh: '新兵训练营', ar: 'معسكر التدريب', ru: 'Учебный лагерь' },
     'Bronze Trenches': { en: 'Bronze Trenches', es: 'Trincheras de Bronce', fr: 'Tranchées de Bronze', de: 'Bronzegräben', pt: 'Trincheiras de Bronze', ja: 'ブロンズ塹壕', ko: '브론즈 참호', zh: '青铜战壕', ar: 'خنادق البرونز', ru: 'Бронзовые окопы' },
     'Fallen Ruins': { en: 'Fallen Ruins', es: 'Ruinas Caídas', fr: 'Ruines Déchues', de: 'Gefallene Ruinen', pt: 'Ruínas Caídas', ja: '朽ちた遺跡', ko: '무너진 폐허', zh: '堕落废墟', ar: 'الأطلال المتساقطة', ru: 'Павшие руины' },
-    'Iron Wargrounds': { en: 'Iron Wargrounds', es: 'Campos de Guerra de Hierro', fr: 'Terrains de Guerre de Fer', de: 'Eiserne Kriegsfelder', pt: 'Campos de Guerra de Ferro', ja: '鉄の戦場', ko: '철의 전쟁터', zh: '铁血战场', ar: 'أرض الحرب الحديدية', ru: 'Железные поля боя' },
-    'Mystic Frontline': { en: 'Mystic Frontline', es: 'Frente Místico', fr: 'Front Mystique', de: 'Mystische Frontlinie', pt: 'Frente Místico', ja: '神秘の前線', ko: '신비의 전선', zh: '神秘前线', ar: 'الجبهة الغامضة', ru: 'Мистический фронт' },
-    'Siege Workshop': { en: 'Siege Workshop', es: 'Taller de Asedio', fr: 'Atelier de Siège', de: 'Belagerungswerkstatt', pt: 'Oficina de Cerco', ja: '攻城工房', ko: '공성 작업장', zh: '攻城工坊', ar: 'ورشة الحصار', ru: 'Осадная мастерская' },
-    'Imperial Fortress': { en: 'Imperial Fortress', es: 'Fortaleza Imperial', fr: 'Forteresse Impériale', de: 'Imperiale Festung', pt: 'Fortaleza Imperial', ja: '帝国の要塞', ko: '제국 요새', zh: '帝国堡垒', ar: 'القلعة الإمبراطورية', ru: 'Имперская крепость' },
-    'Frozen Battlefield': { en: 'Frozen Battlefield', es: 'Campo de Batalla Helado', fr: 'Champ de Bataille Gelé', de: 'Gefrorenes Schlachtfeld', pt: 'Campo de Batalha Congelado', ja: '凍結の戦場', ko: '얼어붙은 전장', zh: '冰封战场', ar: 'ساحة المعركة المتجمدة', ru: 'Ледяное поле боя' },
-    'Jungle Warzone': { en: 'Jungle Warzone', es: 'Zona de Guerra Selvática', fr: 'Zone de Guerre Jungle', de: 'Dschungelkriegszone', pt: 'Zona de Guerra Selvagem', ja: 'ジャングル戦場', ko: '정글 전쟁지역', zh: '丛林战区', ar: 'منطقة حرب الأدغال', ru: 'Джунгли войны' },
-    'Warlord Summit': { en: 'Warlord Summit', es: 'Cumbre del Señor de la Guerra', fr: 'Sommet du Seigneur de Guerre', de: 'Kriegsherren-Gipfel', pt: 'Cúpula do Senhor da Guerra', ja: 'ウォーロードサミット', ko: '전쟁 군주의 정상', zh: '军阀峰会', ar: 'قمة أمير الحرب', ru: 'Саммит полководцев' },
-    'Thunder Bastion': { en: 'Thunder Bastion', es: 'Bastión del Trueno', fr: 'Bastion du Tonnerre', de: 'Donnerbollwerk', pt: 'Bastião do Trovão', ja: '雷の砦', ko: '천둥 보루', zh: '雷霆堡垒', ar: 'حصن الرعد', ru: 'Громовой бастион' },
-    'Shadow Citadel': { en: 'Shadow Citadel', es: 'Ciudadela de las Sombras', fr: 'Citadelle de l\'Ombre', de: 'Schattenzitadelle', pt: 'Cidadela das Sombras', ja: 'シャドウ城塞', ko: '그림자 성채', zh: '暗影城堡', ar: 'قلعة الظلال', ru: 'Теневая цитадель' },
-    'Outlaw Garrison': { en: 'Outlaw Garrison', es: 'Guarnición de Forajidos', fr: 'Garnison des Hors-la-loi', de: 'Gesetzlosen-Garnison', pt: 'Guarnição dos Fora-da-lei', ja: 'アウトロー駐屯地', ko: '무법자 주둔지', zh: '亡命之徒驻地', ar: 'حامية الخارجين', ru: 'Гарнизон изгоев' },
-    'Eternal Peaks': { en: 'Eternal Peaks', es: 'Picos Eternos', fr: 'Sommets Éternels', de: 'Ewige Gipfel', pt: 'Picos Eternos', ja: 'エターナルピーク', ko: '영원의 봉우리', zh: '永恒之巅', ar: 'القمم الأبدية', ru: 'Вечные вершины' },
-    'Legends Colosseum': { en: 'Legends Colosseum', es: 'Coliseo de Leyendas', fr: 'Colisée des Légendes', de: 'Legenden-Kolosseum', pt: 'Coliseu das Lendas', ja: 'レジェンドコロシアム', ko: '레전드 콜로세움', zh: '传奇竞技场', ar: 'ملعب الأساطير', ru: 'Колизей легенд' },
   };
   return map[arenaName]?.[lang] || arenaName;
+}
+
+// Translation helper for rarity
+export function tRarity(rarity: string, lang: Language): string {
+  const key = `rarity.${rarity}`;
+  return t(key, lang);
 }
