@@ -22,7 +22,8 @@ interface DeployedUnit {
   lastAttackTime: number;
   targetId: string | null;
   isCharging: boolean;
-  deployCount: number; // track individual unit for swarms
+  deployCount: number;
+  lifetimeRemaining?: number; // for buildings
 }
 
 interface TowerData {
@@ -178,6 +179,7 @@ const BattleArena = () => {
           targetId: null,
           isCharging: false,
           deployCount: i,
+          lifetimeRemaining: card.lifetime ? card.lifetime * 1000 : undefined,
         });
       }
       setDeployedUnits(u => [...u, ...newUnits]);
@@ -293,28 +295,35 @@ const BattleArena = () => {
   // Enemy AI - smarter deployment (use refs to avoid restarting)
   useEffect(() => {
     const interval = setInterval(() => {
-      const troops = deck.filter(c => c.type === 'troop');
-      if (!troops.length) return;
+      const deployable = deck.filter(c => c.type === 'troop' || c.type === 'building');
+      if (!deployable.length) return;
       
-      const affordable = troops.filter(c => c.elixir <= enemyElixir.current);
+      const affordable = deployable.filter(c => c.elixir <= enemyElixir.current);
       if (affordable.length === 0) return;
       
       const card = affordable[Math.floor(Math.random() * affordable.length)];
       enemyElixir.current -= card.elixir;
       
-      const playerUnits = deployedUnitsRef.current.filter(u => u.side === 'player');
-      const leftLane = playerUnits.filter(u => u.x < 50).length;
-      const rightLane = playerUnits.filter(u => u.x >= 50).length;
-      
-      let deployX = 50;
-      if (leftLane > rightLane) deployX = 25 + Math.random() * 15;
-      else if (rightLane > leftLane) deployX = 60 + Math.random() * 15;
-      else deployX = Math.random() > 0.5 ? (25 + Math.random() * 15) : (60 + Math.random() * 15);
-      
-      const speed = getSpeedValue(card.speed);
-      const deployY = speed >= SPEED_VALUES.fast ? 25 : 10 + Math.random() * 10;
-      
-      spawnUnit(card, deployX, deployY, 'enemy');
+      if (card.type === 'building') {
+        // Enemy deploys buildings on their side
+        const deployX = 30 + Math.random() * 40;
+        const deployY = 10 + Math.random() * 15;
+        spawnUnit(card, deployX, deployY, 'enemy');
+      } else {
+        const playerUnits = deployedUnitsRef.current.filter(u => u.side === 'player');
+        const leftLane = playerUnits.filter(u => u.x < 50).length;
+        const rightLane = playerUnits.filter(u => u.x >= 50).length;
+        
+        let deployX = 50;
+        if (leftLane > rightLane) deployX = 25 + Math.random() * 15;
+        else if (rightLane > leftLane) deployX = 60 + Math.random() * 15;
+        else deployX = Math.random() > 0.5 ? (25 + Math.random() * 15) : (60 + Math.random() * 15);
+        
+        const speed = getSpeedValue(card.speed);
+        const deployY = speed >= SPEED_VALUES.fast ? 25 : 10 + Math.random() * 10;
+        
+        spawnUnit(card, deployX, deployY, 'enemy');
+      }
     }, 3500);
     return () => clearInterval(interval);
   }, [deck, spawnUnit]);
@@ -370,7 +379,6 @@ const BattleArena = () => {
         livingTowers.find(t => t.id === unit.targetId && t.hp > 0);
       if (currentTarget) {
         const dist = Math.sqrt((unit.x - currentTarget.x) ** 2 + (unit.y - currentTarget.y) ** 2);
-        // Keep current target if in range or if it's still the closest reasonable option
         if (dist <= range * 2.5) return currentTarget;
       }
     }
@@ -378,15 +386,21 @@ const BattleArena = () => {
     let bestTarget: DeployedUnit | TowerData | null = null;
     let bestDist = Infinity;
 
-    if (!targetsBuildings) {
+    if (targetsBuildings) {
+      // Building-targeting units: target enemy buildings first, then towers
+      for (const enemy of units) {
+        if (enemy.side !== enemySide || enemy.hp <= 0) continue;
+        if (enemy.card.type !== 'building') continue;
+        const dist = Math.sqrt((unit.x - enemy.x) ** 2 + (unit.y - enemy.y) ** 2);
+        if (dist < bestDist) { bestDist = dist; bestTarget = enemy; }
+      }
+    } else {
       for (const enemy of units) {
         if (enemy.side !== enemySide || enemy.hp <= 0) continue;
         if (!canTarget(card, enemy.card)) continue;
         
         const dist = Math.sqrt((unit.x - enemy.x) ** 2 + (unit.y - enemy.y) ** 2);
         const enemyLane = getLane(enemy.x);
-        
-        // Prefer same-lane targets (give them a distance bonus)
         const effectiveDist = enemyLane === unitLane ? dist : dist * 1.8;
         
         if (effectiveDist < bestDist) {
@@ -476,6 +490,20 @@ const BattleArena = () => {
         let units = prevUnits.map(u => ({ ...u })); // mutable copies
         const livingTowers = towersRef.current.filter(t => t.hp > 0);
 
+        // Phase 0: Building lifetime decay
+        for (const unit of units) {
+          if (unit.card.type === 'building' && unit.lifetimeRemaining !== undefined) {
+            unit.lifetimeRemaining -= 100;
+            if (unit.lifetimeRemaining <= 0) {
+              unit.hp = 0; // building expires
+            }
+          }
+        }
+
+        // Check for Joan of Arc passive: +20% damage bonus while alive
+        const joanAlivePlayer = units.some(u => u.card.id === 'joan-of-arc' && u.side === 'player' && u.hp > 0);
+        const joanAliveEnemy = units.some(u => u.card.id === 'joan-of-arc' && u.side === 'enemy' && u.hp > 0);
+
         // Phase 1: Find targets and move/flag attacks
         const attackingUnits: { unit: DeployedUnit; target: DeployedUnit | TowerData; damage: number }[] = [];
 
@@ -484,9 +512,13 @@ const BattleArena = () => {
           if (unit.hp <= 0) continue;
 
           const card = unit.card;
-          const speed = getSpeedValue(card.speed) * 0.8;
+          const isBuilding = card.type === 'building';
+          const speed = isBuilding ? 0 : getSpeedValue(card.speed) * 0.8;
           const range = getRangeValue(card.range) * 5;
           const hitSpeed = (card.hitSpeed || 1.0) * 1000;
+
+          // Buildings with 0 damage don't attack (e.g. Tombstone)
+          if (isBuilding && card.damage === 0) continue;
 
           const target = findTarget(unit, units, livingTowers);
 
@@ -494,8 +526,8 @@ const BattleArena = () => {
             const targetDist = Math.sqrt((unit.x - target.x) ** 2 + (unit.y - target.y) ** 2);
             unit.targetId = target.id;
 
-            if (targetDist > range) {
-              // Move towards target (with bridge pathing)
+            if (targetDist > range && !isBuilding) {
+              // Move towards target (buildings don't move)
               const moveTarget = getMovementTarget(unit, target);
               const moveDist = Math.sqrt((unit.x - moveTarget.x) ** 2 + (unit.y - moveTarget.y) ** 2);
               if (moveDist > 0.5) {
@@ -505,17 +537,21 @@ const BattleArena = () => {
                 unit.y = unit.y + dy * speed;
               }
               unit.isCharging = !!(card.chargeSpeed && targetDist > range * 2);
-            } else {
+            } else if (targetDist <= range) {
               // In range - attack if ready
               if (now - unit.lastAttackTime >= hitSpeed) {
-                const damage = card.damage * (unit.isCharging && card.chargeSpeed ? card.chargeSpeed : 1);
+                let damage = card.damage * (unit.isCharging && card.chargeSpeed ? card.chargeSpeed : 1);
+                // Joan's passive: +20% damage
+                if ((unit.side === 'player' && joanAlivePlayer) || (unit.side === 'enemy' && joanAliveEnemy)) {
+                  damage = Math.floor(damage * 1.2);
+                }
                 attackingUnits.push({ unit, target, damage });
                 unit.lastAttackTime = now;
                 unit.isCharging = false;
               }
             }
-          } else {
-            // No target - move towards enemy side
+          } else if (!isBuilding) {
+            // No target - move towards enemy side (buildings stay)
             const moveDir = unit.side === 'player' ? -1 : 1;
             unit.targetId = null;
             unit.y = unit.y + moveDir * speed;
@@ -642,7 +678,8 @@ const BattleArena = () => {
     if (!card || elixir < card.elixir) return;
     
     // Troops can only deploy on player's side; spells can target anywhere
-    if (card.type !== 'spell' && ay < 50) return;
+    if (card.type !== 'spell' && card.type !== 'building' && ay < 50) return;
+    if (card.type === 'building' && (ay < 50 || ay > 95)) return; // buildings on player side only
     
     setElixir(p => p - card.elixir);
     
@@ -750,7 +787,10 @@ const BattleArena = () => {
 
         {/* Units */}
         <AnimatePresence>
-          {deployedUnits.map(u => (
+          {deployedUnits.map(u => {
+            const isBuilding = u.card.type === 'building';
+            const isJoan = u.card.id === 'joan-of-arc' && u.hp > 0;
+            return (
             <motion.div 
               key={u.key} 
               initial={{scale:0}} 
@@ -764,27 +804,38 @@ const BattleArena = () => {
                 {u.card.unitType === 'air' && (
                   <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-1 bg-black/30 rounded-full blur-sm" />
                 )}
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs shadow-lg ${
+                {/* Joan passive aura glow */}
+                {isJoan && (
+                  <div className="absolute -inset-2 rounded-full bg-amber-400/20 animate-pulse blur-sm" />
+                )}
+                <div className={`${isBuilding ? 'w-9 h-9 rounded-lg' : 'w-7 h-7 rounded-full'} flex items-center justify-center text-xs shadow-lg ${
                   u.side==='player'
-                    ? 'bg-blue-700 border-2 border-blue-400'
-                    : 'bg-red-700 border-2 border-red-400'
+                    ? isBuilding ? 'bg-blue-900 border-2 border-blue-300' : 'bg-blue-700 border-2 border-blue-400'
+                    : isBuilding ? 'bg-red-900 border-2 border-red-300' : 'bg-red-700 border-2 border-red-400'
                 } ${u.isCharging ? 'animate-pulse ring-2 ring-primary' : ''}`}>
                   {u.card.emoji}
                 </div>
                 {/* HP bar */}
-                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-1 bg-black/60 rounded-full overflow-hidden">
+                <div className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 ${isBuilding ? 'w-8' : 'w-6'} h-1 bg-black/60 rounded-full overflow-hidden`}>
                   <div 
                     className={`h-full transition-all ${u.hp/u.maxHp > 0.5 ? 'bg-hp-green' : u.hp/u.maxHp > 0.25 ? 'bg-yellow-500' : 'bg-hp-red'}`} 
                     style={{width:`${(u.hp/u.maxHp)*100}%`}} 
                   />
                 </div>
+                {/* Lifetime bar for buildings */}
+                {isBuilding && u.lifetimeRemaining !== undefined && u.card.lifetime && (
+                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-black/40 rounded-full overflow-hidden">
+                    <div className="h-full bg-amber-400/70 transition-all" style={{width:`${(u.lifetimeRemaining / (u.card.lifetime * 1000)) * 100}%`}} />
+                  </div>
+                )}
                 {/* Shield indicator */}
                 {u.shieldHp > 0 && (
                   <div className="absolute -top-1 left-1/2 -translate-x-1/2 text-[8px]">🛡️</div>
                 )}
               </div>
             </motion.div>
-          ))}
+            );
+          })}
         </AnimatePresence>
 
         {/* Damage numbers */}
@@ -857,6 +908,12 @@ const BattleArena = () => {
             <div className="text-[7px] font-bold text-center text-foreground/70 mt-1 max-w-14 leading-tight">
               {championCard.ability.name}
             </div>
+            {championCard.passive && (
+              <div className="mt-1 px-1 py-0.5 rounded bg-amber-500/20 border border-amber-500/30">
+                <div className="text-[5px] font-bold text-amber-400 uppercase text-center">Passive</div>
+                <div className="text-[5px] text-amber-300/80 text-center leading-tight">{championCard.passive.name}</div>
+              </div>
+            )}
           </div>
         )}
 
