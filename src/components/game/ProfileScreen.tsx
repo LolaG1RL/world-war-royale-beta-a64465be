@@ -1,14 +1,17 @@
 import { useGame } from '@/context/GameContext';
 import { useAuth } from '@/context/AuthContext';
+import { useSettings } from '@/context/SettingsContext';
 import { getArenaForTrophies } from '@/data/cards';
 import { BottomNav } from './BottomNav';
 import { ChevronLeft, Copy, Shield, Award, Target, Crown, Star, LogOut, Check } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { t, tArena } from '@/lib/i18n';
 
 const ProfileScreen = () => {
   const { setScreen, profile, deck } = useGame();
   const { signOut, playerTag } = useAuth();
+  const { language } = useSettings();
   const arena = getArenaForTrophies(profile.trophies);
   const [copied, setCopied] = useState(false);
 
@@ -22,14 +25,14 @@ const ProfileScreen = () => {
   };
 
   const stats = [
-    { label: 'Wins', value: profile.wins, icon: '⚔️' },
-    { label: 'Losses', value: profile.losses, icon: '💀' },
-    { label: '3 Crown Wins', value: profile.threeCrownWins, icon: '👑' },
-    { label: 'Max Trophies', value: profile.maxTrophies, icon: '🏆' },
-    { label: 'Challenge Max', value: profile.challengeMaxWins, icon: '🏅' },
-    { label: 'War Day Wins', value: profile.warDayWins, icon: '⚔️' },
-    { label: 'Cards Collected', value: profile.clanCardsCollected, icon: '🃏' },
-    { label: 'Total Donations', value: profile.totalDonations, icon: '📦' },
+    { label: t('profile.wins', language), value: profile.wins, icon: '⚔️' },
+    { label: t('profile.losses', language), value: profile.losses, icon: '💀' },
+    { label: t('profile.3_crown_wins', language), value: profile.threeCrownWins, icon: '👑' },
+    { label: t('profile.max_trophies', language), value: profile.maxTrophies, icon: '🏆' },
+    { label: t('profile.challenge_max', language), value: profile.challengeMaxWins, icon: '🏅' },
+    { label: t('profile.war_day_wins', language), value: profile.warDayWins, icon: '⚔️' },
+    { label: t('profile.cards_collected', language), value: profile.clanCardsCollected, icon: '🃏' },
+    { label: t('profile.total_donations', language), value: profile.totalDonations, icon: '📦' },
   ];
 
   const badges = [
@@ -46,7 +49,7 @@ const ProfileScreen = () => {
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,25%,12%)] border-b border-border">
         <button onClick={() => setScreen('menu')} className="text-muted-foreground"><ChevronLeft className="w-5 h-5" /></button>
-        <h2 className="font-display font-bold text-foreground text-sm uppercase tracking-wider">Deaf ID Profile</h2>
+        <h2 className="font-display font-bold text-foreground text-sm uppercase tracking-wider">{t('profile.title', language)}</h2>
         <button className="text-muted-foreground text-[10px]">⚙️</button>
       </div>
 
@@ -156,7 +159,7 @@ const ProfileScreen = () => {
         <div className="px-3 pb-4">
           <button onClick={signOut} className="w-full py-2.5 bg-accent/10 border border-accent/20 rounded-xl text-xs font-bold text-accent uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-accent/20 transition-colors">
             <LogOut className="w-3.5 h-3.5" />
-            Sign Out of Deaf ID
+            {t('profile.sign_out', language)}
           </button>
         </div>
       </div>
