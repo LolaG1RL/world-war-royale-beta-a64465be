@@ -210,6 +210,7 @@ const ShopScreen = () => {
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [rewardPopup, setRewardPopup] = useState<RewardItem[] | null>(null);
   const [purchasedDeals, setPurchasedDeals] = useState<Set<number>>(() => getPurchasedDeals());
+  const [freebiesClaimed, setFreebiesClaimedState] = useState(getFreebiesClaimed);
   const countdown = useCountdownToMidnight();
   const dailyDeals = useMemo(() => getDailyDeals(), []);
 
