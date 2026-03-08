@@ -3,11 +3,12 @@ import { useAuth } from '@/context/AuthContext';
 import { BottomNav } from './ShopScreen';
 import { allCards } from '@/data/cards';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { MessageCircle, UserPlus, Search, Shield, Swords as SwordsIcon, Plus, Trophy, ChevronLeft, ChevronRight, Loader2, X, Check, UserMinus, ArrowUp, Repeat } from 'lucide-react';
+import { MessageCircle, UserPlus, Search, Shield, Swords as SwordsIcon, Plus, Trophy, ChevronLeft, ChevronRight, Loader2, X, Check, UserMinus, ArrowUp, Repeat, Gift } from 'lucide-react';
 import ClanFlag, { CLAN_ICONS, BANNER_SHAPES } from './ClanFlag';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getCardEntry, addCards, removeCards, canRequest, setRequestCooldown, getRequestTimeLeft, DONATION_LIMITS, getDonationsToday, recordDonation } from '@/data/cardInventory';
 
 const BANNER_COLORS = [
   '#b91c1c', '#dc2626', '#ef4444',
