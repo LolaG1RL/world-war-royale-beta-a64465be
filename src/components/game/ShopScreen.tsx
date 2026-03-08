@@ -637,25 +637,31 @@ const ShopScreen = () => {
           </>
         )}
 
-        {/* Banners tab */}
+        {/* Banners tab - daily rotating deals */}
         {tab === 'banners' && (
           <>
-            <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🖼️ Backgrounds</div>
+            <div className="mb-3 bg-gradient-to-r from-[hsl(270,50%,25%)] to-[hsl(220,40%,20%)] rounded-xl p-3 border border-purple-400/30">
+              <div className="text-[10px] text-purple-300 font-bold uppercase tracking-wider">Daily Banner Deals</div>
+              <div className="text-[8px] text-foreground/70 mt-0.5">Refreshes in {countdown}</div>
+            </div>
+
+            <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🖼️ Today's Backgrounds</div>
             <div className="grid grid-cols-2 gap-2 mb-4">
-              {allBackgrounds.map(bg => {
+              {getDailyBannerDeals('bg').map(({ item: bg, discountPct }, idx) => {
                 const owned = ownedBgs.has(bg.id);
+                const discountCost = Math.round(bg.cost * (1 - discountPct / 100));
                 return (
                   <button
                     key={bg.id}
                     onClick={() => {
                       if (owned) { toast.info('Already owned! Equip in Cards → Banner tab'); return; }
                       const currency = bg.currency === 'gold' ? profile.gold : profile.gems;
-                      if (currency < bg.cost) { toast.error(`Not enough ${bg.currency}!`); return; }
+                      if (currency < discountCost) { toast.error(`Not enough ${bg.currency}!`); return; }
                       setConfirmAction({
                         label: bg.name,
-                        cost: `${bg.currency === 'gold' ? '💰' : '💎'} ${bg.cost}`,
+                        cost: `${bg.currency === 'gold' ? '💰' : '💎'} ${discountCost}`,
                         onConfirm: () => {
-                          setProfile(p => bg.currency === 'gold' ? { ...p, gold: p.gold - bg.cost } : { ...p, gems: p.gems - bg.cost });
+                          setProfile(p => bg.currency === 'gold' ? { ...p, gold: p.gold - discountCost } : { ...p, gems: p.gems - discountCost });
                           addOwnedBackground(bg.id);
                           setOwnedBgs(getOwnedBackgrounds());
                           toast.success(`${bg.name} unlocked!`);
@@ -667,31 +673,35 @@ const ShopScreen = () => {
                     style={{ background: bg.css }}
                   >
                     {bg.animated && bg.animationSvg && <div className="absolute inset-0" dangerouslySetInnerHTML={{ __html: bg.animationSvg }} />}
+                    {discountPct > 0 && !owned && (
+                      <div className="absolute top-1 right-1 bg-accent text-accent-foreground text-[7px] font-black px-1 rounded">-{discountPct}%</div>
+                    )}
                     <div className="absolute bottom-0 left-0 right-0 bg-[hsl(0,0%,0%,0.6)] px-1.5 py-0.5 flex items-center justify-between">
                       <span className="text-[8px] font-bold text-foreground">{bg.name}</span>
-                      <span className="text-[7px] text-muted-foreground">{owned ? '✓' : `${bg.currency === 'gold' ? '💰' : '💎'} ${bg.cost}`}</span>
+                      <span className="text-[7px] text-muted-foreground">{owned ? '✓ Owned' : `${bg.currency === 'gold' ? '💰' : '💎'} ${discountCost}`}</span>
                     </div>
                   </button>
                 );
               })}
             </div>
 
-            <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🎭 Emblems</div>
+            <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🎭 Today's Emblems</div>
             <div className="grid grid-cols-4 gap-2 mb-4">
-              {allEmblems.map(emb => {
+              {getDailyBannerDeals('emb').map(({ item: emb, discountPct }) => {
                 const owned = ownedEmbs.has(emb.id);
+                const discountCost = Math.round(emb.cost * (1 - discountPct / 100));
                 return (
                   <button
                     key={emb.id}
                     onClick={() => {
                       if (owned) { toast.info('Already owned!'); return; }
                       const currency = emb.currency === 'gold' ? profile.gold : profile.gems;
-                      if (currency < emb.cost) { toast.error(`Not enough ${emb.currency}!`); return; }
+                      if (currency < discountCost) { toast.error(`Not enough ${emb.currency}!`); return; }
                       setConfirmAction({
                         label: emb.name,
-                        cost: `${emb.currency === 'gold' ? '💰' : '💎'} ${emb.cost}`,
+                        cost: `${emb.currency === 'gold' ? '💰' : '💎'} ${discountCost}`,
                         onConfirm: () => {
-                          setProfile(p => emb.currency === 'gold' ? { ...p, gold: p.gold - emb.cost } : { ...p, gems: p.gems - emb.cost });
+                          setProfile(p => emb.currency === 'gold' ? { ...p, gold: p.gold - discountCost } : { ...p, gems: p.gems - discountCost });
                           addOwnedEmblem(emb.id);
                           setOwnedEmbs(getOwnedEmblems());
                           toast.success(`${emb.name} unlocked!`);
@@ -699,32 +709,36 @@ const ShopScreen = () => {
                         },
                       });
                     }}
-                    className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 border-2 ${owned ? 'border-hp-green/50 bg-card' : 'border-border bg-muted/10'}`}
+                    className={`relative aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 border-2 ${owned ? 'border-hp-green/50 bg-card' : 'border-border bg-muted/10'}`}
                   >
-                    <span className={`text-xl ${emb.animated ? 'animate-pulse' : ''}`}>{emb.emoji}</span>
+                    {discountPct > 0 && !owned && (
+                      <div className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-[6px] font-black px-1 rounded z-10">-{discountPct}%</div>
+                    )}
+                    <span className={`text-xl ${(emb as any).animated ? 'animate-pulse' : ''}`}>{(emb as any).emoji}</span>
                     <span className="text-[7px] font-bold text-foreground">{emb.name}</span>
-                    <span className="text-[7px] text-muted-foreground">{owned ? '✓' : `${emb.currency === 'gold' ? '💰' : '💎'} ${emb.cost}`}</span>
+                    <span className="text-[7px] text-muted-foreground">{owned ? '✓' : `${emb.currency === 'gold' ? '💰' : '💎'} ${discountCost}`}</span>
                   </button>
                 );
               })}
             </div>
 
-            <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🏅 Cosmetic Badges</div>
+            <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2">🏅 Today's Badges</div>
             <div className="grid grid-cols-4 gap-2">
-              {allBadges.filter(b => b.type === 'cosmetic').map(badge => {
+              {getDailyBannerDeals('badge').map(({ item: badge, discountPct }) => {
                 const owned = ownedBadgesSet.has(badge.id);
+                const discountCost = Math.round(badge.cost * (1 - discountPct / 100));
                 return (
                   <button
                     key={badge.id}
                     onClick={() => {
                       if (owned) { toast.info('Already owned!'); return; }
                       const currency = badge.currency === 'gold' ? profile.gold : profile.gems;
-                      if (currency < badge.cost) { toast.error(`Not enough ${badge.currency}!`); return; }
+                      if (currency < discountCost) { toast.error(`Not enough ${badge.currency}!`); return; }
                       setConfirmAction({
                         label: badge.name,
-                        cost: `${badge.currency === 'gold' ? '💰' : '💎'} ${badge.cost}`,
+                        cost: `${badge.currency === 'gold' ? '💰' : '💎'} ${discountCost}`,
                         onConfirm: () => {
-                          setProfile(p => badge.currency === 'gold' ? { ...p, gold: p.gold - badge.cost } : { ...p, gems: p.gems - badge.cost });
+                          setProfile(p => badge.currency === 'gold' ? { ...p, gold: p.gold - discountCost } : { ...p, gems: p.gems - discountCost });
                           addOwnedBadge(badge.id);
                           setOwnedBadgesSet(getOwnedBadges());
                           toast.success(`${badge.name} badge unlocked!`);
@@ -732,11 +746,14 @@ const ShopScreen = () => {
                         },
                       });
                     }}
-                    className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 border-2 ${owned ? 'border-hp-green/50 bg-card' : 'border-border bg-muted/10'}`}
+                    className={`relative aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 border-2 ${owned ? 'border-hp-green/50 bg-card' : 'border-border bg-muted/10'}`}
                   >
-                    <span className="text-lg">{badge.emoji}</span>
+                    {discountPct > 0 && !owned && (
+                      <div className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-[6px] font-black px-1 rounded z-10">-{discountPct}%</div>
+                    )}
+                    <span className="text-lg">{(badge as any).emoji}</span>
                     <span className="text-[7px] font-bold text-foreground">{badge.name}</span>
-                    <span className="text-[7px] text-muted-foreground">{owned ? '✓' : `${badge.currency === 'gold' ? '💰' : '💎'} ${badge.cost}`}</span>
+                    <span className="text-[7px] text-muted-foreground">{owned ? '✓' : `${badge.currency === 'gold' ? '💰' : '💎'} ${discountCost}`}</span>
                   </button>
                 );
               })}
