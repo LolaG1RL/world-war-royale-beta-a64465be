@@ -29,88 +29,84 @@ const ArenaPreview = ({ arenaId, arenaName, arenaEmoji }: ArenaPreviewProps) => 
   const theme = ARENA_THEMES[arenaId] || ARENA_THEMES[1];
 
   return (
-    <div className="relative w-32 rounded-xl overflow-hidden shadow-2xl border border-border/50" style={{ aspectRatio: '4/5' }}>
-      {/* Arena ground */}
-      <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${theme.accent} 0%, ${theme.ground} 35%, ${theme.ground} 65%, ${theme.accent} 100%)` }} />
-      
-      {/* Grid pattern overlay */}
-      <svg className="absolute inset-0 w-full h-full opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id={`grid-${arenaId}`} width="16" height="16" patternUnits="userSpaceOnUse">
-            <path d="M 16 0 L 0 0 0 16" fill="none" stroke="white" strokeWidth="0.5" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill={`url(#grid-${arenaId})`} />
-      </svg>
+    <div className="flex items-center gap-2">
+      <div className="relative w-32 rounded-xl overflow-hidden shadow-2xl border border-border/50" style={{ aspectRatio: '4/5' }}>
+        {/* Arena ground */}
+        <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${theme.accent} 0%, ${theme.ground} 35%, ${theme.ground} 65%, ${theme.accent} 100%)` }} />
+        
+        {/* Grid pattern overlay */}
+        <svg className="absolute inset-0 w-full h-full opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id={`grid-${arenaId}`} width="16" height="16" patternUnits="userSpaceOnUse">
+              <path d="M 16 0 L 0 0 0 16" fill="none" stroke="white" strokeWidth="0.5" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill={`url(#grid-${arenaId})`} />
+        </svg>
 
-      {/* Lane divider */}
-      <div className="absolute top-0 bottom-0 left-1/2 w-px opacity-10" style={{ background: 'white' }} />
+        {/* Lane divider */}
+        <div className="absolute top-0 bottom-0 left-1/2 w-px opacity-10" style={{ background: 'white' }} />
 
-      {/* River */}
-      <div className="absolute left-0 right-0 top-[46%] h-[8%]" style={{ background: theme.river }}>
-        <div className="absolute inset-0 opacity-30" style={{ background: `linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)` }} />
-        {/* Ripple effect */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/2 left-0 right-0 h-px bg-white/10 animate-pulse" />
+        {/* River */}
+        <div className="absolute left-0 right-0 top-[46%] h-[8%]" style={{ background: theme.river }}>
+          <div className="absolute inset-0 opacity-30" style={{ background: `linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)` }} />
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-1/2 left-0 right-0 h-px bg-white/10 animate-pulse" />
+          </div>
         </div>
-      </div>
 
-      {/* Left bridge */}
-      <div className="absolute left-[15%] top-[44%] w-[20%] h-[12%] rounded-sm z-10" style={{ background: theme.bridge, border: `1px solid ${theme.wall}` }}>
-        <div className="absolute inset-x-1 top-1 bottom-1 rounded-sm opacity-20" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)' }} />
-      </div>
-      {/* Right bridge */}
-      <div className="absolute right-[15%] top-[44%] w-[20%] h-[12%] rounded-sm z-10" style={{ background: theme.bridge, border: `1px solid ${theme.wall}` }}>
-        <div className="absolute inset-x-1 top-1 bottom-1 rounded-sm opacity-20" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)' }} />
-      </div>
+        {/* Left bridge */}
+        <div className="absolute left-[15%] top-[44%] w-[20%] h-[12%] rounded-sm z-10" style={{ background: theme.bridge, border: `1px solid ${theme.wall}` }}>
+          <div className="absolute inset-x-1 top-1 bottom-1 rounded-sm opacity-20" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)' }} />
+        </div>
+        {/* Right bridge */}
+        <div className="absolute right-[15%] top-[44%] w-[20%] h-[12%] rounded-sm z-10" style={{ background: theme.bridge, border: `1px solid ${theme.wall}` }}>
+          <div className="absolute inset-x-1 top-1 bottom-1 rounded-sm opacity-20" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)' }} />
+        </div>
 
-      {/* Enemy towers (top) */}
-      {/* King tower */}
-      <div className="absolute top-[6%] left-1/2 -translate-x-1/2 z-20">
-        <div className="w-7 h-7 rounded-md bg-red-800 border-2 border-red-500 flex items-center justify-center shadow-lg">
-          <span className="text-[10px]">👑</span>
+        {/* Enemy towers (top) */}
+        <div className="absolute top-[6%] left-1/2 -translate-x-1/2 z-20">
+          <div className="w-7 h-7 rounded-md bg-red-800 border-2 border-red-500 flex items-center justify-center shadow-lg">
+            <span className="text-[10px]">👑</span>
+          </div>
         </div>
-      </div>
-      {/* Princess towers */}
-      <div className="absolute top-[18%] left-[18%] z-20">
-        <div className="w-5 h-5 rounded-md bg-red-800 border border-red-500 flex items-center justify-center shadow">
-          <span className="text-[8px]">🗼</span>
+        <div className="absolute top-[18%] left-[18%] z-20">
+          <div className="w-5 h-5 rounded-md bg-red-800 border border-red-500 flex items-center justify-center shadow">
+            <span className="text-[8px]">🗼</span>
+          </div>
         </div>
-      </div>
-      <div className="absolute top-[18%] right-[18%] z-20">
-        <div className="w-5 h-5 rounded-md bg-red-800 border border-red-500 flex items-center justify-center shadow">
-          <span className="text-[8px]">🗼</span>
+        <div className="absolute top-[18%] right-[18%] z-20">
+          <div className="w-5 h-5 rounded-md bg-red-800 border border-red-500 flex items-center justify-center shadow">
+            <span className="text-[8px]">🗼</span>
+          </div>
         </div>
-      </div>
 
-      {/* Player towers (bottom) */}
-      {/* King tower */}
-      <div className="absolute bottom-[6%] left-1/2 -translate-x-1/2 z-20">
-        <div className="w-7 h-7 rounded-md bg-blue-800 border-2 border-blue-400 flex items-center justify-center shadow-lg">
-          <span className="text-[10px]">👑</span>
+        {/* Player towers (bottom) */}
+        <div className="absolute bottom-[6%] left-1/2 -translate-x-1/2 z-20">
+          <div className="w-7 h-7 rounded-md bg-blue-800 border-2 border-blue-400 flex items-center justify-center shadow-lg">
+            <span className="text-[10px]">👑</span>
+          </div>
         </div>
-      </div>
-      {/* Princess towers */}
-      <div className="absolute bottom-[18%] left-[18%] z-20">
-        <div className="w-5 h-5 rounded-md bg-blue-800 border border-blue-400 flex items-center justify-center shadow">
-          <span className="text-[8px]">🗼</span>
+        <div className="absolute bottom-[18%] left-[18%] z-20">
+          <div className="w-5 h-5 rounded-md bg-blue-800 border border-blue-400 flex items-center justify-center shadow">
+            <span className="text-[8px]">🗼</span>
+          </div>
         </div>
-      </div>
-      <div className="absolute bottom-[18%] right-[18%] z-20">
-        <div className="w-5 h-5 rounded-md bg-blue-800 border border-blue-400 flex items-center justify-center shadow">
-          <span className="text-[8px]">🗼</span>
+        <div className="absolute bottom-[18%] right-[18%] z-20">
+          <div className="w-5 h-5 rounded-md bg-blue-800 border border-blue-400 flex items-center justify-center shadow">
+            <span className="text-[8px]">🗼</span>
+          </div>
         </div>
-      </div>
 
-      {/* Arena name banner at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm py-1 px-2 z-30">
-        <div className="text-center">
-          <span className="text-[10px] font-display font-bold text-foreground drop-shadow">{arenaEmoji} {arenaName}</span>
-        </div>
+        {/* Glow effect */}
+        <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: `inset 0 0 30px ${theme.glow}33` }} />
       </div>
 
-      {/* Glow effect */}
-      <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: `inset 0 0 30px ${theme.glow}33` }} />
+      {/* Arena name to the right */}
+      <div className="flex flex-col items-start gap-0.5">
+        <span className="text-lg">{arenaEmoji}</span>
+        <span className="text-[10px] font-display font-bold text-foreground drop-shadow leading-tight">{arenaName}</span>
+      </div>
     </div>
   );
 };

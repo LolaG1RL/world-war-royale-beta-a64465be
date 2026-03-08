@@ -22,7 +22,7 @@ const rarityGradients: Record<string, string> = {
   rare: 'from-[hsl(210,50%,40%)] to-[hsl(210,60%,22%)]',
   epic: 'from-[hsl(280,45%,40%)] to-[hsl(280,60%,20%)]',
   legendary: 'from-[hsl(38,85%,48%)] to-[hsl(28,90%,28%)]',
-  hero: 'from-[hsl(340,60%,45%)] to-[hsl(340,70%,22%)]',
+  champion: 'from-[hsl(340,60%,45%)] to-[hsl(340,70%,22%)]',
 };
 
 const rarityBorders: Record<string, string> = {
@@ -30,7 +30,7 @@ const rarityBorders: Record<string, string> = {
   rare: 'border-[hsl(210,60%,50%)]',
   epic: 'border-[hsl(280,55%,50%)]',
   legendary: 'border-[hsl(38,90%,55%)]',
-  hero: 'border-[hsl(340,70%,55%)]',
+  champion: 'border-[hsl(340,70%,55%)]',
 };
 
 const rarityGlow: Record<string, string> = {
@@ -38,7 +38,7 @@ const rarityGlow: Record<string, string> = {
   rare: '',
   epic: 'shadow-[0_0_8px_hsl(280,55%,50%,0.3)]',
   legendary: 'shadow-[0_0_12px_hsl(38,90%,50%,0.4)]',
-  hero: 'shadow-[0_0_15px_hsl(340,70%,50%,0.5)]',
+  champion: 'shadow-[0_0_15px_hsl(340,70%,50%,0.5)]',
 };
 
 const CardComponent = ({ card, size = 'md', onClick, disabled = false, showElixir = true, showLevel = false, showCount = false }: CardComponentProps) => {
@@ -80,8 +80,8 @@ const CardComponent = ({ card, size = 'md', onClick, disabled = false, showElixi
         </div>
       )}
 
-      {/* Rarity shine effect for legendary/hero */}
-      {(card.rarity === 'legendary' || card.rarity === 'hero') && (
+      {/* Rarity shine effect for legendary/champion */}
+      {(card.rarity === 'legendary' || card.rarity === 'champion') && (
         <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-[hsl(0,0%,100%,0.08)] to-transparent pointer-events-none" />
       )}
     </div>
