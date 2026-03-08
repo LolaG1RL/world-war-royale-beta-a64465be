@@ -311,6 +311,9 @@ const ShopScreen = () => {
   const dailyDeals = useMemo(() => getDailyDeals(), []);
   const dailyFreebies = useMemo(() => getDailyFreebieCards(), []);
   const emoteDeals = useMemo(() => getDailyEmoteDeals(), []);
+  // Memoize daily banner/emblem deals on mount so they don't shift when purchased
+  const dailyBgDeals = useMemo(() => getDailyBgDeals(new Set()), []);
+  const dailyEmbDeals = useMemo(() => getDailyEmbDeals(new Set()), []);
   const [purchasedEmotes, setPurchasedEmotes] = useState<Set<number>>(() => getEmoteDealsPurchased());
   const [ownedEmoteIds, setOwnedEmoteIds] = useState(() => getOwnedEmotes());
   const [confirmAction, setConfirmAction] = useState<{ label: string; cost: string; onConfirm: () => void } | null>(null);
