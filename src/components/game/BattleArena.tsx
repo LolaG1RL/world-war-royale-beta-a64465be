@@ -71,7 +71,7 @@ const BattleArena = () => {
   const projectileCounter = useRef(0);
 
   // For non-trophy battles (river race), pick a random arena for music/bg
-  const battleArena = isRiverRace ? (Math.floor(Math.random() * 7) + 1) : profile.arena;
+  const battleArena = isRiverRace ? (Math.floor(Math.random() * 15) + 1) : profile.arena;
 
   // Start arena music when intro finishes
   useEffect(() => {
