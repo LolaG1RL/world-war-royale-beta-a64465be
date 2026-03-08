@@ -97,6 +97,7 @@ const BattleIntro = ({ onComplete }: { onComplete: () => void }) => {
               name={profile.name} 
               trophies={profile.trophies} 
               clanName={clan?.name || undefined}
+              clanBanner={clan ? { bannerColor: clan.bannerColor, bannerShape: clan.bannerShape, iconId: clan.iconId, iconColor: clan.iconColor } : undefined}
               size="lg" 
             />
           </motion.div>

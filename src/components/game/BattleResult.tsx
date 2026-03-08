@@ -153,8 +153,8 @@ const BattleResult = () => {
             {name}
           </div>
           {clanName && (
-            <div className={`text-[9px] ${isPlayer ? 'text-blue-400/70' : 'text-red-400/70'}`}>
-              🏴 {clanName}
+            <div className={`text-[9px] flex items-center justify-center gap-1 ${isPlayer ? 'text-blue-400/70' : 'text-red-400/70'}`}>
+              {clanName}
             </div>
           )}
         </div>
