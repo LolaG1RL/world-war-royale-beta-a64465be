@@ -102,7 +102,7 @@ const TrophyRoadScreen = () => {
       : 100;
 
   // Expand/collapse per arena to show unlocked cards
-  const [expandedArena, setExpandedArena] = useStateReact<number | null>(null);
+  const [expandedArena, setExpandedArena] = useState<number | null>(null);
 
   return (
     <div className="h-screen w-full max-w-md mx-auto flex flex-col bg-background overflow-hidden relative">
