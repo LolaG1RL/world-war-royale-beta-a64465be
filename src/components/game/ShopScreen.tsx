@@ -165,25 +165,53 @@ function saveFreebieClaimedIndex(index: number) {
   localStorage.setItem('daily_freebies_claimed', JSON.stringify({ date: getTodayKey(), indices: Array.from(current) }));
 }
 
-function getDailyFreebieCards() {
+function getDailyFreebieCards(arenaId: number) {
   const today = new Date();
   const seed = (today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()) * 7;
   let s = seed;
-  const pick = (arr: typeof allCards) => {
+  const arenaPool = allCards.filter(c => c.unlockArena <= arenaId);
+  const pool = arenaPool.length > 0 ? arenaPool : allCards;
+  const pick = (arr: typeof pool) => {
     s = (s * 1103515245 + 12345) & 0x7fffffff;
     return arr[s % arr.length];
   };
-  // Weighted: 2 commons, 1 rare (small chance epic)
   const results: { emoji: string; name: string; amount: number; rarity: string }[] = [];
+  const commons = pool.filter(c => c.rarity === 'common');
   for (let i = 0; i < 2; i++) {
-    const card = pick(allCards.filter(c => c.rarity === 'common'));
+    const card = pick(commons.length > 0 ? commons : pool);
     results.push({ emoji: card.emoji, name: card.name, amount: 2 + (s % 3), rarity: 'common' });
   }
   s = (s * 1103515245 + 12345) & 0x7fffffff;
   const rareRoll = s % 100;
-  const pool = rareRoll < 80 ? allCards.filter(c => c.rarity === 'rare') : allCards.filter(c => c.rarity === 'epic');
-  const card = pick(pool);
+  const rarePool = rareRoll < 80 ? pool.filter(c => c.rarity === 'rare') : pool.filter(c => c.rarity === 'epic');
+  const finalPool = rarePool.length > 0 ? rarePool : pool;
+  const card = pick(finalPool);
   results.push({ emoji: card.emoji, name: card.name, amount: 1, rarity: card.rarity });
+  return results;
+}
+
+function getDailyDiscountedCards(arenaId: number) {
+  const today = new Date();
+  const seed = (today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()) * 31;
+  let s = seed;
+  const arenaPool = allCards.filter(c => c.unlockArena <= arenaId);
+  const pool = arenaPool.length > 0 ? arenaPool : allCards;
+  const results: { card: typeof allCards[0]; amount: number; originalCost: number; discountedCost: number; currency: 'gold' | 'gems' }[] = [];
+  const shuffled = [...pool];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const j = s % (i + 1);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  for (let i = 0; i < Math.min(6, shuffled.length); i++) {
+    const c = shuffled[i];
+    const amount = c.rarity === 'common' ? 5 + (s % 6) : c.rarity === 'rare' ? 2 + (s % 3) : c.rarity === 'epic' ? 1 + (s % 2) : 1;
+    const baseCost = c.rarity === 'common' ? 10 * amount : c.rarity === 'rare' ? 100 * amount : c.rarity === 'epic' ? 500 * amount : 2000;
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const discountPct = 20 + (s % 31); // 20-50% off
+    const discountedCost = Math.max(1, Math.round(baseCost * (1 - discountPct / 100)));
+    results.push({ card: c, amount, originalCost: baseCost, discountedCost, currency: 'gold' });
+  }
   return results;
 }
 
@@ -307,7 +335,17 @@ const ShopScreen = () => {
   const [claimedFreebies, setClaimedFreebies] = useState<Set<number>>(() => getFreebiesClaimed());
   const countdown = useCountdownToMidnight();
   const dailyDeals = useMemo(() => getDailyDeals(), []);
-  const dailyFreebies = useMemo(() => getDailyFreebieCards(), []);
+  const dailyFreebies = useMemo(() => getDailyFreebieCards(profile.arena), [profile.arena]);
+  const dailyDiscountedCards = useMemo(() => getDailyDiscountedCards(profile.arena), [profile.arena]);
+  const [purchasedDiscounts, setPurchasedDiscounts] = useState<Set<number>>(() => {
+    try {
+      const stored = localStorage.getItem('daily_discounts_purchased');
+      if (!stored) return new Set();
+      const parsed = JSON.parse(stored);
+      if (parsed.date !== getTodayKey()) return new Set();
+      return new Set(parsed.indices as number[]);
+    } catch { return new Set(); }
+  });
   const emoteDeals = useMemo(() => getDailyEmoteDeals(), []);
   // Memoize daily banner/emblem deals on mount so they don't shift when purchased
   const dailyBgDeals = useMemo(() => getDailyBgDeals(new Set()), []);
@@ -358,8 +396,10 @@ const ShopScreen = () => {
       rewards.push({ emoji: '💎', name: 'Gems', count: deal.amount, rarity: 'rare' });
     } else if (deal.type === 'chest') {
       const numCards = deal.name.includes('Magical') ? 12 : deal.name.includes('Gold') ? 6 : 3;
+      const arenaPool = allCards.filter(c => c.unlockArena <= profile.arena);
+      const pool = arenaPool.length > 0 ? arenaPool : allCards;
       for (let i = 0; i < numCards; i++) {
-        const card = allCards[Math.floor(Math.random() * allCards.length)];
+        const card = pool[Math.floor(Math.random() * pool.length)];
         rewards.push({ emoji: card.emoji, name: card.name, count: 1 + Math.floor(Math.random() * 3), rarity: card.rarity });
       }
       rewards.push({ emoji: '💰', name: 'Gold', count: 50 + Math.floor(Math.random() * 200), rarity: 'common' });
@@ -402,8 +442,10 @@ const ShopScreen = () => {
     switch (item.type) {
       case 'chest': {
         const numCards = item.name.includes('Legendary') ? 1 : item.name.includes('Magical') ? 12 : item.name.includes('Gold') ? 6 : 3;
+        const arenaPool = allCards.filter(c => c.unlockArena <= profile.arena);
+        const pool = arenaPool.length > 0 ? arenaPool : allCards;
         for (let i = 0; i < numCards; i++) {
-          const card = allCards[Math.floor(Math.random() * allCards.length)];
+          const card = pool[Math.floor(Math.random() * pool.length)];
           rewards.push({ emoji: card.emoji, name: card.name, count: 1 + Math.floor(Math.random() * 5), rarity: card.rarity });
         }
         const goldReward = 100 + Math.floor(Math.random() * 500);
@@ -585,6 +627,62 @@ const ShopScreen = () => {
                     </span>
                     <div className="mt-auto w-full py-1 rounded-lg text-[9px] font-bold text-center bg-[hsl(140,50%,15%)] text-[hsl(140,60%,60%)]">
                       {claimed ? t('shop.claimed', language) : t('shop.free', language)}
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            {/* Discounted cards */}
+            <div className="mb-3 bg-gradient-to-r from-[hsl(38,60%,20%)] to-[hsl(28,70%,18%)] rounded-xl p-3 border border-primary/30">
+              <div className="text-[10px] text-primary font-bold uppercase tracking-wider">{t('shop.discounted_cards', language)}</div>
+              <div className="text-[8px] text-foreground/70 mt-0.5">{t('shop.refreshes_in', language)} {countdown}</div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              {dailyDiscountedCards.map((deal, i) => {
+                const bought = purchasedDiscounts.has(i);
+                const canAfford = !bought && profile.gold >= deal.discountedCost;
+                return (
+                  <motion.button
+                    key={`disc-${i}`}
+                    whileTap={!bought ? { scale: 0.95 } : undefined}
+                    onClick={() => {
+                      if (bought || !canAfford) return;
+                      setConfirmAction({
+                        label: `${deal.card.name} x${deal.amount}`,
+                        cost: `💰 ${deal.discountedCost}`,
+                        onConfirm: () => {
+                          setProfile(p => ({ ...p, gold: p.gold - deal.discountedCost }));
+                          const next = new Set(purchasedDiscounts);
+                          next.add(i);
+                          setPurchasedDiscounts(next);
+                          localStorage.setItem('daily_discounts_purchased', JSON.stringify({ date: getTodayKey(), indices: [...next] }));
+                          showRewards([{ emoji: deal.card.emoji, name: deal.card.name, count: deal.amount, rarity: deal.card.rarity }]);
+                          setConfirmAction(null);
+                        }
+                      });
+                    }}
+                    disabled={bought || !canAfford}
+                    className={`bg-card border-2 ${bought ? 'border-muted-foreground/20 opacity-40' : RARITY_COLORS[deal.card.rarity]} rounded-xl p-2 flex flex-col items-center gap-1 transition-colors relative ${!bought && canAfford ? 'hover:brightness-110' : ''}`}
+                  >
+                    {bought && (
+                      <div className="absolute inset-0 bg-background/60 rounded-xl flex items-center justify-center z-10">
+                        <Check className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                    )}
+                    <span className="text-2xl mt-1">{deal.card.emoji}</span>
+                    <span className="text-[9px] font-bold text-foreground text-center leading-tight">{deal.card.name}</span>
+                    <span className="text-[7px] text-muted-foreground">x{deal.amount}</span>
+                    <span className={`text-[7px] font-bold ${deal.card.rarity === 'legendary' ? 'text-primary' : deal.card.rarity === 'epic' ? 'text-purple-400' : deal.card.rarity === 'rare' ? 'text-blue-400' : 'text-muted-foreground'}`}>
+                      {tRarity(deal.card.rarity, language)}
+                    </span>
+                    <div className="mt-auto w-full py-1 rounded-lg text-[9px] font-bold text-center bg-primary/20 text-primary">
+                      {bought ? t('shop.sold', language) : (
+                        <>
+                          <span className="line-through text-muted-foreground mr-1">💰{deal.originalCost}</span>
+                          💰{deal.discountedCost}
+                        </>
+                      )}
                     </div>
                   </motion.button>
                 );

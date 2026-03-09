@@ -14,7 +14,7 @@ import { t } from '@/lib/i18n';
 
 interface RewardItem { emoji: string; name: string; count: number; rarity: string; }
 
-const generateChestContents = (chestLabel: string): { gold: number; gems: number; items: RewardItem[] } => {
+const generateChestContents = (chestLabel: string, arenaId: number = 15): { gold: number; gems: number; items: RewardItem[] } => {
   const isLegendary = chestLabel.toLowerCase().includes('legendary');
   const isLightning = chestLabel.toLowerCase().includes('lightning');
   const isMagic = chestLabel.toLowerCase().includes('magic');
@@ -33,10 +33,13 @@ const generateChestContents = (chestLabel: string): { gold: number; gems: number
   items.push({ emoji: '💰', name: `${gold} Gold`, count: gold, rarity: 'common' });
   if (gems > 0) items.push({ emoji: '💎', name: `${gems} Gems`, count: gems, rarity: 'rare' });
 
+  const arenaPool = allCards.filter(c => c.unlockArena <= arenaId);
+  const pool = arenaPool.length > 0 ? arenaPool : allCards;
   const pickCards = (rarity: string, count: number) => {
-    const pool = allCards.filter(c => c.rarity === rarity);
+    const rarityPool = pool.filter(c => c.rarity === rarity);
+    const finalPool = rarityPool.length > 0 ? rarityPool : pool;
     for (let i = 0; i < count; i++) {
-      const card = pool[Math.floor(Math.random() * pool.length)];
+      const card = finalPool[Math.floor(Math.random() * finalPool.length)];
       if (card) {
         const amt = rarity === 'common' ? 2 + Math.floor(Math.random() * 4) : rarity === 'rare' ? 1 + Math.floor(Math.random() * 2) : 1;
         items.push({ emoji: card.emoji, name: card.name, count: amt, rarity });
@@ -239,7 +242,8 @@ const WarPassScreen = () => {
       items = [{ emoji: '⚜️', name: 'Joan of Arc (Champion)', count: 1, rarity: 'legendary' }];
       toast.success('Season 1 Exclusive Champion Joan of Arc unlocked! She is always active!');
     } else if (r.type === 'chest') {
-      const contents = generateChestContents(r.label);
+      const playerArena = profile.arena || 1;
+      const contents = generateChestContents(r.label, playerArena);
       setProfile(p => ({ ...p, gold: p.gold + contents.gold, gems: p.gems + contents.gems }));
       contents.items.forEach(item => {
         if (item.rarity !== 'common' || !item.name.includes('Gold')) {
@@ -250,14 +254,17 @@ const WarPassScreen = () => {
       items = contents.items;
     } else if (r.type === 'cards') {
       const label = r.label.toLowerCase();
-      let pool = allCards;
-      if (label.includes('legendary')) pool = allCards.filter(c => c.rarity === 'legendary');
-      else if (label.includes('epic')) pool = allCards.filter(c => c.rarity === 'epic');
-      else if (label.includes('rare')) pool = allCards.filter(c => c.rarity === 'rare');
-      else pool = allCards.filter(c => c.rarity === 'common' || c.rarity === 'rare');
+      const arenaPool = allCards.filter(c => c.unlockArena <= (profile.arena || 1));
+      const pool = arenaPool.length > 0 ? arenaPool : allCards;
+      let filteredPool = pool;
+      if (label.includes('legendary')) filteredPool = pool.filter(c => c.rarity === 'legendary');
+      else if (label.includes('epic')) filteredPool = pool.filter(c => c.rarity === 'epic');
+      else if (label.includes('rare')) filteredPool = pool.filter(c => c.rarity === 'rare');
+      else filteredPool = pool.filter(c => c.rarity === 'common' || c.rarity === 'rare');
+      if (filteredPool.length === 0) filteredPool = pool;
       
       for (let i = 0; i < r.amount; i++) {
-        const card = pool[Math.floor(Math.random() * pool.length)];
+        const card = filteredPool[Math.floor(Math.random() * filteredPool.length)];
         if (card) {
           const amt = card.rarity === 'common' ? 2 + Math.floor(Math.random() * 4) : card.rarity === 'rare' ? 1 + Math.floor(Math.random() * 2) : 1;
           addCards(card.id, amt);
