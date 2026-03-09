@@ -544,6 +544,13 @@ const translations: TranslationMap = {
   // ═══ Season-end rewards ═══
   'social.season_end_rewards': { en: 'Season End Rewards!', es: '¡Recompensas de Fin de Temporada!', fr: 'Récompenses de Fin de Saison!', de: 'Saisonende-Belohnungen!', pt: 'Recompensas de Fim de Temporada!', ja: 'シーズン終了報酬！', ko: '시즌 종료 보상!', zh: '赛季结束奖励！', ar: 'مكافآت نهاية الموسم!', ru: 'Награды за сезон!' },
   'social.season_end_desc': { en: 'Based on your final leaderboard rankings', es: 'Basado en tu posición final en el ranking', fr: 'Basé sur votre classement final', de: 'Basierend auf deiner endgültigen Platzierung', pt: 'Baseado na sua posição final no ranking', ja: '最終ランキング順位に基づく', ko: '최종 리더보드 순위 기준', zh: '基于你的最终排行榜排名', ar: 'بناءً على ترتيبك النهائي', ru: 'На основе вашего финального рейтинга' },
+
+  // ═══ Battle Arena UI ═══
+  'battle.you': { en: 'YOU', es: 'TÚ', fr: 'VOUS', de: 'DU', pt: 'VOCÊ', ja: '自分', ko: '나', zh: '你', ar: 'أنت', ru: 'ВЫ' },
+  'battle.foe': { en: 'FOE', es: 'RIVAL', fr: 'ENNEMI', de: 'FEIND', pt: 'INIMIGO', ja: '敵', ko: '적', zh: '敌人', ar: 'العدو', ru: 'ВРАГ' },
+  'battle.tap_deploy': { en: 'Tap to deploy', es: 'Toca para desplegar', fr: 'Touchez pour déployer', de: 'Tippe zum Einsetzen', pt: 'Toque para implantar', ja: 'タップして配置', ko: '탭하여 배치', zh: '点击部署', ar: 'انقر للنشر', ru: 'Нажмите для размещения' },
+  'battle.deck_incomplete': { en: 'Your deck needs 8 cards!', es: '¡Tu mazo necesita 8 cartas!', fr: 'Votre deck a besoin de 8 cartes!', de: 'Dein Deck braucht 8 Karten!', pt: 'Seu deck precisa de 8 cartas!', ja: 'デッキには8枚のカードが必要です！', ko: '덱에 카드 8장이 필요합니다!', zh: '你的卡组需要8张卡！', ar: 'مجموعتك تحتاج 8 بطاقات!', ru: 'В колоде должно быть 8 карт!' },
+  'shop.discounted_cards': { en: '🏷️ Discounted Cards', es: '🏷️ Cartas con Descuento', fr: '🏷️ Cartes en Promo', de: '🏷️ Vergünstigte Karten', pt: '🏷️ Cartas com Desconto', ja: '🏷️ 割引カード', ko: '🏷️ 할인 카드', zh: '🏷️ 折扣卡牌', ar: '🏷️ بطاقات مخفضة', ru: '🏷️ Карты со скидкой' },
 };
 
 // Get a translation by key

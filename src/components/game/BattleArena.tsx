@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { GameCard, getSpeedValue, canTarget, getRangeValue, SPEED_VALUES } from '@/data/cards';
+import { GameCard, getSpeedValue, canTarget, getRangeValue, SPEED_VALUES, allCards } from '@/data/cards';
 import { useGame } from '@/context/GameContext';
 import CardComponent from './CardComponent';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -53,6 +53,12 @@ const BattleArena = () => {
   const [timer, setTimer] = useState(180);
   const [hand, setHand] = useState<GameCard[]>([]);
   const [nextCard, setNextCard] = useState<GameCard | null>(null);
+  const [cardQueue, setCardQueue] = useState<GameCard[]>([]);
+  // AI deck/hand/cycle refs (don't need re-renders)
+  const aiDeckRef = useRef<GameCard[]>([]);
+  const aiHandRef = useRef<GameCard[]>([]);
+  const aiQueueRef = useRef<GameCard[]>([]);
+  const aiNextRef = useRef<GameCard | null>(null);
   const [deployedUnits, setDeployedUnits] = useState<DeployedUnit[]>([]);
   const [towers, setTowers] = useState<TowerData[]>([
     // Enemy towers
@@ -175,9 +181,21 @@ const BattleArena = () => {
   }, [deck, setBattleResult, setProfile, setScreen, getEnemyTowerHP, getPlayerTowerHP, isRiverRace]);
 
   useEffect(() => {
+    // Player card cycle init
     const shuffled = [...deck].sort(() => Math.random() - 0.5);
     setHand(shuffled.slice(0, 4));
     setNextCard(shuffled[4] || shuffled[0]);
+    setCardQueue(shuffled.slice(5));
+    // AI deck init - arena-scaled random 8 cards (import at top)
+    const arenaCards = allCards.filter(c => c.unlockArena <= profile.arena && c.rarity !== 'champion');
+    const aiShuffled = [...arenaCards].sort(() => Math.random() - 0.5).slice(0, 8);
+    // Ensure at least 8 by repeating if needed
+    while (aiShuffled.length < 8) aiShuffled.push(arenaCards[Math.floor(Math.random() * arenaCards.length)]);
+    const aiDeck = [...aiShuffled].sort(() => Math.random() - 0.5);
+    aiDeckRef.current = aiDeck;
+    aiHandRef.current = aiDeck.slice(0, 4);
+    aiNextRef.current = aiDeck[4] || aiDeck[0];
+    aiQueueRef.current = aiDeck.slice(5);
   }, [deck]);
 
   const spawnUnit = useCallback((card: GameCard, x: number, y: number, side: 'player' | 'enemy') => {
@@ -215,12 +233,12 @@ const BattleArena = () => {
   // Keep ref updated
   spawnUnitRef.current = spawnUnit;
 
-  // Elixir regen
+  // Elixir regen - same rate for both player and AI
   useEffect(() => {
     const rate = isDoubleElixir ? 0.5 : 1;
     const interval = setInterval(() => {
       setElixir(prev => Math.min(prev + 0.5, maxElixir));
-      enemyElixir.current = Math.min(enemyElixir.current + 0.5 * (isDoubleElixir ? 2 : 1), 10);
+      enemyElixir.current = Math.min(enemyElixir.current + 0.5, 10);
     }, 1000 * rate);
     return () => clearInterval(interval);
   }, [maxElixir, isDoubleElixir]);
@@ -320,20 +338,51 @@ const BattleArena = () => {
     return () => clearInterval(interval);
   }, [setBattleResult, setScreen, setProfile, isRiverRace, getEnemyTowerHP, getPlayerTowerHP]);
 
-  // Enemy AI - smarter deployment (use refs to avoid restarting)
+  // Enemy AI - uses own deck with proper card cycle
   useEffect(() => {
     const interval = setInterval(() => {
-      const deployable = deck.filter(c => c.type === 'troop' || c.type === 'building');
-      if (!deployable.length) return;
+      const aiHand = aiHandRef.current;
+      if (!aiHand.length) return;
       
-      const affordable = deployable.filter(c => c.elixir <= enemyElixir.current);
+      const affordable = aiHand.filter(c => c.elixir <= enemyElixir.current);
       if (affordable.length === 0) return;
       
-      const card = affordable[Math.floor(Math.random() * affordable.length)];
+      const cardIdx = aiHand.indexOf(affordable[Math.floor(Math.random() * affordable.length)]);
+      const card = aiHand[cardIdx];
       enemyElixir.current -= card.elixir;
       
-      if (card.type === 'building') {
-        // Enemy deploys buildings on their side
+      // AI card cycle: replace played card with next, shift queue
+      const nextCard = aiNextRef.current;
+      if (nextCard) {
+        aiHandRef.current = aiHand.map((c, i) => i === cardIdx ? nextCard : c);
+        const queue = aiQueueRef.current;
+        aiNextRef.current = queue[0] || card;
+        aiQueueRef.current = [...queue.slice(1), card];
+      }
+      
+      if (card.type === 'spell') {
+        // AI spell: target player units or towers
+        const playerUnits = deployedUnitsRef.current.filter(u => u.side === 'player' && u.hp > 0);
+        let targetX = 50, targetY = 75;
+        if (playerUnits.length > 0) {
+          const target = playerUnits[Math.floor(Math.random() * playerUnits.length)];
+          targetX = target.x; targetY = target.y;
+        }
+        // Apply spell damage
+        const splash = (card.splashRadius || 2) * 5;
+        setDeployedUnits(units => units.map(u => {
+          if (u.side === 'enemy') return u;
+          const dist = Math.sqrt((targetX - u.x) ** 2 + (targetY - u.y) ** 2);
+          if (dist <= splash) return { ...u, hp: u.hp - card.damage };
+          return u;
+        }));
+        setTowers(t => t.map(tower => {
+          if (tower.side === 'enemy') return tower;
+          const dist = Math.sqrt((targetX - tower.x) ** 2 + (targetY - tower.y) ** 2);
+          if (dist <= splash) return { ...tower, hp: Math.max(0, tower.hp - card.damage) };
+          return tower;
+        }));
+      } else if (card.type === 'building') {
         const deployX = 30 + Math.random() * 40;
         const deployY = 10 + Math.random() * 15;
         spawnUnit(card, deployX, deployY, 'enemy');
@@ -354,7 +403,7 @@ const BattleArena = () => {
       }
     }, 3500);
     return () => clearInterval(interval);
-  }, [deck, spawnUnit]);
+  }, [spawnUnit]);
 
   // Bridge and river constants
   const RIVER_TOP = 47;
@@ -586,10 +635,33 @@ const BattleArena = () => {
               }
             }
           } else if (!isBuilding) {
-            // No target - move towards enemy side (buildings stay)
-            const moveDir = unit.side === 'player' ? -1 : 1;
+            // No target - move towards enemy side via bridge if ground
             unit.targetId = null;
-            unit.y = unit.y + moveDir * speed;
+            if (unit.card.unitType !== 'air') {
+              // Ground troops must use bridges
+              const defaultTargetY = unit.side === 'player' ? 4 : 88;
+              if (needsCrossRiver(unit.y, defaultTargetY, unit.side)) {
+                const bridge = getNearestBridge(unit.x);
+                const distToBridge = Math.sqrt((unit.x - bridge.x) ** 2 + (unit.y - bridge.y) ** 2);
+                if (distToBridge > 3) {
+                  const dx = (bridge.x - unit.x) / distToBridge;
+                  const dy = (bridge.y - unit.y) / distToBridge;
+                  unit.x += dx * speed;
+                  unit.y += dy * speed;
+                } else {
+                  // At bridge, cross
+                  const moveDir = unit.side === 'player' ? -1 : 1;
+                  unit.y += moveDir * speed;
+                }
+              } else {
+                const moveDir = unit.side === 'player' ? -1 : 1;
+                unit.y += moveDir * speed;
+              }
+            } else {
+              // Air units fly straight
+              const moveDir = unit.side === 'player' ? -1 : 1;
+              unit.y += moveDir * speed;
+            }
           }
         }
 
@@ -760,13 +832,19 @@ const BattleArena = () => {
       spawnUnit(card, ax, ay, 'player');
     }
     
+    // Proper 4-card cycle: next replaces played card, played goes to end of queue
+    const playedCard = card;
     setHand(prev => {
       const n = [...prev];
       n[selectedCard] = nextCard!;
       return n;
     });
-    const rem = deck.filter(c => !hand.includes(c) && c.id !== nextCard?.id);
-    setNextCard(rem[Math.floor(Math.random() * rem.length)] || deck[0]);
+    setNextCard(cardQueue[0] || playedCard);
+    setCardQueue(prev => {
+      const next = prev.slice(1);
+      next.push(playedCard);
+      return next;
+    });
     setSelectedCard(null);
   }, [selectedCard, hand, elixir, nextCard, deck, spawnUnit]);
 
@@ -789,7 +867,7 @@ const BattleArena = () => {
       {/* Top bar */}
       <div className="flex items-center justify-between px-3 py-1.5 bg-[hsl(220,20%,10%,0.95)] z-20 border-b border-border">
         <div className="flex items-center gap-1.5">
-          <span className="text-blue-400 font-bold font-display text-[10px]">YOU</span>
+          <span className="text-blue-400 font-bold font-display text-[10px]">{t('battle.you', language)}</span>
           <div className="flex gap-0.5">{[0,1,2].map(i => <span key={i} className={`text-[10px] ${i < pCrowns ? 'text-primary' : 'text-muted-foreground/20'}`}>⭐</span>)}</div>
         </div>
         <div className={`px-3 py-0.5 rounded-full font-display font-bold text-sm ${isDoubleElixir ? 'bg-accent/20 text-accent' : 'bg-muted text-primary'}`}>
@@ -797,7 +875,7 @@ const BattleArena = () => {
         </div>
         <div className="flex items-center gap-1.5">
           <div className="flex gap-0.5">{[0,1,2].map(i => <span key={i} className={`text-[10px] ${i < eCrowns ? 'text-accent' : 'text-muted-foreground/20'}`}>⭐</span>)}</div>
-          <span className="text-red-400 font-bold font-display text-[10px]">FOE</span>
+          <span className="text-red-400 font-bold font-display text-[10px]">{t('battle.foe', language)}</span>
         </div>
       </div>
 
@@ -988,7 +1066,7 @@ const BattleArena = () => {
         {selectedCard !== null && (
           <div className="absolute bottom-0 left-0 right-0 top-1/2 border-t-2 border-dashed border-primary/20 bg-primary/5 pointer-events-none">
             <div className="absolute top-0 left-0 right-0 text-center text-[8px] text-primary/60 uppercase tracking-wider py-1">
-              Tap to deploy
+              {t('battle.tap_deploy', language)}
             </div>
           </div>
         )}

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useGame } from '@/context/GameContext';
+import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { useSettings } from '@/context/SettingsContext';
 import { getArenaForTrophies, trophyRoadRewards, getXpForLevel, getLevelReward } from '@/data/cards';
@@ -240,7 +241,13 @@ const MainMenu = () => {
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => setScreen('matchmaking')}
+            onClick={() => {
+              if (deck.length < 8) {
+                toast.error(t('battle.deck_incomplete', language));
+                return;
+              }
+              setScreen('matchmaking');
+            }}
             className="btn-battle text-lg flex items-center gap-2"
           >
             <Swords className="w-5 h-5" />

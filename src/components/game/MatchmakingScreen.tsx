@@ -127,7 +127,7 @@ const MatchmakingScreen = () => {
                 {t('matchmaking.looking_for', language)}
               </p>
               <div className="text-xs text-muted-foreground font-mono">
-                {elapsed}s / {MATCHMAKING_TIMEOUT}s
+                {elapsed}s
               </div>
               {/* Trophy range */}
               <div className="mt-3 bg-card border border-border rounded-lg px-4 py-2 inline-block">

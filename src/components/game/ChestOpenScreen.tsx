@@ -14,12 +14,17 @@ const ChestOpenScreen = () => {
 
   const readyChest = chests.find(c => c.isReady);
 
+  // Get player arena for scaling rewards
+  const playerArena = (() => { try { const p = JSON.parse(localStorage.getItem('player_progress_cache') || '{}'); return p.arena || 1; } catch { return 1; } })();
+  const arenaPool = allCards.filter(c => c.unlockArena <= playerArena);
+
   const openChest = () => {
-    // Generate random rewards
+    // Generate random rewards scaled to player's arena
     const numCards = readyChest?.cards || 3;
+    const pool = arenaPool.length > 0 ? arenaPool : allCards;
     const rewardCards: typeof rewards = [];
     for (let i = 0; i < numCards; i++) {
-      const card = allCards[Math.floor(Math.random() * allCards.length)];
+      const card = pool[Math.floor(Math.random() * pool.length)];
       rewardCards.push({ emoji: card.emoji, name: card.name, count: 1 + Math.floor(Math.random() * 5), rarity: card.rarity });
     }
     rewardCards.push({ emoji: '💰', name: 'Gold', count: 100 + Math.floor(Math.random() * 500), rarity: 'common' });
