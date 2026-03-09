@@ -178,13 +178,12 @@ const getHeroSlots = (level: number): number => {
 };
 
 const getActiveHeroSlots = (): string[] => {
-  try {
-    return JSON.parse(localStorage.getItem('hero_slots') || '[]');
-  } catch { return []; }
+  // No longer used - hero activation is now position-based
+  return [];
 };
 
-const saveHeroSlots = (slots: string[]) => {
-  localStorage.setItem('hero_slots', JSON.stringify(slots));
+const saveHeroSlots = (_slots: string[]) => {
+  // No longer used - hero activation is now position-based
 };
 
 const isHeroUnlocked = (cardId: string): boolean => {
@@ -247,12 +246,6 @@ const CardCollection = () => {
     const newDecks = [...decks];
     if (isInDeck(card)) {
       newDecks[deckSlot] = newDecks[deckSlot].filter(d => d.id !== card.id);
-      // Remove from hero slots if removed from deck
-      if (heroSlots.includes(card.id)) {
-        const newSlots = heroSlots.filter(s => s !== card.id);
-        setHeroSlots(newSlots);
-        saveHeroSlots(newSlots);
-      }
     } else {
       newDecks[deckSlot] = [...newDecks[deckSlot], card];
     }
@@ -260,18 +253,10 @@ const CardCollection = () => {
     if (deckSlot === 0) setDeck(newDecks[0]);
   };
 
-  const toggleHeroSlot = (cardId: string) => {
-    if (heroSlots.includes(cardId)) {
-      const newSlots = heroSlots.filter(s => s !== cardId);
-      setHeroSlots(newSlots);
-      saveHeroSlots(newSlots);
-    } else if (heroSlots.length < maxHeroSlots) {
-      const newSlots = [...heroSlots, cardId];
-      setHeroSlots(newSlots);
-      saveHeroSlots(newSlots);
-    } else {
-      toast.error(`${t('cards.slots_available', language)}: ${maxHeroSlots}`);
-    }
+  // Helper: check if a card is in a hero slot (first N positions of current deck)
+  const isInHeroSlot = (cardId: string) => {
+    const idx = currentDeck.findIndex(c => c.id === cardId);
+    return idx >= 0 && idx < maxHeroSlots;
   };
 
   const toggleEquipEmote = (emoteId: string) => {
