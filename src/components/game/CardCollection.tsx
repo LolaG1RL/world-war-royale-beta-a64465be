@@ -178,13 +178,12 @@ const getHeroSlots = (level: number): number => {
 };
 
 const getActiveHeroSlots = (): string[] => {
-  try {
-    return JSON.parse(localStorage.getItem('hero_slots') || '[]');
-  } catch { return []; }
+  // No longer used - hero activation is now position-based
+  return [];
 };
 
-const saveHeroSlots = (slots: string[]) => {
-  localStorage.setItem('hero_slots', JSON.stringify(slots));
+const saveHeroSlots = (_slots: string[]) => {
+  // No longer used - hero activation is now position-based
 };
 
 const isHeroUnlocked = (cardId: string): boolean => {
@@ -207,7 +206,7 @@ const CardCollection = () => {
   const [equipped, setEquipped] = useState(() => getEquippedEmotes());
   const [, forceUpdate] = useState(0);
   const [detailTab, setDetailTab] = useState<'overview' | 'matchup' | 'hero'>('overview');
-  const [heroSlots, setHeroSlots] = useState<string[]>(getActiveHeroSlots());
+  // heroSlots state removed - hero activation is now position-based in the deck
 
   const maxHeroSlots = getHeroSlots(profile.level);
 
@@ -247,12 +246,6 @@ const CardCollection = () => {
     const newDecks = [...decks];
     if (isInDeck(card)) {
       newDecks[deckSlot] = newDecks[deckSlot].filter(d => d.id !== card.id);
-      // Remove from hero slots if removed from deck
-      if (heroSlots.includes(card.id)) {
-        const newSlots = heroSlots.filter(s => s !== card.id);
-        setHeroSlots(newSlots);
-        saveHeroSlots(newSlots);
-      }
     } else {
       newDecks[deckSlot] = [...newDecks[deckSlot], card];
     }
@@ -260,18 +253,10 @@ const CardCollection = () => {
     if (deckSlot === 0) setDeck(newDecks[0]);
   };
 
-  const toggleHeroSlot = (cardId: string) => {
-    if (heroSlots.includes(cardId)) {
-      const newSlots = heroSlots.filter(s => s !== cardId);
-      setHeroSlots(newSlots);
-      saveHeroSlots(newSlots);
-    } else if (heroSlots.length < maxHeroSlots) {
-      const newSlots = [...heroSlots, cardId];
-      setHeroSlots(newSlots);
-      saveHeroSlots(newSlots);
-    } else {
-      toast.error(`${t('cards.slots_available', language)}: ${maxHeroSlots}`);
-    }
+  // Helper: check if a card is in a hero slot (first N positions of current deck)
+  const isInHeroSlot = (cardId: string) => {
+    const idx = currentDeck.findIndex(c => c.id === cardId);
+    return idx >= 0 && idx < maxHeroSlots;
   };
 
   const toggleEquipEmote = (emoteId: string) => {
@@ -339,27 +324,40 @@ const CardCollection = () => {
           {/* Current deck */}
           <div className="px-2 py-2 bg-[hsl(220,20%,13%)] border-b border-border">
             <div className="grid grid-cols-8 gap-1">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i}>
-                  {currentDeck[i] ? (
-                    <div onClick={() => toggleDeck(currentDeck[i])} className="relative">
-                      <CardComponent card={currentDeck[i]} size="xs" showElixir={false} />
-                      {isHeroUnlocked(currentDeck[i].id) && currentDeck[i].heroBonus && (
-                        <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full flex items-center justify-center z-10 text-[6px] ${heroSlots.includes(currentDeck[i].id) ? 'bg-amber-500 animate-pulse' : 'bg-muted-foreground/40'}`}>
-                          ⭐
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="w-10 h-13 rounded border border-dashed border-muted-foreground/20 bg-muted/10" />
-                  )}
-                </div>
-              ))}
+              {Array.from({ length: 8 }).map((_, i) => {
+                const isHeroSlot = i < maxHeroSlots;
+                const card = currentDeck[i];
+                const isChampionInHeroSlot = isHeroSlot && card && card.heroBonus && isHeroUnlocked(card.id);
+                return (
+                  <div key={i} className="relative">
+                    {/* Golden hero slot outline */}
+                    {isHeroSlot && (
+                      <div className="absolute -inset-[2px] rounded-md border-2 border-amber-400 z-0 pointer-events-none" style={{ boxShadow: '0 0 6px rgba(251,191,36,0.4), inset 0 0 4px rgba(251,191,36,0.15)' }} />
+                    )}
+                    {card ? (
+                      <div onClick={() => toggleDeck(card)} className="relative z-[1]">
+                        <CardComponent card={card} size="xs" showElixir={false} />
+                        {isChampionInHeroSlot && (
+                          <div className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center z-10 text-[7px] bg-amber-500 animate-pulse shadow-[0_0_6px_rgba(251,191,36,0.6)]">
+                            ⭐
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className={`w-10 h-13 rounded border border-dashed bg-muted/10 relative z-[1] ${isHeroSlot ? 'border-amber-400/40' : 'border-muted-foreground/20'}`}>
+                        {isHeroSlot && (
+                          <div className="absolute inset-0 flex items-center justify-center text-[8px] text-amber-400/60">⭐</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
             <div className="flex items-center justify-between mt-1.5 px-1">
               <span className="text-[9px] text-muted-foreground">Avg Elixir: <span className="text-elixir font-bold">{avgElixir}</span></span>
               <div className="flex items-center gap-2">
-                <span className="text-[9px] text-amber-400">⭐ Hero Slots: {heroSlots.length}/{maxHeroSlots}</span>
+                {maxHeroSlots > 0 && <span className="text-[9px] text-amber-400">⭐ Hero Slots: {maxHeroSlots}</span>}
                 <span className="text-[9px] text-muted-foreground">{currentDeck.length}/8 cards</span>
               </div>
             </div>
@@ -754,8 +752,10 @@ const CardCollection = () => {
                                     <span className="font-bold text-amber-400">{maxHeroSlots}</span>
                                   </div>
                                   <div className="flex items-center justify-between text-[10px]">
-                                    <span className="text-muted-foreground">Hero Slots Used</span>
-                                    <span className="font-bold text-foreground">{heroSlots.length}/{maxHeroSlots}</span>
+                                    <span className="text-muted-foreground">In Hero Slot?</span>
+                                    <span className={`font-bold ${isInHeroSlot(enriched.id) ? 'text-amber-400' : 'text-muted-foreground'}`}>
+                                      {isInHeroSlot(enriched.id) ? '✅ Yes — Bonus Active' : '❌ No'}
+                                    </span>
                                   </div>
                                   <div className="h-px bg-border my-1" />
                                   <div className="text-[9px] text-muted-foreground space-y-0.5">
@@ -766,21 +766,17 @@ const CardCollection = () => {
                                 </div>
                               </div>
 
-                              {/* Slot toggle */}
+                              {/* Position-based hero slot info */}
                               {heroUnlocked && isInDeck(enriched) && maxHeroSlots > 0 && (
-                                <button
-                                  onClick={() => toggleHeroSlot(enriched.id)}
-                                  className={`w-full py-2.5 rounded-xl font-black text-xs uppercase tracking-wider ${
-                                    heroSlots.includes(enriched.id)
-                                      ? 'bg-amber-500 text-black'
-                                      : heroSlots.length < maxHeroSlots
-                                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
-                                        : 'bg-muted text-muted-foreground cursor-not-allowed'
-                                  }`}
-                                  disabled={!heroSlots.includes(enriched.id) && heroSlots.length >= maxHeroSlots}
-                                >
-                                  {heroSlots.includes(enriched.id) ? '⭐ Remove from Hero Slot' : '⭐ Place in Hero Slot'}
-                                </button>
+                                <div className={`w-full py-2.5 rounded-xl font-black text-xs uppercase tracking-wider text-center ${
+                                  isInHeroSlot(enriched.id)
+                                    ? 'bg-amber-500 text-black'
+                                    : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+                                }`}>
+                                  {isInHeroSlot(enriched.id) 
+                                    ? `⭐ Active in Hero Slot ${currentDeck.findIndex(c => c.id === enriched.id) + 1}` 
+                                    : `⭐ Move to slot ${maxHeroSlots === 1 ? '1' : '1 or 2'} to activate`}
+                                </div>
                               )}
                               {heroUnlocked && !isInDeck(enriched) && (
                                 <div className="text-[10px] text-muted-foreground text-center">Add this card to your deck first to use a hero slot</div>
@@ -791,8 +787,8 @@ const CardCollection = () => {
 
                               <div className="mt-3 rounded-lg bg-accent/10 border border-accent/20 px-3 py-2">
                                 <p className="text-[9px] text-accent leading-relaxed">
-                                  ⚠️ Hero bonuses/passives only activate when the card is placed in a Hero Slot. 
-                                  Max 2 hero version cards per deck. Cards not in a hero slot will function as normal cards.
+                                  ⚠️ Hero bonuses only activate when the champion is placed in the first {maxHeroSlots || 0} golden-outlined slot{maxHeroSlots !== 1 ? 's' : ''} of your deck. 
+                                  Drag or reorder cards to place champions in hero slots.
                                 </p>
                               </div>
                             </div>

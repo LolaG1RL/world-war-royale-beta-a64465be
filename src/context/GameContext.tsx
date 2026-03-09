@@ -161,7 +161,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!loaded) return;
     markCardsOwned(deck.map(c => c.id));
-  }, [deck, loaded]);
+    // Save deck IDs and player level to localStorage for battle hero slot checks
+    localStorage.setItem('current_deck_ids', JSON.stringify(deck.map(c => c.id)));
+    localStorage.setItem('player_level', String(profile.level));
+  }, [deck, loaded, profile.level]);
 
   // Keep profile name in sync with username
   const currentProfile = { ...profile, name: username || profile.name };
