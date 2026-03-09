@@ -752,8 +752,10 @@ const CardCollection = () => {
                                     <span className="font-bold text-amber-400">{maxHeroSlots}</span>
                                   </div>
                                   <div className="flex items-center justify-between text-[10px]">
-                                    <span className="text-muted-foreground">Hero Slots Used</span>
-                                    <span className="font-bold text-foreground">{heroSlots.length}/{maxHeroSlots}</span>
+                                    <span className="text-muted-foreground">In Hero Slot?</span>
+                                    <span className={`font-bold ${isInHeroSlot(enriched.id) ? 'text-amber-400' : 'text-muted-foreground'}`}>
+                                      {isInHeroSlot(enriched.id) ? '✅ Yes — Bonus Active' : '❌ No'}
+                                    </span>
                                   </div>
                                   <div className="h-px bg-border my-1" />
                                   <div className="text-[9px] text-muted-foreground space-y-0.5">
@@ -764,21 +766,17 @@ const CardCollection = () => {
                                 </div>
                               </div>
 
-                              {/* Slot toggle */}
+                              {/* Position-based hero slot info */}
                               {heroUnlocked && isInDeck(enriched) && maxHeroSlots > 0 && (
-                                <button
-                                  onClick={() => toggleHeroSlot(enriched.id)}
-                                  className={`w-full py-2.5 rounded-xl font-black text-xs uppercase tracking-wider ${
-                                    heroSlots.includes(enriched.id)
-                                      ? 'bg-amber-500 text-black'
-                                      : heroSlots.length < maxHeroSlots
-                                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
-                                        : 'bg-muted text-muted-foreground cursor-not-allowed'
-                                  }`}
-                                  disabled={!heroSlots.includes(enriched.id) && heroSlots.length >= maxHeroSlots}
-                                >
-                                  {heroSlots.includes(enriched.id) ? '⭐ Remove from Hero Slot' : '⭐ Place in Hero Slot'}
-                                </button>
+                                <div className={`w-full py-2.5 rounded-xl font-black text-xs uppercase tracking-wider text-center ${
+                                  isInHeroSlot(enriched.id)
+                                    ? 'bg-amber-500 text-black'
+                                    : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+                                }`}>
+                                  {isInHeroSlot(enriched.id) 
+                                    ? `⭐ Active in Hero Slot ${currentDeck.findIndex(c => c.id === enriched.id) + 1}` 
+                                    : `⭐ Move to slot ${maxHeroSlots === 1 ? '1' : '1 or 2'} to activate`}
+                                </div>
                               )}
                               {heroUnlocked && !isInDeck(enriched) && (
                                 <div className="text-[10px] text-muted-foreground text-center">Add this card to your deck first to use a hero slot</div>
@@ -789,8 +787,8 @@ const CardCollection = () => {
 
                               <div className="mt-3 rounded-lg bg-accent/10 border border-accent/20 px-3 py-2">
                                 <p className="text-[9px] text-accent leading-relaxed">
-                                  ⚠️ Hero bonuses/passives only activate when the card is placed in a Hero Slot. 
-                                  Max 2 hero version cards per deck. Cards not in a hero slot will function as normal cards.
+                                  ⚠️ Hero bonuses only activate when the champion is placed in the first {maxHeroSlots || 0} golden-outlined slot{maxHeroSlots !== 1 ? 's' : ''} of your deck. 
+                                  Drag or reorder cards to place champions in hero slots.
                                 </p>
                               </div>
                             </div>
