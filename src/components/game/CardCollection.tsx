@@ -206,7 +206,7 @@ const CardCollection = () => {
   const [equipped, setEquipped] = useState(() => getEquippedEmotes());
   const [, forceUpdate] = useState(0);
   const [detailTab, setDetailTab] = useState<'overview' | 'matchup' | 'hero'>('overview');
-  const [heroSlots, setHeroSlots] = useState<string[]>(getActiveHeroSlots());
+  // heroSlots state removed - hero activation is now position-based in the deck
 
   const maxHeroSlots = getHeroSlots(profile.level);
 

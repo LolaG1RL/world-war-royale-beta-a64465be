@@ -531,9 +531,11 @@ const BattleArena = () => {
           }
         }
 
-        // Check for Joan of Arc passive: +20% damage bonus while alive AND hero version in a hero slot
-        const heroSlots: string[] = (() => { try { return JSON.parse(localStorage.getItem('hero_slots') || '[]'); } catch { return []; } })();
-        const joanInHeroSlot = heroSlots.includes('joan-of-arc');
+        // Check for Joan of Arc passive: +20% damage bonus while alive AND in a hero slot (first N positions of deck)
+        const heroSlotCount = (() => { const lvl = parseInt(localStorage.getItem('player_level') || '1'); if (lvl >= 26) return 2; if (lvl >= 11) return 1; return 0; })();
+        const playerDeckIds: string[] = (() => { try { return JSON.parse(localStorage.getItem('current_deck_ids') || '[]'); } catch { return []; } })();
+        const joanDeckIndex = playerDeckIds.indexOf('joan-of-arc');
+        const joanInHeroSlot = joanDeckIndex >= 0 && joanDeckIndex < heroSlotCount;
         const joanAlivePlayer = joanInHeroSlot && units.some(u => u.card.id === 'joan-of-arc' && u.side === 'player' && u.hp > 0);
         const joanAliveEnemy = units.some(u => u.card.id === 'joan-of-arc' && u.side === 'enemy' && u.hp > 0);
 
