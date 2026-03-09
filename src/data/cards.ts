@@ -581,6 +581,11 @@ export const getArenaForTrophies = (trophies: number) => {
   return [...arenas].reverse().find(a => trophies >= a.trophies) || arenas[0];
 };
 
+// Get cards available up to a given arena
+export const getCardsForArena = (arenaId: number): GameCard[] => {
+  return allCards.filter(c => c.unlockArena <= arenaId);
+};
+
 // Helper functions for combat mechanics
 export const getSpeedValue = (speed: MovementSpeed | undefined): number => {
   if (!speed) return SPEED_VALUES.medium;
