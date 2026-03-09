@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { GameCard, getSpeedValue, canTarget, getRangeValue, SPEED_VALUES } from '@/data/cards';
+import { GameCard, getSpeedValue, canTarget, getRangeValue, SPEED_VALUES, allCards } from '@/data/cards';
 import { useGame } from '@/context/GameContext';
 import CardComponent from './CardComponent';
 import { motion, AnimatePresence } from 'framer-motion';

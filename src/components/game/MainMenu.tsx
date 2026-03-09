@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useGame } from '@/context/GameContext';
+import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { useSettings } from '@/context/SettingsContext';
 import { getArenaForTrophies, trophyRoadRewards, getXpForLevel, getLevelReward } from '@/data/cards';
