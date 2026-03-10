@@ -1072,7 +1072,10 @@ const BattleArena = () => {
                 </>
               )}
               {abilityCooldown <= 0 && !abilityActive && (
-                <span className="text-[6px] font-bold text-[hsl(340,60%,65%)] uppercase">{t('battle.ready', language)}</span>
+                <div className="flex flex-col items-center">
+                  <span className="text-[6px] font-bold text-[hsl(340,60%,65%)] uppercase">{t('battle.ready', language)}</span>
+                  <span className="text-[7px] font-bold text-elixir">💧{getAbilityElixirCost(championCard.id)}</span>
+                </div>
               )}
             </motion.button>
             <div className="text-[7px] font-bold text-center text-foreground/70 mt-1 max-w-14 leading-tight">
