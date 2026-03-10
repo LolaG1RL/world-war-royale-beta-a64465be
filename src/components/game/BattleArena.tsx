@@ -348,7 +348,7 @@ const BattleArena = () => {
           localStorage.setItem('last_battle_crowns', String(netCrowns));
           const result = pCrowns >= eCrowns ? 'win' : 'lose';
           setBattleResult(result);
-          if (!isRiverRace && !isEventBattle) { 
+          if (!isNonTrophyBattle) { 
             const change = result === 'win' ? (20 + Math.floor(Math.random() * 21)) : -(10 + Math.floor(Math.random() * 21)); 
             localStorage.setItem('last_trophy_change', String(change)); 
             setProfile(prev => ({ ...prev, trophies: Math.max(0, prev.trophies + change), maxTrophies: result === 'win' ? Math.max(prev.maxTrophies, prev.trophies + change) : prev.maxTrophies, wins: result === 'win' ? prev.wins + 1 : prev.wins, losses: result === 'lose' ? prev.losses + 1 : prev.losses, threeCrownWins: result === 'win' && pCrowns >= 3 ? prev.threeCrownWins + 1 : prev.threeCrownWins })); 
