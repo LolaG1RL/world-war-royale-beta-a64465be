@@ -942,6 +942,9 @@ const BattleArena = () => {
           {deployedUnits.map(u => {
             const isBuilding = u.card.type === 'building';
             const isJoan = u.card.id === 'joan-of-arc' && u.hp > 0;
+            const isSmall = u.card.deployCount && u.card.deployCount >= 3;
+            const isLarge = (u.card.unitType === 'air' && (u.card.hp || 0) > 1000) || (u.card.hp || 0) > 2500;
+            const unitSize = isBuilding ? 'w-9 h-9' : isSmall ? 'w-5 h-5' : isLarge ? 'w-9 h-9' : 'w-7 h-7';
             return (
             <motion.div 
               key={u.key} 
@@ -960,10 +963,10 @@ const BattleArena = () => {
                 {isJoan && (
                   <div className="absolute -inset-2 rounded-full bg-amber-400/20 animate-pulse blur-sm" />
                 )}
-                <div className={`${isBuilding ? 'w-9 h-9 rounded-lg' : 'w-7 h-7 rounded-full'} flex items-center justify-center text-xs shadow-lg ${
+                <div className={`${unitSize} ${isBuilding ? 'rounded-lg' : 'rounded-sm'} flex items-center justify-center ${isSmall ? 'text-[8px]' : 'text-xs'} shadow-lg ${
                   u.side==='player'
-                    ? isBuilding ? 'bg-blue-900 border-2 border-blue-300' : 'bg-blue-700 border-2 border-blue-400'
-                    : isBuilding ? 'bg-red-900 border-2 border-red-300' : 'bg-red-700 border-2 border-red-400'
+                    ? isBuilding ? 'bg-blue-900/80 border-2 border-blue-300 outline outline-2 outline-blue-400/50' : 'bg-blue-900/60 border-2 border-blue-400 outline outline-1 outline-blue-300/40'
+                    : isBuilding ? 'bg-red-900/80 border-2 border-red-300 outline outline-2 outline-red-400/50' : 'bg-red-900/60 border-2 border-red-400 outline outline-1 outline-red-300/40'
                 } ${u.isCharging ? 'animate-pulse ring-2 ring-primary' : ''}`}>
                   {u.card.emoji}
                 </div>
