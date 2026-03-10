@@ -170,10 +170,10 @@ const MatchmakingScreen = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              <h2 className="font-display font-bold text-sm text-muted-foreground mb-2">
-                {t('matchmaking.no_players', language)}
+              <h2 className="font-display font-bold text-sm text-primary mb-2">
+                {t('matchmaking.found', language)}
               </h2>
-              <p className="text-[10px] text-primary font-bold">
+              <p className="text-[10px] text-muted-foreground font-bold">
                 {t('matchmaking.ai_opponent', language)}
               </p>
             </motion.div>

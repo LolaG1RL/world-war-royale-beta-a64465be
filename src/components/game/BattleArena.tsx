@@ -46,6 +46,19 @@ const BattleArena = () => {
   const { language } = useSettings();
   const isRiverRace = !!localStorage.getItem('river_race_battle');
   const isEventBattle = !!localStorage.getItem('event_battle');
+  const isFriendlyBattle = !!localStorage.getItem('friendly_battle');
+  const isNonTrophyBattle = isRiverRace || isEventBattle || isFriendlyBattle;
+
+  // Read event modifiers (e.g. triple elixir, rage, etc.)
+  const eventModifiers = (() => {
+    try {
+      const eb = localStorage.getItem('event_battle');
+      if (!eb) return null;
+      return JSON.parse(eb);
+    } catch { return null; }
+  })();
+  const elixirMultiplier = eventModifiers?.elixirMultiplier || 1;
+  const rageMode = eventModifiers?.rageMode || false;
   const [showIntro, setShowIntro] = useState(true);
   const playerBanner = getPlayerBanner();
   const [elixir, setElixir] = useState(5);
@@ -147,7 +160,7 @@ const BattleArena = () => {
           localStorage.setItem('war_pass_data', JSON.stringify(s1));
           localStorage.setItem('last_battle_crowns', String(net));
           setBattleResult('win');
-          if (!isRiverRace && !isEventBattle) { const gain = 20 + Math.floor(Math.random() * 21); localStorage.setItem('last_trophy_change', String(gain)); setProfile(prev => ({ ...prev, trophies: prev.trophies + gain, maxTrophies: Math.max(prev.maxTrophies, prev.trophies + gain), wins: prev.wins + 1, threeCrownWins: pC >= 3 ? prev.threeCrownWins + 1 : prev.threeCrownWins })); }
+          if (!isNonTrophyBattle) { const gain = 20 + Math.floor(Math.random() * 21); localStorage.setItem('last_trophy_change', String(gain)); setProfile(prev => ({ ...prev, trophies: prev.trophies + gain, maxTrophies: Math.max(prev.maxTrophies, prev.trophies + gain), wins: prev.wins + 1, threeCrownWins: pC >= 3 ? prev.threeCrownWins + 1 : prev.threeCrownWins })); }
           if (isRiverRace) { setProfile(prev => ({ ...prev, warDayWins: prev.warDayWins + 1 })); }
           setScreen('result');
           break;
@@ -163,7 +176,7 @@ const BattleArena = () => {
           localStorage.setItem('war_pass_data', JSON.stringify(s2));
           localStorage.setItem('last_battle_crowns', String(net2));
           setBattleResult('lose');
-          if (!isRiverRace && !isEventBattle) { const loss = 10 + Math.floor(Math.random() * 21); localStorage.setItem('last_trophy_change', String(-loss)); setProfile(prev => ({ ...prev, losses: prev.losses + 1, trophies: Math.max(0, prev.trophies - loss) })); }
+          if (!isNonTrophyBattle) { const loss = 10 + Math.floor(Math.random() * 21); localStorage.setItem('last_trophy_change', String(-loss)); setProfile(prev => ({ ...prev, losses: prev.losses + 1, trophies: Math.max(0, prev.trophies - loss) })); }
           setScreen('result');
           break;
         }
@@ -233,15 +246,16 @@ const BattleArena = () => {
   // Keep ref updated
   spawnUnitRef.current = spawnUnit;
 
-  // Elixir regen - same rate for both player and AI
+  // Elixir regen - same rate for both player and AI, affected by event modifiers
   useEffect(() => {
-    const rate = isDoubleElixir ? 0.5 : 1;
+    const doubleRate = isDoubleElixir ? 2 : 1;
+    const totalMultiplier = doubleRate * elixirMultiplier;
     const interval = setInterval(() => {
-      setElixir(prev => Math.min(prev + 0.5, maxElixir));
-      enemyElixir.current = Math.min(enemyElixir.current + 0.5, 10);
-    }, 1000 * rate);
+      setElixir(prev => Math.min(prev + 0.5 * totalMultiplier, maxElixir));
+      enemyElixir.current = Math.min(enemyElixir.current + 0.5 * totalMultiplier, 10);
+    }, 1000);
     return () => clearInterval(interval);
-  }, [maxElixir, isDoubleElixir]);
+  }, [maxElixir, isDoubleElixir, elixirMultiplier]);
 
   // Champion ability cooldown tick
   useEffect(() => {
@@ -252,8 +266,21 @@ const BattleArena = () => {
     return () => clearInterval(interval);
   }, [abilityCooldown > 0]);
 
+  // Champion ability elixir cost (3 for Joan, 4 for Alexander, 3 default)
+  const getAbilityElixirCost = (cardId: string) => {
+    if (cardId === 'alexander-the-great') return 4;
+    if (cardId === 'joan-of-arc') return 3;
+    if (cardId === 'cleopatra') return 3;
+    if (cardId === 'genghis-khan') return 4;
+    if (cardId === 'napoleon') return 3;
+    return 3;
+  };
+
   const activateAbility = useCallback(() => {
     if (!championCard?.ability || abilityCooldown > 0 || abilityActive) return;
+    const cost = getAbilityElixirCost(championCard.id);
+    if (elixir < cost) return; // Not enough elixir
+    setElixir(prev => prev - cost);
     setAbilityActive(true);
     setAbilityCooldown(championCard.ability.cooldown || 10);
 
@@ -299,7 +326,7 @@ const BattleArena = () => {
     } else {
       setTimeout(() => setAbilityActive(false), 3000);
     }
-  }, [championCard, abilityCooldown, abilityActive, towers]);
+  }, [championCard, abilityCooldown, abilityActive, towers, elixir]);
 
   // Timer - use refs to avoid restarting interval
   const isDoubleElixirRef = useRef(isDoubleElixir);
@@ -321,7 +348,7 @@ const BattleArena = () => {
           localStorage.setItem('last_battle_crowns', String(netCrowns));
           const result = pCrowns >= eCrowns ? 'win' : 'lose';
           setBattleResult(result);
-          if (!isRiverRace && !isEventBattle) { 
+          if (!isNonTrophyBattle) { 
             const change = result === 'win' ? (20 + Math.floor(Math.random() * 21)) : -(10 + Math.floor(Math.random() * 21)); 
             localStorage.setItem('last_trophy_change', String(change)); 
             setProfile(prev => ({ ...prev, trophies: Math.max(0, prev.trophies + change), maxTrophies: result === 'win' ? Math.max(prev.maxTrophies, prev.trophies + change) : prev.maxTrophies, wins: result === 'win' ? prev.wins + 1 : prev.wins, losses: result === 'lose' ? prev.losses + 1 : prev.losses, threeCrownWins: result === 'win' && pCrowns >= 3 ? prev.threeCrownWins + 1 : prev.threeCrownWins })); 
@@ -523,7 +550,7 @@ const BattleArena = () => {
       localStorage.setItem('war_pass_data', JSON.stringify(s));
       localStorage.setItem('last_battle_crowns', String(net));
       setBattleResult('win');
-      if (!isRiverRace && !isEventBattle) {
+      if (!isNonTrophyBattle) {
         const gain = 20 + Math.floor(Math.random() * 21);
         localStorage.setItem('last_trophy_change', String(gain));
         setProfile(prev => ({ ...prev, trophies: prev.trophies + gain, maxTrophies: Math.max(prev.maxTrophies, prev.trophies + gain), wins: prev.wins + 1, threeCrownWins: pC >= 3 ? prev.threeCrownWins + 1 : prev.threeCrownWins }));
@@ -546,7 +573,7 @@ const BattleArena = () => {
       localStorage.setItem('war_pass_data', JSON.stringify(s));
       localStorage.setItem('last_battle_crowns', String(net));
       setBattleResult('lose');
-      if (!isRiverRace && !isEventBattle) {
+      if (!isNonTrophyBattle) {
         const loss = 10 + Math.floor(Math.random() * 21);
         localStorage.setItem('last_trophy_change', String(-loss));
         setProfile(prev => ({ ...prev, losses: prev.losses + 1, trophies: Math.max(0, prev.trophies - loss) }));
@@ -638,18 +665,24 @@ const BattleArena = () => {
             // No target - move towards enemy side via bridge if ground
             unit.targetId = null;
             if (unit.card.unitType !== 'air') {
-              // Ground troops must use bridges
               const defaultTargetY = unit.side === 'player' ? 4 : 88;
-              if (needsCrossRiver(unit.y, defaultTargetY, unit.side)) {
-                const bridge = getNearestBridge(unit.x);
+              const bridge = getNearestBridge(unit.x);
+              const nearBridgeX = Math.abs(unit.x - bridge.x) <= 7;
+              const inRiverZone = unit.y >= RIVER_TOP && unit.y <= RIVER_BOTTOM;
+
+              // Hard river rule: ground units cannot path through river unless aligned with bridge
+              if (inRiverZone && !nearBridgeX) {
+                const dx = bridge.x - unit.x;
+                const step = Math.sign(dx) * Math.min(Math.abs(dx), speed * 1.2);
+                unit.x += step;
+              } else if (needsCrossRiver(unit.y, defaultTargetY, unit.side)) {
                 const distToBridge = Math.sqrt((unit.x - bridge.x) ** 2 + (unit.y - bridge.y) ** 2);
-                if (distToBridge > 3) {
+                if (distToBridge > 2.2) {
                   const dx = (bridge.x - unit.x) / distToBridge;
                   const dy = (bridge.y - unit.y) / distToBridge;
                   unit.x += dx * speed;
                   unit.y += dy * speed;
                 } else {
-                  // At bridge, cross
                   const moveDir = unit.side === 'player' ? -1 : 1;
                   unit.y += moveDir * speed;
                 }
@@ -915,6 +948,9 @@ const BattleArena = () => {
           {deployedUnits.map(u => {
             const isBuilding = u.card.type === 'building';
             const isJoan = u.card.id === 'joan-of-arc' && u.hp > 0;
+            const isSmall = u.card.deployCount && u.card.deployCount >= 3;
+            const isLarge = (u.card.unitType === 'air' && (u.card.hp || 0) > 1000) || (u.card.hp || 0) > 2500;
+            const unitSize = isBuilding ? 'w-9 h-9' : isSmall ? 'w-5 h-5' : isLarge ? 'w-9 h-9' : 'w-7 h-7';
             return (
             <motion.div 
               key={u.key} 
@@ -933,10 +969,10 @@ const BattleArena = () => {
                 {isJoan && (
                   <div className="absolute -inset-2 rounded-full bg-amber-400/20 animate-pulse blur-sm" />
                 )}
-                <div className={`${isBuilding ? 'w-9 h-9 rounded-lg' : 'w-7 h-7 rounded-full'} flex items-center justify-center text-xs shadow-lg ${
+                <div className={`${unitSize} ${isBuilding ? 'rounded-lg' : 'rounded-sm'} flex items-center justify-center ${isSmall ? 'text-[8px]' : 'text-xs'} shadow-lg ${
                   u.side==='player'
-                    ? isBuilding ? 'bg-blue-900 border-2 border-blue-300' : 'bg-blue-700 border-2 border-blue-400'
-                    : isBuilding ? 'bg-red-900 border-2 border-red-300' : 'bg-red-700 border-2 border-red-400'
+                    ? isBuilding ? 'bg-blue-900/80 border-2 border-blue-300 outline outline-2 outline-blue-400/50' : 'bg-blue-900/60 border-2 border-blue-400 outline outline-1 outline-blue-300/40'
+                    : isBuilding ? 'bg-red-900/80 border-2 border-red-300 outline outline-2 outline-red-400/50' : 'bg-red-900/60 border-2 border-red-400 outline outline-1 outline-red-300/40'
                 } ${u.isCharging ? 'animate-pulse ring-2 ring-primary' : ''}`}>
                   {u.card.emoji}
                 </div>
@@ -1021,7 +1057,7 @@ const BattleArena = () => {
             <motion.button
               whileTap={abilityCooldown <= 0 ? { scale: 0.9 } : {}}
               onClick={(e) => { e.stopPropagation(); activateAbility(); }}
-              disabled={abilityCooldown > 0}
+              disabled={abilityCooldown > 0 || elixir < getAbilityElixirCost(championCard.id)}
               className={`relative w-14 h-14 rounded-full border-2 flex flex-col items-center justify-center shadow-xl transition-all ${
                 abilityActive
                   ? 'bg-primary/30 border-primary ring-2 ring-primary/50 animate-pulse'
@@ -1045,7 +1081,10 @@ const BattleArena = () => {
                 </>
               )}
               {abilityCooldown <= 0 && !abilityActive && (
-                <span className="text-[6px] font-bold text-[hsl(340,60%,65%)] uppercase">{t('battle.ready', language)}</span>
+                <div className="flex flex-col items-center">
+                  <span className="text-[6px] font-bold text-[hsl(340,60%,65%)] uppercase">{t('battle.ready', language)}</span>
+                  <span className="text-[7px] font-bold text-elixir">💧{getAbilityElixirCost(championCard.id)}</span>
+                </div>
               )}
             </motion.button>
             <div className="text-[7px] font-bold text-center text-foreground/70 mt-1 max-w-14 leading-tight">
