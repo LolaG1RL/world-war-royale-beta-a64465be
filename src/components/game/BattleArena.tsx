@@ -246,15 +246,16 @@ const BattleArena = () => {
   // Keep ref updated
   spawnUnitRef.current = spawnUnit;
 
-  // Elixir regen - same rate for both player and AI
+  // Elixir regen - same rate for both player and AI, affected by event modifiers
   useEffect(() => {
-    const rate = isDoubleElixir ? 0.5 : 1;
+    const doubleRate = isDoubleElixir ? 2 : 1;
+    const totalMultiplier = doubleRate * elixirMultiplier;
     const interval = setInterval(() => {
-      setElixir(prev => Math.min(prev + 0.5, maxElixir));
-      enemyElixir.current = Math.min(enemyElixir.current + 0.5, 10);
-    }, 1000 * rate);
+      setElixir(prev => Math.min(prev + 0.5 * totalMultiplier, maxElixir));
+      enemyElixir.current = Math.min(enemyElixir.current + 0.5 * totalMultiplier, 10);
+    }, 1000);
     return () => clearInterval(interval);
-  }, [maxElixir, isDoubleElixir]);
+  }, [maxElixir, isDoubleElixir, elixirMultiplier]);
 
   // Champion ability cooldown tick
   useEffect(() => {
