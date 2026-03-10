@@ -1048,7 +1048,7 @@ const BattleArena = () => {
             <motion.button
               whileTap={abilityCooldown <= 0 ? { scale: 0.9 } : {}}
               onClick={(e) => { e.stopPropagation(); activateAbility(); }}
-              disabled={abilityCooldown > 0}
+              disabled={abilityCooldown > 0 || elixir < getAbilityElixirCost(championCard.id)}
               className={`relative w-14 h-14 rounded-full border-2 flex flex-col items-center justify-center shadow-xl transition-all ${
                 abilityActive
                   ? 'bg-primary/30 border-primary ring-2 ring-primary/50 animate-pulse'
