@@ -252,8 +252,21 @@ const BattleArena = () => {
     return () => clearInterval(interval);
   }, [abilityCooldown > 0]);
 
+  // Champion ability elixir cost (3 for Joan, 4 for Alexander, 3 default)
+  const getAbilityElixirCost = (cardId: string) => {
+    if (cardId === 'alexander-the-great') return 4;
+    if (cardId === 'joan-of-arc') return 3;
+    if (cardId === 'cleopatra') return 3;
+    if (cardId === 'genghis-khan') return 4;
+    if (cardId === 'napoleon') return 3;
+    return 3;
+  };
+
   const activateAbility = useCallback(() => {
     if (!championCard?.ability || abilityCooldown > 0 || abilityActive) return;
+    const cost = getAbilityElixirCost(championCard.id);
+    if (elixir < cost) return; // Not enough elixir
+    setElixir(prev => prev - cost);
     setAbilityActive(true);
     setAbilityCooldown(championCard.ability.cooldown || 10);
 
