@@ -346,13 +346,26 @@ const EventsScreen = () => {
     if (prog.completed) { toast.info(t('events.already_completed', language)); return; }
     if (event.maxLosses && event.maxLosses > 0 && prog.losses >= event.maxLosses) { toast.error(t('events.too_many_losses', language)); return; }
 
-    // Store event battle context
-    localStorage.setItem('event_battle', JSON.stringify({
+    // Store event battle context with modifiers
+    const eventMods: Record<string, any> = {
       eventId: event.id,
       maxWins: event.maxWins || 0,
       maxLosses: event.maxLosses || 0,
       completed: false,
-    }));
+    };
+    // Apply event-specific modifiers
+    const nameLower = event.name.toLowerCase();
+    if (nameLower.includes('triple') || nameLower.includes('double elixir')) {
+      eventMods.elixirMultiplier = nameLower.includes('triple') ? 3 : 2;
+    }
+    if (nameLower.includes('rage')) {
+      eventMods.rageMode = true;
+      eventMods.elixirMultiplier = 2;
+    }
+    if (nameLower.includes('sudden death')) {
+      eventMods.suddenDeath = true;
+    }
+    localStorage.setItem('event_battle', JSON.stringify(eventMods));
 
     // Navigate to actual battle
     setScreen('battle');
