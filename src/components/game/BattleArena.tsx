@@ -665,18 +665,24 @@ const BattleArena = () => {
             // No target - move towards enemy side via bridge if ground
             unit.targetId = null;
             if (unit.card.unitType !== 'air') {
-              // Ground troops must use bridges
               const defaultTargetY = unit.side === 'player' ? 4 : 88;
-              if (needsCrossRiver(unit.y, defaultTargetY, unit.side)) {
-                const bridge = getNearestBridge(unit.x);
+              const bridge = getNearestBridge(unit.x);
+              const nearBridgeX = Math.abs(unit.x - bridge.x) <= 7;
+              const inRiverZone = unit.y >= RIVER_TOP && unit.y <= RIVER_BOTTOM;
+
+              // Hard river rule: ground units cannot path through river unless aligned with bridge
+              if (inRiverZone && !nearBridgeX) {
+                const dx = bridge.x - unit.x;
+                const step = Math.sign(dx) * Math.min(Math.abs(dx), speed * 1.2);
+                unit.x += step;
+              } else if (needsCrossRiver(unit.y, defaultTargetY, unit.side)) {
                 const distToBridge = Math.sqrt((unit.x - bridge.x) ** 2 + (unit.y - bridge.y) ** 2);
-                if (distToBridge > 3) {
+                if (distToBridge > 2.2) {
                   const dx = (bridge.x - unit.x) / distToBridge;
                   const dy = (bridge.y - unit.y) / distToBridge;
                   unit.x += dx * speed;
                   unit.y += dy * speed;
                 } else {
-                  // At bridge, cross
                   const moveDir = unit.side === 'player' ? -1 : 1;
                   unit.y += moveDir * speed;
                 }
