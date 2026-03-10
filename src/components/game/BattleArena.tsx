@@ -46,6 +46,19 @@ const BattleArena = () => {
   const { language } = useSettings();
   const isRiverRace = !!localStorage.getItem('river_race_battle');
   const isEventBattle = !!localStorage.getItem('event_battle');
+  const isFriendlyBattle = !!localStorage.getItem('friendly_battle');
+  const isNonTrophyBattle = isRiverRace || isEventBattle || isFriendlyBattle;
+
+  // Read event modifiers (e.g. triple elixir, rage, etc.)
+  const eventModifiers = (() => {
+    try {
+      const eb = localStorage.getItem('event_battle');
+      if (!eb) return null;
+      return JSON.parse(eb);
+    } catch { return null; }
+  })();
+  const elixirMultiplier = eventModifiers?.elixirMultiplier || 1;
+  const rageMode = eventModifiers?.rageMode || false;
   const [showIntro, setShowIntro] = useState(true);
   const playerBanner = getPlayerBanner();
   const [elixir, setElixir] = useState(5);
