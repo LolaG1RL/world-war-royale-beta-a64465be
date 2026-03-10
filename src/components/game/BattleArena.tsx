@@ -160,7 +160,7 @@ const BattleArena = () => {
           localStorage.setItem('war_pass_data', JSON.stringify(s1));
           localStorage.setItem('last_battle_crowns', String(net));
           setBattleResult('win');
-          if (!isRiverRace && !isEventBattle) { const gain = 20 + Math.floor(Math.random() * 21); localStorage.setItem('last_trophy_change', String(gain)); setProfile(prev => ({ ...prev, trophies: prev.trophies + gain, maxTrophies: Math.max(prev.maxTrophies, prev.trophies + gain), wins: prev.wins + 1, threeCrownWins: pC >= 3 ? prev.threeCrownWins + 1 : prev.threeCrownWins })); }
+          if (!isNonTrophyBattle) { const gain = 20 + Math.floor(Math.random() * 21); localStorage.setItem('last_trophy_change', String(gain)); setProfile(prev => ({ ...prev, trophies: prev.trophies + gain, maxTrophies: Math.max(prev.maxTrophies, prev.trophies + gain), wins: prev.wins + 1, threeCrownWins: pC >= 3 ? prev.threeCrownWins + 1 : prev.threeCrownWins })); }
           if (isRiverRace) { setProfile(prev => ({ ...prev, warDayWins: prev.warDayWins + 1 })); }
           setScreen('result');
           break;
