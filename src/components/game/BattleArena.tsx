@@ -312,7 +312,7 @@ const BattleArena = () => {
     } else {
       setTimeout(() => setAbilityActive(false), 3000);
     }
-  }, [championCard, abilityCooldown, abilityActive, towers]);
+  }, [championCard, abilityCooldown, abilityActive, towers, elixir]);
 
   // Timer - use refs to avoid restarting interval
   const isDoubleElixirRef = useRef(isDoubleElixir);
