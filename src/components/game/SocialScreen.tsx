@@ -101,6 +101,28 @@ interface FriendRow {
   friend_trophies?: number;
 }
 
+// Season countdown component for leaderboard
+const SeasonCountdown = () => {
+  const [timeLeft, setTimeLeft] = useState('');
+  useEffect(() => {
+    const tick = () => {
+      const saved = localStorage.getItem('war_pass_data');
+      let seasonStart = Date.now();
+      try { if (saved) seasonStart = JSON.parse(saved).seasonStart || Date.now(); } catch {}
+      const seasonEnd = seasonStart + 30 * 24 * 60 * 60 * 1000;
+      const diff = Math.max(0, seasonEnd - Date.now());
+      const d = Math.floor(diff / (24 * 3600000));
+      const h = Math.floor((diff % (24 * 3600000)) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      setTimeLeft(`${d}d ${h}h ${m}m`);
+    };
+    tick();
+    const id = setInterval(tick, 60000);
+    return () => clearInterval(id);
+  }, []);
+  return <span className="text-[9px] font-bold text-primary">{timeLeft}</span>;
+};
+
 const SocialScreen = () => {
   const { setScreen, clan, profile, setClan, setProfile, deck } = useGame();
   const { language } = useSettings();
