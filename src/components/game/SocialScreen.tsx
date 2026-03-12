@@ -15,6 +15,7 @@ import { allEmotes, getEquippedEmotes } from '@/data/emotes';
 import { countryCodeToFlag } from '@/lib/countryFlags';
 import { allEmblems, getPlayerBanner } from '@/data/banners';
 import RevealScreen, { RevealItem } from './RevealScreen';
+import { isContentSafe } from '@/lib/contentFilter';
 
 const BANNER_COLORS = [
   '#b91c1c', '#dc2626', '#ef4444',
