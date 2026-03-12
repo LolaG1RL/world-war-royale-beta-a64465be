@@ -747,7 +747,23 @@ const SocialScreen = () => {
                   <div className="text-xs font-bold text-foreground">{f.friend_username}</div>
                   <div className="text-[8px] text-muted-foreground">{f.friend_tag}</div>
                 </div>
-                <div className="text-[10px] font-bold text-foreground mr-2">🏆 {f.friend_trophies}</div>
+                <div className="text-[10px] font-bold text-foreground mr-1">🏆 {f.friend_trophies}</div>
+                {f.status === 'accepted' && (
+                  <button
+                    onClick={() => {
+                      // Check deck has 8 cards
+                      if (deck.length < 8) {
+                        toast.error(t('battle.deck_not_full', language));
+                        return;
+                      }
+                      localStorage.setItem('friendly_battle', JSON.stringify({ friendName: f.friend_username, friendTag: f.friend_tag }));
+                      setScreen('matchmaking');
+                    }}
+                    className="px-2 py-1 bg-primary/20 border border-primary/30 rounded-lg text-[8px] font-bold text-primary hover:bg-primary/30 transition-colors mr-1"
+                  >
+                    ⚔️ {t('social.friendly_battle', language)}
+                  </button>
+                )}
                 <button onClick={() => removeFriend(f.id)} className="text-muted-foreground hover:text-destructive">
                   <UserMinus className="w-3.5 h-3.5" />
                 </button>
