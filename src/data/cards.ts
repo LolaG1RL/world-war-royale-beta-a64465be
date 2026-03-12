@@ -525,8 +525,9 @@ export const shopItems: ShopItem[] = [
   { id: 'shop-7', name: 'Dragon Warrior', emoji: '🐲', type: 'card', cost: 2000, currency: 'gold', rarity: 'epic', description: 'x1 card' },
   { id: 'shop-8', name: '1000 Gold', emoji: '💰', type: 'gold', cost: 60, currency: 'gems', description: '1000 Gold coins' },
   { id: 'shop-9', name: '10000 Gold', emoji: '💰', type: 'gold', cost: 500, currency: 'gems', description: '10000 Gold coins' },
-  { id: 'shop-10', name: '80 Gems', emoji: '💎', type: 'gems', cost: 4.99, currency: 'real', description: '80 Gems' },
-  { id: 'shop-11', name: '500 Gems', emoji: '💎', type: 'gems', cost: 14.99, currency: 'real', description: '500 Gems' },
+  { id: 'shop-10', name: '80 Gems', emoji: '💎', type: 'gems', cost: 1.99, currency: 'real', description: '80 Gems' },
+  { id: 'shop-11', name: '500 Gems', emoji: '💎', type: 'gems', cost: 9.99, currency: 'real', description: '500 Gems' },
+  { id: 'shop-13', name: '1500 Gems', emoji: '💎', type: 'gems', cost: 19.99, currency: 'real', description: '1500 Gems' },
   { id: 'shop-12', name: 'War Pass', emoji: '🎖️', type: 'pass', cost: 4.99, currency: 'real', description: 'Unlock premium rewards all season' },
 ];
 
