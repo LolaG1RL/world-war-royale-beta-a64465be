@@ -446,7 +446,7 @@ const BattleArena = () => {
         const splash = (card.splashRadius || 2) * 5;
         
         // Frost Rune / speed debuff spells
-        const isFrostSpell = card.id === 'frost-rune' || card.name.toLowerCase().includes('frost') || card.name.toLowerCase().includes('freeze');
+        const isFrostSpell = card.id === 'freeze-spell' || card.name.toLowerCase().includes('frost') || card.name.toLowerCase().includes('freeze');
         
         // Ranged projectile VFX for AI spells
         projectileCounter.current++;
