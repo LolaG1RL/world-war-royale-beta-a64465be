@@ -367,8 +367,8 @@ const EventsScreen = () => {
     }
     localStorage.setItem('event_battle', JSON.stringify(eventMods));
 
-    // Navigate to actual battle
-    setScreen('battle');
+    // Navigate through matchmaking screen (same as all other battles)
+    setScreen('matchmaking');
   }, [language, setScreen]);
 
   const claimMilestone = useCallback((event: EventData, milestoneIdx: number) => {

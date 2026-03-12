@@ -52,21 +52,31 @@ const BattleResult = () => {
         localStorage.setItem('event_battle', JSON.stringify({ ...parsed, completed: true, result: isWin ? 'win' : 'loss' }));
       } catch {}
     }
-    // Advance daily quest "Win 3 Battles" on any battle win
-    if (isWin) {
-      try {
-        const d = new Date();
-        const todayKey = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-        const stored = localStorage.getItem('daily_quest_progress');
-        if (stored) {
-          const qp = JSON.parse(stored);
-          if (qp.date === todayKey && qp.quests[0] && qp.quests[0].progress < 3) {
+    // Advance daily quests on any battle
+    try {
+      const d = new Date();
+      const todayKey = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+      const stored = localStorage.getItem('daily_quest_progress');
+      if (stored) {
+        const qp = JSON.parse(stored);
+        if (qp.date === todayKey) {
+          // Quest 0: "Win 3 Battles" - only on wins
+          if (isWin && qp.quests[0] && qp.quests[0].progress < 3) {
             qp.quests[0].progress += 1;
-            localStorage.setItem('daily_quest_progress', JSON.stringify(qp));
           }
+          // Quest 1: "Play 5 Cards" - increment on every battle (you always play cards)
+          if (qp.quests[1] && qp.quests[1].progress < 5) {
+            qp.quests[1].progress += 1;
+          }
+          // Quest 2: "Destroy 10 Towers" - increment by crowns earned
+          const crowns = Math.max(0, parseInt(localStorage.getItem('last_battle_crowns') || '0'));
+          if (qp.quests[2] && qp.quests[2].progress < 10) {
+            qp.quests[2].progress = Math.min(10, qp.quests[2].progress + crowns);
+          }
+          localStorage.setItem('daily_quest_progress', JSON.stringify(qp));
         }
-      } catch {}
-    }
+      }
+    } catch {}
     // Play sfx
     if (isWin) playVictory(); else playDefeat();
     // Animate: zoom out, then show crowns

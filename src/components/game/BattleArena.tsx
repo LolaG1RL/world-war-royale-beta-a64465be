@@ -1006,7 +1006,7 @@ const BattleArena = () => {
     
     if (card.type === 'spell') {
       const splash = (card.splashRadius || 2) * 5;
-      const isFrostSpell = card.id === 'frost-rune' || card.name.toLowerCase().includes('frost') || card.name.toLowerCase().includes('freeze');
+      const isFrostSpell = card.id === 'freeze-spell' || card.name.toLowerCase().includes('frost') || card.name.toLowerCase().includes('freeze');
       
       projectileCounter.current++;
       const projId = projectileCounter.current;
