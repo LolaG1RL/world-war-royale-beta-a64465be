@@ -797,15 +797,21 @@ const SocialScreen = () => {
             </div>
           )}
 
-          {/* Rewards info banner */}
+          {/* Rewards info banner + Season timer */}
           {(globalSubTab === 'top100' || globalSubTab === 'local') && (
-            <button
-              onClick={() => setShowRewardsPanel(!showRewardsPanel)}
-              className="mx-3 mt-2 mb-1 px-3 py-2 bg-gradient-to-r from-[hsl(38,80%,20%)] to-[hsl(38,60%,15%)] border border-primary/30 rounded-lg text-[9px] font-bold text-primary flex items-center justify-between"
-            >
-              <span>🏅 {globalSubTab === 'top100' ? t('social.top100_rewards', language) : t('social.top10_rewards', language)}</span>
-              <span className="text-[8px]">{showRewardsPanel ? '▲' : '▼'}</span>
-            </button>
+            <div className="mx-3 mt-2 mb-1 space-y-1">
+              <div className="px-3 py-1.5 bg-gradient-to-r from-[hsl(280,40%,18%)] to-[hsl(320,40%,18%)] border border-[hsl(280,30%,30%)] rounded-lg text-[9px] font-bold text-[hsl(280,60%,70%)] flex items-center justify-between">
+                <span>⏳ {t('social.season_ends', language)}</span>
+                <SeasonCountdown />
+              </div>
+              <button
+                onClick={() => setShowRewardsPanel(!showRewardsPanel)}
+                className="w-full px-3 py-2 bg-gradient-to-r from-[hsl(38,80%,20%)] to-[hsl(38,60%,15%)] border border-primary/30 rounded-lg text-[9px] font-bold text-primary flex items-center justify-between"
+              >
+                <span>🏅 {globalSubTab === 'top100' ? t('social.top100_rewards', language) : t('social.top10_rewards', language)}</span>
+                <span className="text-[8px]">{showRewardsPanel ? '▲' : '▼'}</span>
+              </button>
+            </div>
           )}
 
           {/* Rewards panel */}
