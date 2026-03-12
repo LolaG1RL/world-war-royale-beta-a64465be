@@ -101,7 +101,7 @@ interface FriendRow {
 }
 
 const SocialScreen = () => {
-  const { setScreen, clan, profile, setClan, setProfile } = useGame();
+  const { setScreen, clan, profile, setClan, setProfile, deck } = useGame();
   const { language } = useSettings();
   const { user, playerTag } = useAuth();
   const T = (key: string) => t(key, language);
