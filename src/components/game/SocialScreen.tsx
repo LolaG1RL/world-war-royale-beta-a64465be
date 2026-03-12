@@ -285,10 +285,16 @@ const SocialScreen = () => {
     setJoiningClan(null);
   };
 
-  // Create clan (save to DB)
+  // Create clan (save to DB) - with content safety
   const handleCreateClan = async () => {
     if (!clanName.trim() || clanName.length < 3 || !user) return;
     if (profile.gems < 100) return;
+
+    // Content safety check
+    if (!isContentSafe(clanName) || !isContentSafe(clanDescription)) {
+      toast.error(t('social.inappropriate_content', language));
+      return;
+    }
 
     const tag = `#${clanName.trim().substring(0, 3).toUpperCase()}${Math.floor(Math.random() * 9000 + 1000)}`;
 

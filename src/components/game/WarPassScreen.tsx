@@ -198,6 +198,13 @@ const WarPassScreen = () => {
     return 30;
   };
 
+  const getSeasonNumber = () => {
+    // Calculate season number based on a fixed epoch
+    const epoch = new Date('2025-01-01').getTime();
+    const now = Date.now();
+    return Math.floor((now - epoch) / (30 * 24 * 60 * 60 * 1000)) + 1;
+  };
+
   const save = (c: number, paid: boolean, cf: Set<number>, cp: Set<number>) => {
     const saved = localStorage.getItem('war_pass_data');
     let seasonStart = Date.now();
