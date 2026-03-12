@@ -245,7 +245,11 @@ const CardCollection = () => {
     
     const newDecks = [...decks];
     if (isInDeck(card)) {
-      newDecks[deckSlot] = newDecks[deckSlot].filter(d => d.id !== card.id);
+      // Remove by index - keep all other cards in their exact positions
+      const removeIdx = newDecks[deckSlot].findIndex(d => d.id === card.id);
+      if (removeIdx >= 0) {
+        newDecks[deckSlot] = [...newDecks[deckSlot].slice(0, removeIdx), ...newDecks[deckSlot].slice(removeIdx + 1)];
+      }
     } else {
       newDecks[deckSlot] = [...newDecks[deckSlot], card];
     }
