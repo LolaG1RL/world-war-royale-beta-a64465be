@@ -19,6 +19,7 @@ import { BottomNav } from './BottomNav';
 const STRIPE_PRICES: Record<string, string> = {
   'shop-10': 'price_1T8c8YF8KfKkJquq45NfyNTG',
   'shop-11': 'price_1T8c8dF8KfKkJquqIXEugeJM',
+  'shop-13': 'price_1TA3ZWF8KfKkJquqEA5Euloo',
   'shop-12': 'price_1T8c8eF8KfKkJquqBrjotFic',
 };
 

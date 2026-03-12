@@ -198,6 +198,13 @@ const WarPassScreen = () => {
     return 30;
   };
 
+  const getSeasonNumber = () => {
+    // Calculate season number based on a fixed epoch
+    const epoch = new Date('2025-01-01').getTime();
+    const now = Date.now();
+    return Math.floor((now - epoch) / (30 * 24 * 60 * 60 * 1000)) + 1;
+  };
+
   const save = (c: number, paid: boolean, cf: Set<number>, cp: Set<number>) => {
     const saved = localStorage.getItem('war_pass_data');
     let seasonStart = Date.now();
@@ -412,7 +419,7 @@ const WarPassScreen = () => {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <Crown className="w-5 h-5 text-primary" />
-        <h1 className="font-display font-bold text-sm text-foreground flex-1">{T('warpass.title')}</h1>
+        <h1 className="font-display font-bold text-sm text-foreground flex-1">{T('warpass.title')} <span className="text-[9px] text-primary bg-primary/20 px-1.5 py-0.5 rounded ml-1">S{getSeasonNumber()}</span></h1>
         <div className="text-[8px] text-muted-foreground mr-2">⏳ {getDaysLeft()}d {T('warpass.left')}</div>
         <div className="flex items-center gap-1 bg-primary/20 px-2 py-0.5 rounded-full border border-primary/30">
           <span className="text-xs">👑</span>

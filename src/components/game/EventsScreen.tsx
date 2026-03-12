@@ -342,6 +342,8 @@ const EventsScreen = () => {
   }, []);
 
   const startEventBattle = useCallback((event: EventData) => {
+    // Deck validation
+    if (deck.length < 8) { toast.error(t('battle.deck_not_full', language)); return; }
     const prog = getEventProgress(event.id);
     if (prog.completed) { toast.info(t('events.already_completed', language)); return; }
     if (event.maxLosses && event.maxLosses > 0 && prog.losses >= event.maxLosses) { toast.error(t('events.too_many_losses', language)); return; }

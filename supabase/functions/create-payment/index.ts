@@ -11,6 +11,7 @@ const corsHeaders = {
 const PRICE_REWARDS: Record<string, { gems?: number; gold?: number; type: string }> = {
   "price_1T8c8YF8KfKkJquq45NfyNTG": { gems: 80, type: "80-gems" },
   "price_1T8c8dF8KfKkJquqIXEugeJM": { gems: 500, type: "500-gems" },
+  "price_1TA3ZWF8KfKkJquqEA5Euloo": { gems: 1500, type: "1500-gems" },
   "price_1T8c8eF8KfKkJquqBrjotFic": { type: "war-pass" },
 };
 
